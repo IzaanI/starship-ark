@@ -19,13 +19,15 @@
 
             <!-- CLICKABLE ANGLED PERSPECTIVE LAPTOP HOTSPOT ON DESK -->
             <div id="laptop-hotspot" title="Click to access terminal">
-                <div class="hotspot-tooltip">💻 ACCESS TERMINAL</div>
+                <div class="hotspot-tooltip">ACCESS TERMINAL</div>
             </div>
 
-            <!-- PHYSICAL DECISION LEVERS ON DESK SURFACE -->
-            <div id="levers-container">
-                <button class="btn-lever btn-accept" onclick="acceptEntry()">🟢 ACCEPT ENTRY (LEVER)</button>
-                <button class="btn-lever btn-reject" onclick="rejectEntry()">🔴 REJECT ENTRY (LEVER)</button>
+            <!-- PHYSICAL WALL BUTTON HOTSPOTS (GREEN ACCEPT & RED REJECT) -->
+            <div id="wall-button-accept" class="wall-btn-hotspot" title="Accept Candidate Entry" onclick="acceptEntry()">
+                <div class="wall-btn-tooltip tooltip-accept">ACCEPT ENTRY</div>
+            </div>
+            <div id="wall-button-reject" class="wall-btn-hotspot" title="Reject Candidate Entry" onclick="rejectEntry()">
+                <div class="wall-btn-tooltip tooltip-reject">REJECT ENTRY</div>
             </div>
         </div>
 
