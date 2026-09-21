@@ -31,14 +31,14 @@ html, body {
 }
 
 /* =============================================================
-   1. MAIN ROOM VIEW (LOCKED 16:9 ASPECT RATIO CONTAINER)
+   1. MAIN ROOM VIEW (FULLSCREEN COVER 16:9 CONTAINER)
    ============================================================= */
 #room-view {
     position: relative;
-    width: 100vw;
-    height: 56.25vw;
-    max-height: 100vh;
-    max-width: 177.78vh;
+    width: 177.78vh;
+    height: 100vh;
+    min-width: 100vw;
+    min-height: 56.25vw;
     aspect-ratio: 16 / 9;
     overflow: hidden;
     z-index: 1;
