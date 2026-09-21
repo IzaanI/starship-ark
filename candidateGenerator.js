@@ -514,7 +514,7 @@ static unrelatedDisciplines = [
         "Unverified",
         "Diploma Mill Flagged",
         "No Institutional Record",
-        "Forged Document Signature Alert",
+        "Forged Document Signature",
         "Revoked Accreditation Registry",
         "Unaccredited Mail-Order Provider"
     ];
@@ -598,7 +598,31 @@ static unrelatedDisciplines = [
         const harmlessInfract = this.harmlessInfractions[Math.floor(Math.random() * this.harmlessInfractions.length)];
         const harmlessMed = this.harmlessMedicalNotes[Math.floor(Math.random() * this.harmlessMedicalNotes.length)];
         const gpaHonors = ["Summa Cum Laude (4.0 GPA)", "Magna Cum Laude (3.9 GPA)", "Dean's List (3.6 GPA)", "Satisfactory Pass (3.2 GPA)", "Academic Honors", "First Class Distinction"][Math.floor(Math.random() * 6)];
-        const bloodTypeVal = ["A-POSITIVE", "O-POSITIVE", "B-POSITIVE", "AB-NEGATIVE", "A-NEGATIVE", "B-NEGATIVE", "O-NEGATIVE", "AB-POSITIVE"][Math.floor(Math.random() * 8)];
+        
+        // Random Individual Body Weight (115 lbs to 275 lbs) — Determines resource/food consumption
+        const weightLbs = Math.floor(Math.random() * (275 - 115 + 1)) + 115;
+
+        // Tier-Weighted Station Performance Impact (Core > Adjacent > Stretch + Identity Multiplier)
+        let basePerformance = 100;
+        if (role.tier === "Core") {
+            basePerformance = Math.floor(Math.random() * 31 + 95); // Core: +95% to +125% station efficiency
+        } else if (role.tier === "Adjacent") {
+            basePerformance = Math.floor(Math.random() * 26 + 55); // Adjacent: +55% to +80% station efficiency
+        } else {
+            basePerformance = Math.floor(Math.random() * 26 + 15); // Stretch: +15% to +40% station efficiency
+        }
+
+        // True Identity Performance Modifiers
+        let performanceImpactNum = basePerformance;
+        if (chosenIdentity.type === "DESPERATE_FRAUD") {
+            performanceImpactNum = Math.floor(basePerformance * 0.25); // Unqualified fraud penalty
+        } else if (chosenIdentity.type === "DOOMSDAY_SABOTEUR") {
+            performanceImpactNum = -Math.floor(Math.random() * 51 + 50); // Active sabotage (-50% to -100% penalty)
+        } else if (chosenIdentity.type === "RESOURCE_HOARDER") {
+            performanceImpactNum = Math.floor(basePerformance * 0.4); // Resource drain efficiency drop
+        } else if (chosenIdentity.type === "CONTAGIOUS_CARRIER") {
+            performanceImpactNum = Math.floor(basePerformance * 0.3); // Contagion efficiency drop
+        }
 
         const candidate = {
             id: id,
@@ -608,6 +632,8 @@ static unrelatedDisciplines = [
             station: stationObj.name,
             city: city,
             age: age,
+            weightLbs: weightLbs,
+            performanceImpact: performanceImpactNum,
             trueIdentity: chosenIdentity.type,
             trueIdentityLabel: chosenIdentity.label,
             quote: `"Applicant for ${role.name} position. Credentials submitted for review."`,
@@ -664,7 +690,7 @@ static unrelatedDisciplines = [
                 status: "MEDICAL REPORT",
                 fields: [
                     { label: "PATIENT NAME", val: name },
-                    { label: "BLOOD TYPE", val: bloodTypeVal },
+                    { label: "BODY WEIGHT", val: `${weightLbs} LBS` },
                     { label: "OXYGEN SATURATION", val: `${(97.5 + Math.random()*2.2).toFixed(1)}%` },
                     { label: "NEURAL EEG INDEX", val: `${(0.91 + Math.random()*0.08).toFixed(2)} (Stable)` },
                     { label: "MEDICAL HISTORY", val: harmlessMed },
