@@ -602,27 +602,31 @@ static unrelatedDisciplines = [
         // Random Individual Body Weight (115 lbs to 275 lbs) — Determines resource/food consumption
         const weightLbs = Math.floor(Math.random() * (275 - 115 + 1)) + 115;
 
-        // Tier-Weighted Station Performance Impact (Core > Adjacent > Stretch + Identity Multiplier)
+        // Base Tier Station Performance (Core: 90-120%, Adjacent: 70-90%, Stretch: 60-70%)
         let basePerformance = 100;
         if (role.tier === "Core") {
-            basePerformance = Math.floor(Math.random() * 31 + 95); // Core: +95% to +125% station efficiency
+            basePerformance = Math.floor(Math.random() * 31 + 90); // 90% - 120%
         } else if (role.tier === "Adjacent") {
-            basePerformance = Math.floor(Math.random() * 26 + 55); // Adjacent: +55% to +80% station efficiency
+            basePerformance = Math.floor(Math.random() * 21 + 70); // 70% - 90%
         } else {
-            basePerformance = Math.floor(Math.random() * 26 + 15); // Stretch: +15% to +40% station efficiency
+            basePerformance = Math.floor(Math.random() * 11 + 60); // 60% - 70%
         }
 
-        // True Identity Performance Modifiers
-        let performanceImpactNum = basePerformance;
-        if (chosenIdentity.type === "DESPERATE_FRAUD") {
-            performanceImpactNum = Math.floor(basePerformance * 0.25); // Unqualified fraud penalty
-        } else if (chosenIdentity.type === "DOOMSDAY_SABOTEUR") {
-            performanceImpactNum = -Math.floor(Math.random() * 51 + 50); // Active sabotage (-50% to -100% penalty)
-        } else if (chosenIdentity.type === "RESOURCE_HOARDER") {
-            performanceImpactNum = Math.floor(basePerformance * 0.4); // Resource drain efficiency drop
+        // True Identity Performance Multipliers (Applied on top of base tier efficiency)
+        let identityMultiplier = 1.0;
+        if (chosenIdentity.type === "LEGITIMATE_EXPERT") {
+            identityMultiplier = 1.0; // 100% standard efficiency
+        } else if (chosenIdentity.type === "DESPERATE_FRAUD") {
+            identityMultiplier = 0.50; // 50% output penalty (unqualified degree)
         } else if (chosenIdentity.type === "CONTAGIOUS_CARRIER") {
-            performanceImpactNum = Math.floor(basePerformance * 0.3); // Contagion efficiency drop
+            identityMultiplier = 0.75; // 75% output (25% sickness drop)
+        } else if (chosenIdentity.type === "RESOURCE_HOARDER") {
+            identityMultiplier = 1.0; // 100% standard output (steals resources later)
+        } else if (chosenIdentity.type === "DOOMSDAY_SABOTEUR") {
+            identityMultiplier = -0.25; // -25% output penalty (active sabotage)
         }
+
+        const performanceImpactNum = Math.round(basePerformance * identityMultiplier);
 
         const candidate = {
             id: id,
@@ -633,6 +637,8 @@ static unrelatedDisciplines = [
             city: city,
             age: age,
             weightLbs: weightLbs,
+            basePerformance: basePerformance,
+            identityMultiplier: identityMultiplier,
             performanceImpact: performanceImpactNum,
             trueIdentity: chosenIdentity.type,
             trueIdentityLabel: chosenIdentity.label,
@@ -731,6 +737,14 @@ static unrelatedDisciplines = [
         }
 
         return candidate;
+    }
+
+    // Station Placement Efficiency Helper (Calculates output, applying 50% penalty if placed in wrong station)
+    static getAssignedStationEfficiency(candidate, assignedStationName) {
+        if (!candidate) return 0;
+        const isMatchingStation = (candidate.station === assignedStationName);
+        const stationMultiplier = isMatchingStation ? 1.0 : 0.50; // 50% efficiency penalty if placed at wrong station
+        return Math.round(candidate.performanceImpact * stationMultiplier);
     }
 }
 
