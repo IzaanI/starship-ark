@@ -25,25 +25,29 @@ html, body {
     height: 100vh;
     overflow: hidden;
     background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* =============================================================
-   1. MAIN ROOM VIEW (EDGE-TO-EDGE FULLSCREEN)
+   1. MAIN ROOM VIEW (LOCKED 16:9 ASPECT RATIO CONTAINER)
    ============================================================= */
 #room-view {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    position: relative;
+    width: 100vw;
+    height: 56.25vw;
+    max-height: 100vh;
+    max-width: 177.78vh;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
     z-index: 1;
 }
 
 #room-bg-img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center;
+    object-fit: fill;
     position: absolute;
     top: 0;
     left: 0;
