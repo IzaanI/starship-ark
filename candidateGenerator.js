@@ -302,44 +302,129 @@ class CandidateGenerator {
         }
     ];
 
-    static unrelatedDisciplines = [
-        "Basic Office Typing",
-        "Domestic Gardening",
-        "Elementary Computer Usage",
-        "Introductory Hotel Reception",
-        "Digital Media Production",
-        "Commercial Food Preparation"
-    ];
+static unrelatedDisciplines = [
+    "Basic Office Typing",
+    "Domestic Gardening",
+    "Elementary Computer Usage",
+    "Introductory Hotel Reception",
+    "Digital Media Production",
+    "Commercial Food Preparation",
+    "Professional Balloon Decoration",
+    "Advanced Spreadsheet Formatting",
+    "Recreational Dance Instruction",
+    "Introductory Floral Arrangement",
+    "Basic Aquarium Maintenance",
+    "Wedding Event Coordination",
+    "Commercial Window Cleaning",
+    "Retail Customer Service",
+    "Introduction to Interior Decorating",
+    "Professional Gift Wrapping",
+    "Elementary Photography",
+    "Recreational Baking",
+    "Basic Sewing & Alterations",
+    "Introduction to Pet Grooming",
+    "Amateur Birdwatching",
+    "Commercial Ice Cream Preparation",
+    "Basic Musical Theatre",
+    "Introductory Calligraphy",
+    "Recreational Fishing Techniques",
+    "Basic Bartending",
+    "Professional Tour Guiding",
+    "Introductory Pottery",
+    "Residential Lawn Maintenance",
+    "Basic Cake Decorating",
+    "Children's Party Entertainment",
+    "Retail Merchandising",
+    "Introductory Yoga Instruction",
+    "Commercial Upholstery",
+    "Basic Candle Making",
+    "Recreational Photography",
+    "Introductory Wine Appreciation",
+    "Professional Closet Organization",
+    "Basic Carpet Installation",
+    "Introduction to Stand-Up Comedy",
+    "Amateur Magic Performance",
+    "Decorative Cookie Design",
+    "Recreational Origami",
+    "Introductory Disc Jockeying",
+    "Basic Antique Restoration",
+    "Commercial Balloon Animal Fabrication",
+    "Introductory Cheese Presentation",
+    "Professional Queue Management",
+    "Basic Gift Basket Assembly",
+    "Recreational Kite Construction",
+    "Introduction to Competitive Trivia",
+    "Domestic Fermentation",
+    "Advanced Sandwich Assembly",
+    "Introductory Escape Room Design",
+    "Professional Mascot Performance",
+    "Basic Aquarium Fish Identification",
+    "Recreational Miniature Painting",
+    "Introductory Sock Darning",
+    "Commercial Birthday Cake Assembly"
+];
 
     static legitInstitutions = [
-        "Geneva Institute of Technology",
-        "Zurich Federal Polytechnic",
-        "Tokyo Imperial Academy",
-        "Berlin Technical University",
-        "Cairo Global Observatory",
-        "New York Technical College",
-        "Edmonton City Academy",
-        "Valparaiso Polytechnic"
+        "Massachusetts Institute of Applied Sciences",
+        "Seoul National Institute of Technology",
+        "Copenhagen Institute of Engineering",
+        "Melbourne Polytechnic University",
+        "Osaka Institute of Advanced Technology",
+        "Toronto Institute of Applied Engineering",
+        "Munich Technical Institute",
+        "Singapore Institute of Science and Technology",
+        "Stockholm Institute of Technology",
+        "Buenos Aires Polytechnic Academy"
     ];
 
     static unaccreditedInstitutions = [
         "Global Online Distance Network",
         "Express Fast-Track Institute",
-        "Unregistered Mail-Order Registry"
+        "Unregistered Mail-Order Registry",
+        "International Institute of Career Advancement",
+        "World Academy of Professional Excellence",
+        "Universal Technical Learning Center",
+        "Global Institute for Applied Success",
+        "International Distance Certification Bureau",
+        "Advanced Career Solutions Academy",
+        "National Institute of Accelerated Learning",
+        "Worldwide Professional Development Institute",
+        "Prestige Academy of Applied Studies"
     ];
 
     static harmlessInfractions = [
         "1 citation: Parking violation (2028)",
         "1 citation: Noise complaint (2027)",
         "1 infraction: Expired vehicle registration (2029)",
-        "None"
+        "1 citation: Improper waste disposal (2028)",
+        "1 citation: Public transit fare violation (2027)",
+        "1 infraction: Failure to display parking permit (2029)",
+        "1 citation: Residential parking violation (2026)",
+        "1 citation: Unauthorized overnight parking (2028)",
+        "1 infraction: Bicycle registration violation (2027)",
+        "1 citation: Excessive residential noise (2029)",
+        "1 citation: Failure to yield at pedestrian crossing (2028)",
+        "1 infraction: Municipal bylaw violation (2026)",
+        "1 citation: Parking meter expired (2027)",
+        "1 citation: Improper recycling disposal (2029)"
     ];
 
     static harmlessMedicalNotes = [
         "No major surgeries on record",
         "Corrected myopia (vision 20/20 with lenses)",
         "Healed radius bone fracture (2026)",
-        "Routine seasonal pollen allergy"
+        "Routine seasonal pollen allergy",
+        "Healed ankle sprain (2027)",
+        "Corrected astigmatism (vision 20/20 with lenses)",
+        "History of uncomplicated appendectomy (2025)",
+        "Mild lactose intolerance",
+        "Healed clavicle fracture (2024)",
+        "Routine prescription for corrective lenses",
+        "Minor concussion fully resolved (2027)",
+        "Seasonal sensitivity to dust and pollen",
+        "Healed wrist fracture (2025)",
+        "History of childhood asthma; no current treatment",
+        "Routine dental surgery; no ongoing complications"
     ];
 
     static firstNames = ["Vance", "Elena", "Marcus", "Kaito", "Zahra", "Sven", "Nadia", "Liam", "Yuki", "Cassandra", "Tariq", "Astrid", "Dante"];
