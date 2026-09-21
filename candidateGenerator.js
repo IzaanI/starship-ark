@@ -360,7 +360,6 @@ static unrelatedDisciplines = [
     "Professional Mascot Performance",
     "Basic Aquarium Fish Identification",
     "Recreational Miniature Painting",
-    "Introductory Sock Darning",
     "Commercial Birthday Cake Assembly"
 ];
 
@@ -374,7 +373,9 @@ static unrelatedDisciplines = [
         "Munich Technical Institute",
         "Singapore Institute of Science and Technology",
         "Stockholm Institute of Technology",
-        "Buenos Aires Polytechnic Academy"
+        "Buenos Aires Polytechnic Academy",
+        "Zurich Federal Institute of Technology",
+        "Tokyo University of Science & Engineering"
     ];
 
     static unaccreditedInstitutions = [
@@ -394,19 +395,19 @@ static unrelatedDisciplines = [
 
     static harmlessInfractions = [
         "1 citation: Parking violation (2028)",
-        "1 citation: Noise complaint (2027)",
-        "1 infraction: Expired vehicle registration (2029)",
+        "2 citation: Noise complaint (2027)",
+        "1 infractions: Expired vehicle registration (2029)",
         "1 citation: Improper waste disposal (2028)",
-        "1 citation: Public transit fare violation (2027)",
-        "1 infraction: Failure to display parking permit (2029)",
+        "2 citation: Public transit fare violation (2027)",
+        "3 infractions: Failure to display parking permit (2029)",
         "1 citation: Residential parking violation (2026)",
         "1 citation: Unauthorized overnight parking (2028)",
-        "1 infraction: Bicycle registration violation (2027)",
-        "1 citation: Excessive residential noise (2029)",
+        "4 infractions: Bicycle registration violation (2027)",
+        "2 citations: Excessive residential noise (2029)",
         "1 citation: Failure to yield at pedestrian crossing (2028)",
         "1 infraction: Municipal bylaw violation (2026)",
         "1 citation: Parking meter expired (2027)",
-        "1 citation: Improper recycling disposal (2029)"
+        "2 citations: Improper recycling disposal (2029)"
     ];
 
     static harmlessMedicalNotes = [
@@ -427,9 +428,100 @@ static unrelatedDisciplines = [
         "Routine dental surgery; no ongoing complications"
     ];
 
-    static firstNames = ["Vance", "Elena", "Marcus", "Kaito", "Zahra", "Sven", "Nadia", "Liam", "Yuki", "Cassandra", "Tariq", "Astrid", "Dante"];
-    static lastNames = ["Sterling", "Rostova", "Vance", "Tanaka", "Al-Mansoor", "Lindqvist", "Kowalski", "Chen", "Sato", "Moreau", "O'Connor"];
-    static cities = ["Geneva", "Zurich", "Tokyo", "Berlin", "New York", "London", "Kyoto", "Edmonton", "Cairo", "Valparaiso"];
+    // Procedural Flaw Option Pools (Identity Discrepancy Matrix)
+    static saboteurArrests = [
+        "3 arrests (Arson / Restricted Materials - 2029)",
+        "2 arrests (Explosive precursor possession / Unauthorized demolition - 2028)",
+        "1 conviction (Attempted power grid sabotage / Cyber-interference - 2027)",
+        "2 citations (Possession of unregistered explosive detonators - 2029)",
+        "4 infractions (Trespassing in orbital launch silo / Contraband smuggling - 2028)",
+        "1 conviction (Industrial sabotage at reactor coolant facility - 2026)",
+        "3 arrests (Vandalism of life-support infrastructure / Hydro-contaminant possession - 2029)",
+        "2 arrests (Illegal acquisition of weaponized isotopes - 2028)"
+    ];
+
+    static saboteurOrganizations = [
+        "Earth's Final Dawn",
+        "Frontier Liberation Cell",
+        "Humanity First Reclamation Movement",
+        "Void Collective Vanguard",
+        "Project Zero Salvation",
+        "Sons of Sol Demolition Society",
+        "Redacted Sol Defense Syndicate",
+        "Silent Sun Resistance",
+        "Terrestrial Reclamation Front"
+    ];
+
+    static saboteurClearances = [
+        "Clearance Suspended",
+        "Clearance Revoked (Flagged by Watch Commander)",
+        "Level 0 — Restricted Access",
+        "Flagged for Interrogation (Active Warrant)",
+        "Clearance Terminated under Security Directive 4",
+        "DENIED — High Security Risk Flag"
+    ];
+
+    static hoarderIncomes = [
+        "Off-Chain Transfer Ledger (Broker #7)",
+        "Anonymous Crypto-Vault Settlement (Panama Relay)",
+        "Unregistered Shell Corp (Vanguard Holdings Inc.)",
+        "Third-Party Escrow (Cayman Darknet Hub)",
+        "Unlisted Black-Market Smuggling Syndicate",
+        "Offshore Asset Liquidation Account",
+        "Private Privateer Bounty Escrow",
+        "Unverified Overseas Wire Network"
+    ];
+
+    static hoarderDepositNotes = [
+        "+$150,000 from Broker #7",
+        "+$220,000 from Anonymous Cipher Ledger",
+        "+$185,000 from Private Escrow Relay",
+        "+$340,000 wire transfer (Unverified Beneficiary)",
+        "+$125,000 cash deposit (Black Market Coin Exchange)",
+        "+$295,000 wire transfer from Off-Chain Node",
+        "+$410,000 transfer from Offshore Cayman Relay"
+    ];
+
+    static hoarderAuditNotes = [
+        "Audit flag on recent transfer",
+        "Flagged for unresolved money laundering check",
+        "Irregular deposit velocity detected",
+        "Unexplained wealth accumulator alert",
+        "Account under active financial crimes investigation",
+        "Suspicious asset origin — ledger hold pending"
+    ];
+
+    static carrierContagions = [
+        "Airborne fungal spore contagion positive in airway scan",
+        "Active Phase-3 Xenotropic Viral Infection detected in blood sample",
+        "Multidrug-resistant bacterial pathogen isolated in bronchial wash",
+        "Parasitic spore strain Beta-9 present in lymphatic tissue",
+        "High-titer viral hemorrhagic agent detected in serum assay",
+        "Untreated contagious respiratory necrosis infection",
+        "Systemic cellular mutation syndrome — communicable stage"
+    ];
+
+    static carrierClearances = [
+        "Hold / Quarantine",
+        "DENIED — Immediate Medical Isolation Required",
+        "QUARANTINE ORDER #402 ACTIVE",
+        "RESTRICTED — Biological Hazard Flag",
+        "CRITICAL — Medical Containment Protocol 9",
+        "ISOLATION DIRECTIVE — Airway Contagion Risk"
+    ];
+
+    static fraudDiplomaStatuses = [
+        "Unverified",
+        "Diploma Mill Flagged",
+        "No Institutional Record",
+        "Forged Document Signature Alert",
+        "Revoked Accreditation Registry",
+        "Unaccredited Mail-Order Provider"
+    ];
+
+    static firstNames = ["Vance", "Elena", "Marcus", "Kaito", "Zahra", "Sven", "Nadia", "Liam", "Yuki", "Cassandra", "Tariq", "Astrid", "Dante", "Mateo", "Freja", "Amara", "Kenji", "Callum"];
+    static lastNames = ["Sterling", "Rostova", "Vance", "Tanaka", "Al-Mansoor", "Lindqvist", "Kowalski", "Chen", "Sato", "Moreau", "O'Connor", "Dubois", "Varga", "Novak", "Takahashi"];
+    static cities = ["Geneva", "Zurich", "Tokyo", "Berlin", "New York", "London", "Kyoto", "Edmonton", "Cairo", "Valparaiso", "Singapore", "Reykjavik", "Seoul", "Melbourne"];
 
     static trueIdentities = [
         { type: "LEGITIMATE_EXPERT", weight: 35, label: "Legitimate Expert" },
@@ -447,10 +539,11 @@ static unrelatedDisciplines = [
         if (isFraud) {
             const level = ["Cert.", "Dipl."][Math.floor(Math.random() * 2)];
             const discipline = this.unrelatedDisciplines[Math.floor(Math.random() * this.unrelatedDisciplines.length)];
+            const statusVal = this.fraudDiplomaStatuses[Math.floor(Math.random() * this.fraudDiplomaStatuses.length)];
             return {
                 title: `${level} ${discipline}`,
                 institution: inst,
-                status: "Unverified"
+                status: statusVal
             };
         }
 
@@ -504,7 +597,8 @@ static unrelatedDisciplines = [
         const normalSavings = (Math.floor(Math.random() * 12 + 6) * monthlySalaryNum).toLocaleString();
         const harmlessInfract = this.harmlessInfractions[Math.floor(Math.random() * this.harmlessInfractions.length)];
         const harmlessMed = this.harmlessMedicalNotes[Math.floor(Math.random() * this.harmlessMedicalNotes.length)];
-        const gpaHonors = ["Magna Cum Laude (3.9 GPA)", "Dean's List (3.6 GPA)", "Satisfactory Pass (3.2 GPA)", "Academic Honors"][Math.floor(Math.random() * 4)];
+        const gpaHonors = ["Summa Cum Laude (4.0 GPA)", "Magna Cum Laude (3.9 GPA)", "Dean's List (3.6 GPA)", "Satisfactory Pass (3.2 GPA)", "Academic Honors", "First Class Distinction"][Math.floor(Math.random() * 6)];
+        const bloodTypeVal = ["A-POSITIVE", "O-POSITIVE", "B-POSITIVE", "AB-NEGATIVE", "A-NEGATIVE", "B-NEGATIVE", "O-NEGATIVE", "AB-POSITIVE"][Math.floor(Math.random() * 8)];
 
         const candidate = {
             id: id,
@@ -570,32 +664,47 @@ static unrelatedDisciplines = [
                 status: "MEDICAL REPORT",
                 fields: [
                     { label: "PATIENT NAME", val: name },
-                    { label: "BLOOD TYPE", val: ["A-POSITIVE", "O-POSITIVE", "B-POSITIVE", "AB-NEGATIVE"][Math.floor(Math.random()*4)] },
+                    { label: "BLOOD TYPE", val: bloodTypeVal },
                     { label: "OXYGEN SATURATION", val: `${(97.5 + Math.random()*2.2).toFixed(1)}%` },
-                    { label: "NEURAL EEG INDEX", val: "0.94 (Stable)" },
+                    { label: "NEURAL EEG INDEX", val: `${(0.91 + Math.random()*0.08).toFixed(2)} (Stable)` },
                     { label: "MEDICAL HISTORY", val: harmlessMed },
                     { label: "MEDICAL CLEARANCE", val: "Unrestricted" }
                 ]
             }
         };
 
-        // Apply Procedural Flaws for non-fraud identities
+        // Apply Procedural Flaws dynamically from matrix pools for non-fraud identities
         if (candidate.trueIdentity === "DOOMSDAY_SABOTEUR") {
-            candidate.watchDoc.fields[2] = { label: "ARREST HISTORY", val: "3 arrests (Arson / Restricted Materials - 2029)" };
-            candidate.watchDoc.fields[3] = { label: "KNOWN ORGANIZATIONS", val: "Earth's Final Dawn" };
-            candidate.watchDoc.fields[4] = { label: "SECURITY CLEARANCE", val: "Clearance Suspended" };
+            const arrestVal = this.saboteurArrests[Math.floor(Math.random() * this.saboteurArrests.length)];
+            const orgVal = this.saboteurOrganizations[Math.floor(Math.random() * this.saboteurOrganizations.length)];
+            const clearanceVal = this.saboteurClearances[Math.floor(Math.random() * this.saboteurClearances.length)];
+
+            candidate.watchDoc.fields[2] = { label: "ARREST HISTORY", val: arrestVal };
+            candidate.watchDoc.fields[3] = { label: "KNOWN ORGANIZATIONS", val: orgVal };
+            candidate.watchDoc.fields[4] = { label: "SECURITY CLEARANCE", val: clearanceVal };
         } else if (candidate.trueIdentity === "RESOURCE_HOARDER") {
-            candidate.finDoc.fields[2] = { label: "TOTAL SAVINGS BALANCE", val: "$482,950" };
-            candidate.finDoc.fields[3] = { label: "PRIMARY INCOME SOURCE", val: "Off-Chain Transfer Ledger (Broker #7)" };
-            candidate.finDoc.fields[4] = { label: "RECENT LARGE DEPOSITS", val: "+$150,000 from Broker #7" };
-            candidate.finDoc.fields[5] = { label: "LEDGER AUDIT NOTES", val: "Audit flag on recent transfer" };
+            const inflatedSavings = Math.floor(Math.random() * 6500 + 3500) * 100; // $350,000 - $1,000,000
+            const incomeSource = this.hoarderIncomes[Math.floor(Math.random() * this.hoarderIncomes.length)];
+            const recentDeposit = this.hoarderDepositNotes[Math.floor(Math.random() * this.hoarderDepositNotes.length)];
+            const auditNote = this.hoarderAuditNotes[Math.floor(Math.random() * this.hoarderAuditNotes.length)];
+
+            candidate.finDoc.fields[2] = { label: "TOTAL SAVINGS BALANCE", val: `$${inflatedSavings.toLocaleString()}` };
+            candidate.finDoc.fields[3] = { label: "PRIMARY INCOME SOURCE", val: incomeSource };
+            candidate.finDoc.fields[4] = { label: "RECENT LARGE DEPOSITS", val: recentDeposit };
+            candidate.finDoc.fields[5] = { label: "LEDGER AUDIT NOTES", val: auditNote };
         } else if (candidate.trueIdentity === "CONTAGIOUS_CARRIER") {
-            candidate.bioDoc.fields[2] = { label: "OXYGEN SATURATION", val: "73.4% (Severe Deficit)" };
-            candidate.bioDoc.fields[3] = { label: "NEURAL EEG INDEX", val: "0.42 (Degraded)" };
-            candidate.bioDoc.fields[4] = { label: "MEDICAL HISTORY", val: "Airborne fungal spore contagion positive in airway scan" };
-            candidate.bioDoc.fields[5] = { label: "MEDICAL CLEARANCE", val: "Hold / Quarantine" };
+            const lowO2 = (68.0 + Math.random() * 8.5).toFixed(1);
+            const lowEEG = (0.25 + Math.random() * 0.22).toFixed(2);
+            const contagionVal = this.carrierContagions[Math.floor(Math.random() * this.carrierContagions.length)];
+            const clearanceVal = this.carrierClearances[Math.floor(Math.random() * this.carrierClearances.length)];
+
+            candidate.bioDoc.fields[2] = { label: "OXYGEN SATURATION", val: `${lowO2}% (Severe Deficit)` };
+            candidate.bioDoc.fields[3] = { label: "NEURAL EEG INDEX", val: `${lowEEG} (Degraded)` };
+            candidate.bioDoc.fields[4] = { label: "MEDICAL HISTORY", val: contagionVal };
+            candidate.bioDoc.fields[5] = { label: "MEDICAL CLEARANCE", val: clearanceVal };
         }
 
         return candidate;
     }
 }
+
