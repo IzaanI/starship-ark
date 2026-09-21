@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starship Ark — Interactive Security Booth</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 1. MAIN ROOM VIEW (16:9 FULLSCREEN EDGE-TO-EDGE) -->
+        <div id="room-view">
+            <img id="room-bg-img" src="stage3_room_with_laptop.jpg" alt="Security Booth Room">
+            
+            <!-- ANIMATED RAIN CANVAS CONTAINED INSIDE WINDOW MASK -->
+            <div id="rain-window-mask">
+                <canvas id="rain-canvas"></canvas>
+            </div>
+
+            <!-- CLICKABLE ANGLED PERSPECTIVE LAPTOP HOTSPOT ON DESK -->
+            <div id="laptop-hotspot" title="Click to access terminal">
+                <div class="hotspot-tooltip">💻 ACCESS TERMINAL</div>
+            </div>
+
+            <!-- PHYSICAL DECISION LEVERS ON DESK SURFACE -->
+            <div id="levers-container">
+                <button class="btn-lever btn-accept" onclick="acceptEntry()">🟢 ACCEPT ENTRY (LEVER)</button>
+                <button class="btn-lever btn-reject" onclick="rejectEntry()">🔴 REJECT ENTRY (LEVER)</button>
+            </div>
+        </div>
+
+        <!-- 2. FULL TERMINAL SCREEN VIEW (ZOOMED CRT INTERFACE) -->
+        <div id="terminal-screen-view" class="hidden">
+            <div class="crt-scanlines"></div>
+            
+            <!-- TOP BAR WITH RETURN BUTTON & CREW SEAT TRACKER -->
+            <div class="term-top-bar">
+                <button class="btn-return" onclick="closeTerminal()">RETURN TO BOOTH ROOM (ESC)</button>
+                <div class="term-header-center">
+                    <span class="term-header-title">Security_CLI</span>
+                    <span class="term-sys-clock" id="term-sys-clock">SYS_DATE: 2030.10.14 — 08:30:00 UTC</span>
+                </div>
+                <span class="term-status-badge" id="seat-capacity-badge">CREW SEATS: 2 / 7</span>
+            </div>
+
+            <!-- MAIN TERMINAL CONTENT GRID (3-PANEL LAYOUT) -->
+            <div class="terminal-grid">
+                <!-- PANEL 1: CANDIDATE PROFILE CARD -->
+                <div class="term-panel profile-panel">
+                    <div class="panel-title" id="cand-dossier-title">> CANDIDATE PROFILE</div>
+                    
+                    <div id="current-cand-card">
+                        <div class="cand-row"><span class="lbl">NAME:</span> <span id="cand-name" class="val">Loading...</span></div>
+                        <div class="cand-row"><span class="lbl">CLAIMED ROLE:</span> <span id="cand-role" class="val">Loading...</span></div>
+                        <div class="cand-row"><span class="lbl">ORIGIN:</span> <span id="cand-origin" class="val">Loading...</span> | <span class="lbl">AGE:</span> <span id="cand-age" class="val">--</span></div>
+                        <div class="cand-row"><span class="lbl">REF CODE:</span> <span id="cand-ref" class="val-highlight">--</span></div>
+                        <div class="cand-quote-box" id="cand-quote">"..."</div>
+
+                        <div class="cmd-guide-box">
+                            <div class="cmd-guide-title">FETCH COMMANDS</div>
+                            <div class="cmd-item"><code>FETCH EDU</code> - Academic Transcript</div>
+                            <div class="cmd-item"><code>FETCH WATCH</code> - Police & Watchlist</div>
+                            <div class="cmd-item"><code>FETCH FIN</code> - Financial Ledger</div>
+                            <div class="cmd-item"><code>FETCH BIO</code> - Biometric Medical</div>
+                            <div class="cmd-item"><code>CLOSE DOC</code> - Clear Viewer</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 2: DOCUMENT VIEWER DISPLAY -->
+                <div class="term-panel doc-panel">
+                    <div class="panel-title" id="doc-viewer-title">> DOCUMENT VIEWER</div>
+                    <div id="doc-viewer-content">
+                        <div class="doc-placeholder">
+                            <div class="placeholder-icon">📄</div>
+                            <div class="placeholder-text">NO DOCUMENT LOADED</div>
+                            <div class="placeholder-sub">Type a CLI command to retrieve files into the viewer:</div>
+                            <div class="placeholder-cmds">FETCH EDU | FETCH WATCH | FETCH FIN | FETCH BIO</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 3: LIVE LOG CONSOLE & CLI PROMPT INPUT -->
+                <div class="term-panel log-panel">
+                    <div class="panel-title">> K232x5_SYSTEM_LOGS</div>
+                    <div id="log-console">
+                        <div class="log-line"><span class="time">10:00</span> Terminal booted. Document retrieval ready.</div>
+                        <div class="log-line"><span class="time">10:00</span> Type 'HELP' to list CLI commands.</div>
+                    </div>
+
+                    <!-- COMMAND LINE INPUT PROMPT -->
+                    <div class="cli-input-wrapper">
+                        <span class="cli-prompt">></span>
+                        <input type="text" id="cli-input" placeholder="Type command (e.g. FETCH EDU, FETCH WATCH, HELP)..." autocomplete="off">
+                        <button id="cli-send-btn" onclick="submitCLI()">EXECUTE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="candidateGenerator.js"></script>
+    <script src="terminalCLI.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

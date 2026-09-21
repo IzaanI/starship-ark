@@ -1,0 +1,585 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+html, body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #000000;
+    color: #e2e8f0;
+    font-family: 'Consolas', 'Segoe UI', monospace;
+}
+
+/* 100% FULLSCREEN CONTAINER */
+#game-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+}
+
+/* =============================================================
+   1. MAIN ROOM VIEW (EDGE-TO-EDGE FULLSCREEN)
+   ============================================================= */
+#room-view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+#room-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* DYNAMIC RAIN CANVAS CLIPPED TO EXACT RIVETED WINDOW FRAME INNER INNER EDGE */
+#rain-window-mask {
+    
+    position: absolute;
+    top: 0%;
+    left: 3.8%;
+    width: 46.8%;
+    height: 85.4%;
+    z-index: 2;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: 12px;
+    clip-path: polygon(10% 0%, 55% 0% ,100% 10%, 100% 69%, 10% 95%);
+}
+
+#rain-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* CLICKABLE ANGLED PERSPECTIVE LAPTOP HOTSPOT ON DESK */
+#laptop-hotspot {
+    position: absolute;
+    top: 46.2%;
+    left: 71.0%;
+    width: 13.5%;
+    height: 17.6%;
+    z-index: 10;
+    cursor: pointer;
+    /* Angled Quadrilateral Perspective Polygon matching screen bezel */
+    clip-path: polygon(18% 12%, 94% 15%, 88% 108%, 10% 97%);
+    background: rgba(34, 197, 94, 0.05);
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#laptop-hotspot::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    transition: all 0.25s ease;
+    z-index: -1;
+}
+
+#laptop-hotspot:hover::before {
+    background: rgba(34, 197, 94, 0.45);
+    filter: blur(8px);
+    
+}
+
+.hotspot-tooltip {
+    background: rgba(2, 13, 6, 0.95);
+    color: #4ade80;
+    border: 1px solid #22c55e;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.25s ease;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.9);
+    text-align: center;
+}
+
+#laptop-hotspot:hover .hotspot-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Physical Decision Levers on Desk Surface */
+#levers-container {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 24px;
+    z-index: 15;
+}
+
+.btn-lever {
+    padding: 12px 28px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+    text-transform: uppercase;
+    font-family: sans-serif;
+}
+
+.btn-accept {
+    background: #062e24;
+    border: 2px solid #10b981;
+    color: #34d399;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-accept:hover {
+    background: #047857;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.btn-reject {
+    background: #311019;
+    border: 2px solid #f43f5e;
+    color: #fb7185;
+    box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);
+}
+
+.btn-reject:hover {
+    background: #be123c;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* =============================================================
+   2. FULL TERMINAL SCREEN VIEW (ZOOMED CRT INTERFACE)
+   ============================================================= */
+#terminal-screen-view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    background: #020d06;
+    color: #22c55e;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    gap: 16px;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    box-shadow: inset 0 0 60px rgba(34, 197, 94, 0.2);
+}
+
+#terminal-screen-view.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.96);
+}
+
+.crt-scanlines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.18), rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+    z-index: 100;
+}
+
+.term-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #052e16;
+    padding-bottom: 12px;
+}
+
+.btn-return {
+    background: #052e16;
+    border: 1px solid #22c55e;
+    color: #4ade80;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-return:hover {
+    background: #166534;
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+}
+
+.term-header-center {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.term-header-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #4ade80;
+    letter-spacing: 1px;
+}
+
+.term-sys-clock {
+    font-size: 11px;
+    font-weight: bold;
+    color: #38bdf8;
+    background: rgba(5, 46, 22, 0.6);
+    border: 1px solid #052e16;
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+    font-family: monospace;
+}
+
+.term-status-badge {
+    background: #166534;
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.terminal-grid {
+    flex: 1;
+    display: flex;
+    gap: 20px;
+    height: calc(100% - 60px);
+}
+
+.term-panel {
+    background: rgba(1, 15, 7, 0.85);
+    border: 1px solid #052e16;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.profile-panel { flex: 1.1; }
+.doc-panel { flex: 1.8; }
+.log-panel { flex: 1.1; }
+
+.panel-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #4ade80;
+    border-bottom: 1px dashed #052e16;
+    padding-bottom: 6px;
+}
+
+#current-cand-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(2, 20, 9, 0.6);
+    border: 1px solid #052e16;
+    border-radius: 6px;
+    padding: 14px;
+    font-size: 13px;
+}
+
+.cand-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.cand-row .lbl {
+    color: #166534;
+    font-weight: bold;
+}
+
+.cand-row .val {
+    color: #f8fafc;
+}
+
+.cand-row .val-highlight {
+    color: #f59e0b;
+    font-weight: bold;
+}
+
+.cand-quote-box {
+    margin-top: 4px;
+    background: rgba(5, 46, 22, 0.4);
+    border-left: 3px solid #22c55e;
+    padding: 10px 14px;
+    color: #86efac;
+    font-style: italic;
+    font-size: 12px;
+    border-radius: 0 4px 4px 0;
+}
+
+/* COMMAND REFERENCE GUIDE BOX */
+.cmd-guide-box {
+    margin-top: auto;
+    background: rgba(1, 15, 7, 0.9);
+    border: 1px solid #052e16;
+    border-radius: 4px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cmd-guide-title {
+    font-size: 11px;
+    font-weight: bold;
+    color: #38bdf8;
+    letter-spacing: 0.5px;
+    border-bottom: 1px dashed #052e16;
+    padding-bottom: 4px;
+}
+
+.cmd-item {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.cmd-item code {
+    color: #4ade80;
+    font-weight: bold;
+    background: rgba(34, 197, 94, 0.1);
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+
+/* =============================================================
+   DOCUMENT VIEWER PANEL & RETRO CRT DOCUMENT STYLING
+   ============================================================= */
+#doc-viewer-content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.doc-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 8px;
+    border: 1px dashed #052e16;
+    border-radius: 6px;
+    padding: 20px;
+    color: #334155;
+}
+
+.placeholder-icon { font-size: 32px; opacity: 0.4; }
+.placeholder-text { font-size: 14px; font-weight: bold; color: #1e293b; letter-spacing: 1px; }
+.placeholder-sub { font-size: 11px; color: #475569; }
+.placeholder-cmds { font-size: 12px; font-weight: bold; color: #166534; font-family: monospace; margin-top: 4px; }
+
+/* STRUCTURED DOCUMENT CARD */
+.doc-card {
+    background: rgba(2, 20, 9, 0.9);
+    border: 1px solid #166534;
+    border-radius: 6px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.doc-card-header {
+    border-bottom: 2px solid #052e16;
+    padding-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.doc-title-area {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.doc-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #4ade80;
+    letter-spacing: 0.5px;
+}
+
+.doc-issuer {
+    font-size: 10px;
+    color: #166534;
+    font-weight: bold;
+}
+
+.doc-status-badge {
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid #166534;
+    color: #4ade80;
+}
+
+.doc-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.doc-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: rgba(1, 15, 7, 0.6);
+    border: 1px solid #052e16;
+    border-radius: 4px;
+    padding: 6px 10px;
+}
+
+.doc-lbl {
+    font-size: 10px;
+    font-weight: bold;
+    color: #166534;
+    letter-spacing: 0.5px;
+}
+
+.doc-val {
+    font-size: 12px;
+    color: #e2e8f0;
+    word-break: break-word;
+}
+
+#log-console {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 4px;
+}
+
+.log-line {
+    color: #22c55e;
+    display: flex;
+    align-items: flex-start;
+    line-height: 1.5;
+}
+
+.log-line .time {
+    color: #166534;
+    margin-right: 8px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.log-line.cmd-echo {
+    color: #38bdf8;
+    font-weight: bold;
+    margin-top: 6px;
+}
+
+/* TABBED INCOMING SYSTEM LINE INDENTATION */
+.log-line.log-indented {
+    margin-left: 24px;
+    padding-left: 8px;
+    border-left: 2px solid rgba(34, 197, 94, 0.25);
+}
+
+.log-line.log-indented.warning {
+    color: #f87171;
+    border-left: 2px solid rgba(239, 68, 68, 0.6);
+}
+
+/* CLI INPUT PROMPT WRAPPER */
+.cli-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #011409;
+    border: 1px solid #166534;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-top: 6px;
+}
+
+.cli-prompt {
+    color: #4ade80;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+#cli-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #4ade80;
+    font-family: 'Consolas', monospace;
+    font-size: 13px;
+}
+
+#cli-input::placeholder {
+    color: #15803d;
+}
+
+#cli-send-btn {
+    background: #166534;
+    border: 1px solid #22c55e;
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#cli-send-btn:hover {
+    background: #22c55e;
+    color: #020d06;
+}
