@@ -10,16 +10,25 @@
     <div id="game-container">
         <!-- 1. MAIN ROOM VIEW (16:9 FULLSCREEN EDGE-TO-EDGE) -->
         <div id="room-view">
-            <img id="room-bg-img" src="stage3_room_with_laptop.jpg" alt="Security Booth Room">
+            <img id="room-bg-img" class="bg-layer" src="stage3_room_with_laptop.jpg" alt="Security Booth Room">
+            <img id="room-bg-lamp-off" class="bg-layer" src="stage3_room_lamp_off.jpg" alt="Security Booth Lamp Off">
             
             <!-- ANIMATED RAIN CANVAS CONTAINED INSIDE WINDOW MASK -->
             <div id="rain-window-mask">
                 <canvas id="rain-canvas"></canvas>
             </div>
 
+            <!-- ATMOSPHERIC LAMP FLICKER & ROOM AMBIENT LIGHT OVERLAY -->
+            <div id="lamp-flicker-overlay"></div>
+
             <!-- CLICKABLE ANGLED PERSPECTIVE LAPTOP HOTSPOT ON DESK -->
             <div id="laptop-hotspot" title="Click to access terminal">
                 <div class="hotspot-tooltip">ACCESS TERMINAL</div>
+            </div>
+
+            <!-- INTERACTIVE DESK LAMP TOGGLE HOTSPOT -->
+            <div id="desk-lamp-hotspot" title="Toggle Desk Lamp" onclick="toggleLamp()">
+                <div class="wall-btn-tooltip tooltip-lamp">💡 TOGGLE LAMP</div>
             </div>
 
             <!-- PHYSICAL WALL BUTTON HOTSPOTS (GREEN ACCEPT & RED REJECT) -->

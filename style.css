@@ -44,13 +44,50 @@ html, body {
     z-index: 1;
 }
 
-#room-bg-img {
+.bg-layer {
     width: 100%;
     height: 100%;
     object-fit: fill;
     position: absolute;
     top: 0;
     left: 0;
+}
+
+#room-bg-img {
+    z-index: 1;
+}
+
+#room-bg-lamp-off {
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.25s ease-in-out;
+    pointer-events: none;
+}
+
+/* ATMOSPHERIC LAMP FLICKER & ROOM AMBIENT LIGHT OVERLAY (100% FULLSCREEN BLEND) */
+#lamp-flicker-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
+    mix-blend-mode: color-dodge;
+    background: radial-gradient(circle at 64% 48%, rgba(253, 224, 71, 0.22) 0%, rgba(245, 158, 11, 0.10) 35%, transparent 75%);
+    opacity: 0.85;
+    animation: lampFlicker 9s infinite ease-in-out;
+    will-change: opacity;
+}
+
+@keyframes lampFlicker {
+    0%, 28%, 34%, 72%, 78%, 100% { opacity: 0.7; }
+    30% { opacity: 0.45; }
+    31% { opacity: 0.90; }
+    32% { opacity: 0.80; }
+    74% { opacity: 0.50; }
+    75% { opacity: 0.92; }
+    76% { opacity: 0.75; }
 }
 
 /* DYNAMIC RAIN CANVAS CLIPPED TO EXACT RIVETED WINDOW FRAME INNER INNER EDGE */
@@ -60,17 +97,11 @@ html, body {
     left: 3.8%;
     width: 46.8%;
     height: 83.4%;
-    z-index: 2;
+    z-index: 3;
     pointer-events: none;
     overflow: hidden;
     border-radius: 12px;
     clip-path: polygon(10% 0%, 38% 3% ,100% 18%, 100% 69%, 10% 93%);
-}
-
-#rain-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
 }
 
 /* CLICKABLE ANGLED PERSPECTIVE LAPTOP HOTSPOT ON DESK */
@@ -156,7 +187,7 @@ html, body {
 }
 
 #wall-button-reject {
-    top: 44.0%;
+    top: 42.4%;
     left: 54.2%;
     width: 4.8%;
     height: 11.5%;
@@ -165,7 +196,7 @@ html, body {
 
 #wall-button-reject:hover {
     background: rgba(239, 68, 68, 0.25);
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
 }
 
 .wall-btn-tooltip {
@@ -194,6 +225,39 @@ html, body {
     background: rgba(25, 4, 8, 0.92);
     color: #f87171;
     border: 1px solid #ef4444;
+}
+
+/* INTERACTIVE DESK LAMP TOGGLE HOTSPOT */
+#desk-lamp-hotspot {
+    position: absolute;
+    top: 36.5%;
+    left: 58.5%;
+    width: 13.5%;
+    height: 25.5%;
+    z-index: 11;
+    cursor: pointer;
+    background: rgba(253, 224, 71, 0.04);
+    border-radius: 50% 50% 10% 10%;
+    transition: all 0.2s ease;
+}
+
+#desk-lamp-hotspot:hover {
+    background: rgba(253, 224, 71, 0.18);
+    box-shadow: 0 0 20px rgba(253, 224, 71, 0.4);
+}
+
+.tooltip-lamp {
+    background: rgba(20, 18, 2, 0.92);
+    color: #fde047;
+    border: 1px solid #eab308;
+    left: 50%;
+    top: -28px;
+    transform: translateX(-50%);
+}
+
+#desk-lamp-hotspot:hover .tooltip-lamp {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
 .wall-btn-hotspot:hover .wall-btn-tooltip {

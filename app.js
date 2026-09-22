@@ -4,6 +4,7 @@ let currentCandidate = null;
 let acceptedCrew = [];
 let seatsFilled = 2; // Captain + Assistant
 const maxSeats = 7;
+let isLampOn = true;
 
 document.addEventListener('DOMContentLoaded', () => {
     initRainCanvas();
@@ -11,6 +12,31 @@ document.addEventListener('DOMContentLoaded', () => {
     initCLIInput();
     nextCandidate();
 });
+
+// Interactive Desk Lamp Hardware Toggle
+function toggleLamp() {
+    isLampOn = !isLampOn;
+    const roomView = document.getElementById('room-view');
+    const lampOffImg = document.getElementById('room-bg-lamp-off');
+    const flickerOverlay = document.getElementById('lamp-flicker-overlay');
+
+    if (isLampOn) {
+        if (roomView) roomView.classList.remove('lamp-off');
+        if (lampOffImg) lampOffImg.style.opacity = '0';
+        if (flickerOverlay) flickerOverlay.style.display = 'block';
+    } else {
+        if (roomView) roomView.classList.add('lamp-off');
+        if (lampOffImg) lampOffImg.style.opacity = '1';
+        if (flickerOverlay) flickerOverlay.style.display = 'none';
+    }
+
+    const logConsole = document.getElementById('log-console');
+    if (logConsole) {
+        const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
+        TerminalCLI.printLog(logConsole, timeStr, `[HARDWARE] Desk lamp power switched ${isLampOn ? 'ON' : 'OFF'}.`, "cmd-echo", true);
+    }
+}
+window.toggleLamp = toggleLamp;
 
 // 1. Procedural Candidate Queue Manager
 function nextCandidate() {
@@ -197,7 +223,11 @@ function initRainCanvas() {
         });
     }
 
-    function animateRain() {
+    let lastTime = performance.now();
+    function animateRain(now = performance.now()) {
+        const dt = Math.min((now - lastTime) / 1000, 0.05); // Cap delta time at 50ms
+        lastTime = now;
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 0.95;
@@ -210,8 +240,8 @@ function initRainCanvas() {
             ctx.lineTo(d.x - 1.0, d.y + d.length);
             ctx.stroke();
 
-            d.y += d.speed;
-            d.x -= 0.3;
+            d.y += d.speed * dt * 60;
+            d.x -= 0.3 * dt * 60;
 
             if (d.y > canvas.height) {
                 d.y = -d.length;
