@@ -566,7 +566,7 @@ static unrelatedDisciplines = [
         const id = "REF-" + Math.floor(Math.random() * 8999 + 1000);
         const age = Math.floor(Math.random() * 22 + 26); // Age 26 to 48 in 2030
         const birthYear = this.SETTING_YEAR - age;
-        const gradYear = birthYear + Math.floor(Math.random() * 4 + 22); // Graduated between age 22 and 26
+        let gradYear = birthYear + Math.floor(Math.random() * 4 + 22); // Graduated between age 22 and 26
 
         // Roll True Identity
         let totalWeight = this.trueIdentities.reduce((acc, i) => acc + i.weight, 0);
@@ -583,6 +583,28 @@ static unrelatedDisciplines = [
 
         const isFraud = (chosenIdentity.type === "DESPERATE_FRAUD");
         const degreeData = this.generateDegree(stationObj, role.tier, isFraud);
+
+        // Cross-Document Timeline Experience Math
+        const actualYearsExp = Math.max(1, this.SETTING_YEAR - gradYear);
+        let claimedYearsExp = actualYearsExp;
+        let payrollStartYear = gradYear;
+
+        // Apply Timeline Discrepancy Flaws (Specific to Desperate Frauds)
+        if (isFraud) {
+            const timelineFlawType = Math.floor(Math.random() * 3);
+            if (timelineFlawType === 0) {
+                // Flaw Type 0: Inflation Mismatch (e.g. Graduated in 2027, claims 15 years practice!)
+                claimedYearsExp = actualYearsExp + Math.floor(Math.random() * 7 + 6);
+            } else if (timelineFlawType === 1) {
+                // Flaw Type 1: Payroll Pre-dates Graduation (e.g. Graduated 2026, but payroll active since 2017)
+                payrollStartYear = gradYear - Math.floor(Math.random() * 7 + 6);
+            } else {
+                // Flaw Type 2: Child Graduation Math (e.g. Graduated at age 10-12)
+                const childGradYear = birthYear + Math.floor(Math.random() * 4 + 9);
+                claimedYearsExp = this.SETTING_YEAR - childGradYear;
+                gradYear = childGradYear;
+            }
+        }
 
         // Tier-Scaled Realistic Salaries (in 2030 $)
         let monthlySalaryNum = 2400;
@@ -655,6 +677,7 @@ static unrelatedDisciplines = [
                     { label: "CLAIMED PROFESSION", val: role.name },
                     { label: "REGISTERED DEGREE ON FILE", val: degreeData.title },
                     { label: "GRADUATION YEAR", val: gradYear.toString() },
+                    { label: "REGISTERED EXPERIENCE", val: `${claimedYearsExp} Years Professional Practice` },
                     { label: "ACADEMIC RECORD", val: gpaHonors },
                     { label: "REGISTRATION DIPLOMA STATUS", val: degreeData.status }
                 ]
@@ -684,6 +707,7 @@ static unrelatedDisciplines = [
                     { label: "MONTHLY SALARY", val: `$${monthlySalaryNum.toLocaleString()}` },
                     { label: "TOTAL SAVINGS BALANCE", val: `$${normalSavings}` },
                     { label: "PRIMARY INCOME SOURCE", val: `${city} Technical Payroll` },
+                    { label: "PAYROLL RECORD START", val: `Continuous since ${payrollStartYear}` },
                     { label: "RECENT LARGE DEPOSITS", val: "None" },
                     { label: "LEDGER AUDIT NOTES", val: "No discrepancies" }
                 ]
@@ -722,8 +746,8 @@ static unrelatedDisciplines = [
 
             candidate.finDoc.fields[2] = { label: "TOTAL SAVINGS BALANCE", val: `$${inflatedSavings.toLocaleString()}` };
             candidate.finDoc.fields[3] = { label: "PRIMARY INCOME SOURCE", val: incomeSource };
-            candidate.finDoc.fields[4] = { label: "RECENT LARGE DEPOSITS", val: recentDeposit };
-            candidate.finDoc.fields[5] = { label: "LEDGER AUDIT NOTES", val: auditNote };
+            candidate.finDoc.fields[5] = { label: "RECENT LARGE DEPOSITS", val: recentDeposit };
+            candidate.finDoc.fields[6] = { label: "LEDGER AUDIT NOTES", val: auditNote };
         } else if (candidate.trueIdentity === "CONTAGIOUS_CARRIER") {
             const lowO2 = (68.0 + Math.random() * 8.5).toFixed(1);
             const lowEEG = (0.25 + Math.random() * 0.22).toFixed(2);
