@@ -60,7 +60,7 @@ html, body {
 #room-bg-lamp-off {
     z-index: 2;
     opacity: 0;
-    transition: opacity 0.25s ease-in-out;
+    transition: opacity 0.15s ease-out;
     pointer-events: none;
 }
 
@@ -102,6 +102,63 @@ html, body {
     overflow: hidden;
     border-radius: 12px;
     clip-path: polygon(10% 0%, 38% 3% ,100% 18%, 100% 69%, 10% 93%);
+}
+
+/* ANIMATED DESK COFFEE STEAM PARTICLES */
+#coffee-steam-container {
+    position: absolute;
+    top: 50.0%;
+    left: 54.2%;
+    width: 3.5%;
+    height: 10.0%;
+    z-index: 8;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.steam-particle {
+    position: absolute;
+    bottom: 0;
+    width: 3px;
+    height: 38px;
+    background: linear-gradient(to top, rgba(180, 190, 200, 0.35), rgba(150, 160, 170, 0.15) 70%, transparent);
+    border-radius: 40% 40% 50% 50%;
+    filter: blur(1.0px);
+    opacity: 0;
+    animation: steamRise 4.5s infinite cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.steam-particle.p1 {
+    left: 20%;
+    animation-delay: 0s;
+}
+
+.steam-particle.p2 {
+    left: 50%;
+    animation-delay: 1.5s;
+}
+
+.steam-particle.p3 {
+    left: 78%;
+    animation-delay: 3.0s;
+}
+
+@keyframes steamRise {
+    0% {
+        transform: translateY(0) scaleY(0.4) scaleX(0.9);
+        opacity: 0;
+    }
+    18% {
+        opacity: 0.38;
+    }
+    60% {
+        transform: translateY(-22px) scaleY(1.4) scaleX(1.1) translateX(-3px);
+        opacity: 0.20;
+    }
+    100% {
+        transform: translateY(-48px) scaleY(2.0) scaleX(1.2) translateX(4px);
+        opacity: 0;
+    }
 }
 
 /* CLICKABLE ANGLED PERSPECTIVE LAPTOP HOTSPOT ON DESK */
@@ -227,6 +284,17 @@ html, body {
     border: 1px solid #ef4444;
 }
 
+.tooltip-lamp {
+    border-color: #f59e0b;
+    color: #fef3c7;
+    background: rgba(20, 16, 4, 0.95);
+}
+
+#desk-lamp-hotspot:hover .tooltip-lamp {
+    opacity: 1;
+    transform: translateX(0);
+}
+
 /* INTERACTIVE DESK LAMP TOGGLE HOTSPOT */
 #desk-lamp-hotspot {
     position: absolute;
@@ -244,6 +312,314 @@ html, body {
 #desk-lamp-hotspot:hover {
     background: rgba(253, 224, 71, 0.18);
     box-shadow: 0 0 20px rgba(253, 224, 71, 0.4);
+}
+
+/* INTERACTIVE BROWN LEATHER BOOK HOTSPOT ON DESK */
+#book-hotspot {
+    position: absolute;
+    top: 66.0%;
+    left: 56.5%;
+    width: 10.0%;
+    height: 10.0%;
+    z-index: 25;
+    cursor: pointer;
+    background: rgba(217, 119, 6, 0.08);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+#book-hotspot:hover {
+    background: rgba(217, 119, 6, 0.25);
+    box-shadow: 0 0 15px rgba(217, 119, 6, 0.5);
+}
+
+.tooltip-book {
+    border-color: #d97706;
+    color: #fef3c7;
+    background: rgba(26, 17, 10, 0.95);
+}
+
+#book-hotspot:hover .tooltip-book {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* =============================================================
+   3. SHIP OPERATIONS MANUAL MODAL OVERLAY & AGED PARCHMENT THEME
+   ============================================================= */
+#manual-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 200;
+    background: rgba(4, 8, 12, 0.88);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+    opacity: 1;
+    pointer-events: auto;
+    will-change: opacity, transform;
+}
+
+#manual-modal.hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(8px) scale(0.98);
+}
+
+.manual-book-container {
+    width: 78%;
+    max-width: 850px;
+    height: 85vh;
+    background: #f4ebd8;
+    background-image: linear-gradient(to right, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.02) 4%, transparent 8%, transparent 92%, rgba(0,0,0,0.06) 100%);
+    border: none;
+    border-left: 32px solid #2a1610; /* Heavy leather spine */
+    border-radius: 4px 12px 12px 4px;
+    box-shadow: 15px 20px 50px rgba(0, 0, 0, 0.8), inset 30px 0 50px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.manual-book-header {
+    background: transparent;
+    color: #3b2314;
+    padding: 24px 40px 12px 60px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(59, 35, 20, 0.15);
+    margin: 0 30px 0 10px;
+}
+
+.manual-header-left {
+    display: flex;
+    align-items: center;
+}
+
+.chapter-tag {
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    font-style: italic;
+    color: #5c3a21;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    letter-spacing: 0.5px;
+}
+
+.manual-header-title {
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    font-size: 14px;
+    color: #2a1610;
+    text-transform: uppercase;
+}
+
+.manual-btn-close {
+    background: transparent;
+    border: none;
+    color: #7c2d12;
+    font-size: 13px;
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.manual-btn-close:hover {
+    background: transparent;
+    color: #000;
+    text-decoration: underline;
+}
+
+/* BOOK CONTENT VIEWPORT */
+.manual-content-viewport {
+    flex: 1;
+    overflow-y: auto;
+    padding: 35px 70px 40px 75px;
+    color: #2b1f17;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    line-height: 1.7;
+}
+
+.section-stamp {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: bold;
+    color: #5c3a21;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.manual-heading {
+    font-family: 'Georgia', serif;
+    color: #1a0f09;
+    font-size: 19px;
+    font-weight: bold;
+    margin-top: 26px;
+    margin-bottom: 12px;
+    letter-spacing: 0px;
+}
+
+.manual-callout-box {
+    background: transparent;
+    border-left: 2px solid #5c3a21;
+    padding: 10px 20px;
+    margin: 22px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #2b1f17;
+    border-radius: 0;
+}
+
+.manual-callout-box.warning-box {
+    border-left-color: #9a3412;
+    color: #431407;
+}
+
+.manual-bullet-list {
+    margin: 14px 0 18px 24px;
+    list-style-type: square;
+}
+
+.manual-bullet-list li {
+    margin-bottom: 8px;
+}
+
+/* TABLE OF CONTENTS GRID */
+.manual-toc-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.toc-header-stamp {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: bold;
+    color: #5c3a21;
+    letter-spacing: 1px;
+}
+
+.toc-intro {
+    font-size: 14px;
+    color: #3b2314;
+}
+
+.toc-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    margin-top: 14px;
+}
+
+.toc-section-title {
+    font-weight: bold;
+    font-family: 'Georgia', serif;
+    font-size: 15px;
+    color: #1a0f09;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(59, 35, 20, 0.2);
+    padding-bottom: 4px;
+}
+
+.toc-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.toc-list li {
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 0;
+    transition: none;
+    color: #2b1f17;
+    font-family: 'Georgia', serif;
+    font-size: 14.5px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toc-list li:hover {
+    background: transparent;
+    color: #000;
+    text-decoration: underline;
+    font-weight: normal;
+}
+
+.toc-page-num {
+    background: transparent;
+    color: #5c3a21;
+    font-size: 13px;
+    padding: 0;
+    margin-right: 4px;
+    font-style: italic;
+    font-weight: normal;
+}
+.toc-page-num::after {
+    content: '.';
+}
+
+/* BOOK FOOTER NAVIGATION BAR */
+.manual-book-footer {
+    background: transparent;
+    padding: 16px 40px 24px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid rgba(59, 35, 20, 0.15);
+    margin: 0 30px 0 10px;
+}
+
+.manual-nav-btn {
+    background: transparent;
+    color: #5c3a21;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 0;
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+    font-style: italic;
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.manual-nav-btn:hover:not(:disabled) {
+    background: transparent;
+    color: #000;
+    text-decoration: underline;
+    box-shadow: none;
+}
+
+.manual-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.manual-nav-btn.toc-btn {
+    background: transparent;
+    color: #5c3a21;
+}
+
+.manual-page-indicator {
+    color: #5c3a21;
+    font-family: 'Georgia', serif;
+    font-weight: normal;
+    font-style: italic;
+    font-size: 13px;
 }
 
 .tooltip-lamp {

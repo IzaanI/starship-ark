@@ -418,14 +418,26 @@ static unrelatedDisciplines = [
         "Healed ankle sprain (2027)",
         "Corrected astigmatism (vision 20/20 with lenses)",
         "History of uncomplicated appendectomy (2025)",
-        "Mild lactose intolerance",
-        "Healed clavicle fracture (2024)",
+        "Severe lactose intolerance",
+        "Clavicle fracture (2024)",
         "Routine prescription for corrective lenses",
         "Minor concussion fully resolved (2027)",
         "Seasonal sensitivity to dust and pollen",
-        "Healed wrist fracture (2025)",
+        "Major wrist fracture (2025)",
         "History of childhood asthma; no current treatment",
-        "Routine dental surgery; no ongoing complications"
+        "Failed root Canal (2026) — partially resolved",
+    ];
+
+    static suspiciousInfractions = [
+        "1 citation: Unauthorized photography of municipal power grid (2028)",
+        "1 infraction: Trespassing in restricted industrial zone (2029)",
+        "2 citations: Possession of unverified electromagnetic schematics (2027)",
+        "1 arrest: Unauthorized access to municipal ventilation blueprints (2026)",
+        "1 citation: Loitering near orbital launch scaffolding (2028)",
+        "3 infractions: Use of encrypted dark-web communication relays (2029)",
+        "1 citation: Attempting to bypass restricted biometric locks (2027)",
+        "1 arrest: Hoarding restricted chemical fertilizers (2025)",
+        "2 citations: Interference with public transit telemetry (2028)"
     ];
 
     // Procedural Flaw Option Pools (Identity Discrepancy Matrix)
@@ -519,16 +531,40 @@ static unrelatedDisciplines = [
         "Unaccredited Mail-Order Provider"
     ];
 
-    static firstNames = ["Vance", "Elena", "Marcus", "Kaito", "Zahra", "Sven", "Nadia", "Liam", "Yuki", "Cassandra", "Tariq", "Astrid", "Dante", "Mateo", "Freja", "Amara", "Kenji", "Callum"];
-    static lastNames = ["Sterling", "Rostova", "Vance", "Tanaka", "Al-Mansoor", "Lindqvist", "Kowalski", "Chen", "Sato", "Moreau", "O'Connor", "Dubois", "Varga", "Novak", "Takahashi"];
+    static firstNames = [
+        "Vance", "Elena", "Marcus", "Kaito", "Zahra", "Sven", "Nadia", "Liam", "Yuki", "Cassandra", 
+        "Tariq", "Astrid", "Dante", "Mateo", "Freja", "Amara", "Kenji", "Callum", "Priya", "Aisha", 
+        "Omar", "Jamal", "Mei", "Wei", "Chloe", "Diego", "Isabella", "Lars", "Ananya", "Ravi", 
+        "Nina", "Ivan", "Fatima", "Kwame", "Nia", "Hiroshi", "Santiago", "Sofia", "Aarav", "Chen"
+    ];
+    static lastNames = [
+        "Sterling", "Rostova", "Vance", "Tanaka", "Al-Mansoor", "Lindqvist", "Kowalski", "Chen", "Sato", 
+        "Moreau", "O'Connor", "Dubois", "Varga", "Novak", "Takahashi", "Patel", "Singh", "Garcia", 
+        "Rodriguez", "Kim", "Nguyen", "Ali", "Hassan", "Müller", "Smirnov", "Silva", "Santos", 
+        "Cohen", "Levy", "Mwangi", "Okafor", "Gomez", "Ruiz", "Wong", "Liu", "Ivanov", "Popov"
+    ];
+
+    static genericQuotes = [
+        "My documentation is in order. Awaiting boarding clearance.",
+        "I'm ready to leave this dying rock behind. Just give me a seat.",
+        "The Ark needs people with my practical experience. Check the files.",
+        "Credentials submitted. I am prepared to do whatever is needed on board.",
+        "Requesting immediate departure approval. My records speak for themselves.",
+        "I've spent my entire career preparing for a journey like this.",
+        "I just want to survive. Please review my dossier.",
+        "All my clearances are attached. I'm ready to board.",
+        "My background makes me a vital asset for the transit ahead.",
+        "I can be useful up there. Just look at my transcripts."
+    ];
+
     static cities = ["Geneva", "Zurich", "Tokyo", "Berlin", "New York", "London", "Kyoto", "Edmonton", "Cairo", "Valparaiso", "Singapore", "Reykjavik", "Seoul", "Melbourne"];
 
     static trueIdentities = [
         { type: "LEGITIMATE_EXPERT", weight: 35, label: "Legitimate Expert" },
         { type: "DESPERATE_FRAUD", weight: 25, label: "Desperate Fraud" },
-        { type: "DOOMSDAY_SABOTEUR", weight: 15, label: "Doomsday Saboteur" },
-        { type: "RESOURCE_HOARDER", weight: 15, label: "Resource Hoarder" },
-        { type: "CONTAGIOUS_CARRIER", weight: 10, label: "Contagious Carrier" }
+        { type: "DOOMSDAY_SABOTEUR", weight: 10, label: "Doomsday Saboteur" },
+        { type: "RESOURCE_HOARDER", weight: 10, label: "Resource Hoarder" },
+        { type: "CONTAGIOUS_CARRIER", weight: 20, label: "Contagious Carrier" }
     ];
 
     static generateDegree(stationObj, roleTier, isFraud) {
@@ -564,7 +600,7 @@ static unrelatedDisciplines = [
         const name = this.firstNames[Math.floor(Math.random() * this.firstNames.length)] + " " + this.lastNames[Math.floor(Math.random() * this.lastNames.length)];
         const city = this.cities[Math.floor(Math.random() * this.cities.length)];
         const id = "REF-" + Math.floor(Math.random() * 8999 + 1000);
-        const age = Math.floor(Math.random() * 22 + 26); // Age 26 to 48 in 2030
+        const age = Math.floor(Math.random() * 54 + 22); // Age 22 to 75 in 2030
         const birthYear = this.SETTING_YEAR - age;
         let gradYear = birthYear + Math.floor(Math.random() * 4 + 22); // Graduated between age 22 and 26
 
@@ -606,6 +642,26 @@ static unrelatedDisciplines = [
             }
         }
 
+        // Apply Document Mismatch Flaws (Clerical errors on name)
+        let eduName = name;
+        let watchName = name;
+        let finName = name;
+        let bioName = name;
+
+        if (isFraud && Math.random() < 0.40) {
+            let mismatchedName = name;
+            if (mismatchedName.includes('a')) mismatchedName = mismatchedName.replace('a', 'e');
+            else if (mismatchedName.includes('e')) mismatchedName = mismatchedName.replace('e', 'a');
+            else if (mismatchedName.includes('i')) mismatchedName = mismatchedName.replace('i', 'y');
+            else mismatchedName = mismatchedName + "son";
+
+            const targetDoc = Math.floor(Math.random() * 4);
+            if (targetDoc === 0) eduName = mismatchedName;
+            else if (targetDoc === 1) watchName = mismatchedName;
+            else if (targetDoc === 2) finName = mismatchedName;
+            else bioName = mismatchedName;
+        }
+
         // Tier-Scaled Realistic Salaries (in 2030 $)
         let monthlySalaryNum = 2400;
         if (role.tier === "Core") {
@@ -618,9 +674,20 @@ static unrelatedDisciplines = [
 
         const normalSavings = (Math.floor(Math.random() * 12 + 6) * monthlySalaryNum).toLocaleString();
         const harmlessInfract = this.harmlessInfractions[Math.floor(Math.random() * this.harmlessInfractions.length)];
-        const harmlessMed = this.harmlessMedicalNotes[Math.floor(Math.random() * this.harmlessMedicalNotes.length)];
         const gpaHonors = ["Summa Cum Laude (4.0 GPA)", "Magna Cum Laude (3.9 GPA)", "Dean's List (3.6 GPA)", "Satisfactory Pass (3.2 GPA)", "Academic Honors", "First Class Distinction"][Math.floor(Math.random() * 6)];
         
+        // Elderly Crew / O2 Saturation Logic
+        let harmlessMed = this.harmlessMedicalNotes[Math.floor(Math.random() * this.harmlessMedicalNotes.length)];
+        let o2SatNum = (97.5 + Math.random() * 2.2);
+
+        if (age >= 60) {
+            o2SatNum = (91.0 + Math.random() * 4.5);
+            if (Math.random() < 0.5) {
+                harmlessMed = ["Age-related respiratory degradation", "Mild osteoarthritis", "Prescription for hypertension", "Decreased lung capacity due to age"][Math.floor(Math.random() * 4)];
+            }
+        }
+        const o2SatString = o2SatNum.toFixed(1);
+
         // Random Individual Body Weight (115 lbs to 275 lbs) — Determines resource/food consumption
         const weightLbs = Math.floor(Math.random() * (275 - 115 + 1)) + 115;
 
@@ -664,7 +731,7 @@ static unrelatedDisciplines = [
             performanceImpact: performanceImpactNum,
             trueIdentity: chosenIdentity.type,
             trueIdentityLabel: chosenIdentity.label,
-            quote: `"Applicant for ${role.name} position. Credentials submitted for review."`,
+            quote: `"${this.genericQuotes[Math.floor(Math.random() * this.genericQuotes.length)]}"`,
             
             // Procedural Document Objects (2030 Public Database Records)
             eduDoc: {
@@ -673,13 +740,12 @@ static unrelatedDisciplines = [
                 refCode: `EDU-${Math.floor(Math.random()*89999 + 10000)}`,
                 status: "OFFICIAL ARCHIVE",
                 fields: [
-                    { label: "CANDIDATE NAME", val: name },
+                    { label: "CANDIDATE NAME", val: eduName },
                     { label: "CLAIMED PROFESSION", val: role.name },
                     { label: "REGISTERED DEGREE ON FILE", val: degreeData.title },
                     { label: "GRADUATION YEAR", val: gradYear.toString() },
                     { label: "REGISTERED EXPERIENCE", val: `${claimedYearsExp} Years Professional Practice` },
-                    { label: "ACADEMIC RECORD", val: gpaHonors },
-                    { label: "REGISTRATION DIPLOMA STATUS", val: degreeData.status }
+                    { label: "ACADEMIC RECORD", val: gpaHonors }
                 ]
             },
 
@@ -689,7 +755,7 @@ static unrelatedDisciplines = [
                 refCode: `SEC-${Math.floor(Math.random()*89999 + 10000)}`,
                 status: "DATABASE FILE",
                 fields: [
-                    { label: "CITIZEN NAME", val: name },
+                    { label: "CITIZEN NAME", val: watchName },
                     { label: "NATIONAL ID", val: `NID-${Math.floor(Math.random()*899999 + 100000)}` },
                     { label: "ARREST HISTORY", val: harmlessInfract },
                     { label: "KNOWN ORGANIZATIONS", val: "None" },
@@ -703,7 +769,7 @@ static unrelatedDisciplines = [
                 refCode: `FIN-${Math.floor(Math.random()*89999 + 10000)}`,
                 status: "LEDGER AUDIT",
                 fields: [
-                    { label: "ACCOUNT HOLDER", val: name },
+                    { label: "ACCOUNT HOLDER", val: finName },
                     { label: "MONTHLY SALARY", val: `$${monthlySalaryNum.toLocaleString()}` },
                     { label: "TOTAL SAVINGS BALANCE", val: `$${normalSavings}` },
                     { label: "PRIMARY INCOME SOURCE", val: `${city} Technical Payroll` },
@@ -719,9 +785,9 @@ static unrelatedDisciplines = [
                 refCode: `MED-${Math.floor(Math.random()*89999 + 10000)}`,
                 status: "MEDICAL REPORT",
                 fields: [
-                    { label: "PATIENT NAME", val: name },
+                    { label: "PATIENT NAME", val: bioName },
                     { label: "BODY WEIGHT", val: `${weightLbs} LBS` },
-                    { label: "OXYGEN SATURATION", val: `${(97.5 + Math.random()*2.2).toFixed(1)}%` },
+                    { label: "OXYGEN SATURATION", val: `${o2SatString}%` },
                     { label: "NEURAL EEG INDEX", val: `${(0.91 + Math.random()*0.08).toFixed(2)} (Stable)` },
                     { label: "MEDICAL HISTORY", val: harmlessMed },
                     { label: "MEDICAL CLEARANCE", val: "Unrestricted" }
@@ -731,13 +797,29 @@ static unrelatedDisciplines = [
 
         // Apply Procedural Flaws dynamically from matrix pools for non-fraud identities
         if (candidate.trueIdentity === "DOOMSDAY_SABOTEUR") {
-            const arrestVal = this.saboteurArrests[Math.floor(Math.random() * this.saboteurArrests.length)];
-            const orgVal = this.saboteurOrganizations[Math.floor(Math.random() * this.saboteurOrganizations.length)];
-            const clearanceVal = this.saboteurClearances[Math.floor(Math.random() * this.saboteurClearances.length)];
+            const tellRoll = Math.random();
 
-            candidate.watchDoc.fields[2] = { label: "ARREST HISTORY", val: arrestVal };
-            candidate.watchDoc.fields[3] = { label: "KNOWN ORGANIZATIONS", val: orgVal };
-            candidate.watchDoc.fields[4] = { label: "SECURITY CLEARANCE", val: clearanceVal };
+            if (tellRoll < 0.20) {
+                // Tell 1 (20% chance): Obvious Watchlist Slip-up (Only 1 of the 3 fields is blatant)
+                const flagTarget = Math.floor(Math.random() * 3); // 0=Arrest, 1=Org, 2=Clearance
+                
+                if (flagTarget === 0) {
+                    candidate.watchDoc.fields[2].val = this.saboteurArrests[Math.floor(Math.random() * this.saboteurArrests.length)];
+                } else if (flagTarget === 1) {
+                    candidate.watchDoc.fields[3].val = this.saboteurOrganizations[Math.floor(Math.random() * this.saboteurOrganizations.length)];
+                } else {
+                    candidate.watchDoc.fields[4].val = this.saboteurClearances[Math.floor(Math.random() * this.saboteurClearances.length)];
+                }
+            } else if (tellRoll < 0.60) {
+                // Tell 2 (40% chance): Financial Paper Trail (Suspicious wire transfer from radical group)
+                const orgVal = this.saboteurOrganizations[Math.floor(Math.random() * this.saboteurOrganizations.length)];
+                const wireAmt = (Math.floor(Math.random() * 450) + 50) * 1000;
+                candidate.finDoc.fields[5].val = `+$${wireAmt.toLocaleString()} wire transfer from ${orgVal}`;
+                candidate.finDoc.fields[6].val = "Flagged for extremist group financing";
+            } else {
+                // Tell 3 (40% chance): Suspicious Minor Infraction (Clever/Subtle arrest history)
+                candidate.watchDoc.fields[2].val = this.suspiciousInfractions[Math.floor(Math.random() * this.suspiciousInfractions.length)];
+            }
         } else if (candidate.trueIdentity === "RESOURCE_HOARDER") {
             const inflatedSavings = Math.floor(Math.random() * 6500 + 3500) * 100; // $350,000 - $1,000,000
             const incomeSource = this.hoarderIncomes[Math.floor(Math.random() * this.hoarderIncomes.length)];

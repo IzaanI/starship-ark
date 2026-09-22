@@ -176,13 +176,32 @@ function closeTerminal() {
     }
 }
 
+window.openTerminal = openTerminal;
+window.closeTerminal = closeTerminal;
+
 function initKeyboardShortcuts() {
     const laptopHotspot = document.getElementById('laptop-hotspot');
     if (laptopHotspot) {
         laptopHotspot.addEventListener('click', openTerminal);
     }
 
+    const bookHotspot = document.getElementById('book-hotspot');
+    if (bookHotspot) {
+        bookHotspot.addEventListener('click', () => ShipManual.openManual());
+    }
+
     document.addEventListener('keydown', (e) => {
+        if (window.ShipManual && window.ShipManual.isOpen) {
+            if (e.key === 'Escape') {
+                ShipManual.closeManual();
+            } else if (e.key === 'ArrowLeft') {
+                window.ShipManual.prevPage();
+            } else if (e.key === 'ArrowRight') {
+                window.ShipManual.nextPage();
+            }
+            return;
+        }
+
         if (e.key === 'Escape') {
             closeTerminal();
         }

@@ -21,6 +21,13 @@
             <!-- ATMOSPHERIC LAMP FLICKER & ROOM AMBIENT LIGHT OVERLAY -->
             <div id="lamp-flicker-overlay"></div>
 
+            <!-- ANIMATED DESK COFFEE STEAM -->
+            <div id="coffee-steam-container" title="Hot Coffee">
+                <div class="steam-particle p1"></div>
+                <div class="steam-particle p2"></div>
+                <div class="steam-particle p3"></div>
+            </div>
+
             <!-- CLICKABLE ANGLED PERSPECTIVE LAPTOP HOTSPOT ON DESK -->
             <div id="laptop-hotspot" title="Click to access terminal">
                 <div class="hotspot-tooltip">ACCESS TERMINAL</div>
@@ -29,6 +36,11 @@
             <!-- INTERACTIVE DESK LAMP TOGGLE HOTSPOT -->
             <div id="desk-lamp-hotspot" title="Toggle Desk Lamp" onclick="toggleLamp()">
                 <div class="wall-btn-tooltip tooltip-lamp">TOGGLE LAMP</div>
+            </div>
+
+            <!-- INTERACTIVE BROWN LEATHER BOOK HOTSPOT ON DESK -->
+            <div id="book-hotspot" title="Open Ship Operations Manual">
+                <div class="wall-btn-tooltip tooltip-book">SHIP MANUAL</div>
             </div>
 
             <!-- PHYSICAL WALL BUTTON HOTSPOTS (GREEN ACCEPT & RED REJECT) -->
@@ -83,7 +95,6 @@
                     <div class="panel-title" id="doc-viewer-title">> DOCUMENT VIEWER</div>
                     <div id="doc-viewer-content">
                         <div class="doc-placeholder">
-                            <div class="placeholder-icon">📄</div>
                             <div class="placeholder-text">NO DOCUMENT LOADED</div>
                             <div class="placeholder-sub">Type a CLI command to retrieve files into the viewer:</div>
                             <div class="placeholder-cmds">FETCH EDU | FETCH WATCH | FETCH FIN | FETCH BIO</div>
@@ -108,10 +119,35 @@
                 </div>
             </div>
         </div>
+        
+        <div id="manual-modal" class="hidden">
+            <div class="manual-book-container">
+                <div class="manual-book-header">
+                    <div class="manual-header-left">
+                        <span id="manual-chapter-tag" class="chapter-tag">CHAPTER 1: SURVIVAL PROTOCOL</span>
+                    </div>
+                    <button class="manual-btn-close" onclick="ShipManual.closeManual()" title="Close Manual (ESC)">Close</button>
+                </div>
+
+                <!-- BOOK CONTENT VIEWPORT -->
+                <div id="manual-page-content-area" class="manual-content-viewport">
+                    <!-- Dynamic Page Content Injected by manual.js -->
+                </div>
+
+                <!-- BOOK FOOTER NAVIGATION BAR -->
+                <div class="manual-book-footer">
+                    <button id="manual-btn-prev" class="manual-nav-btn" onclick="ShipManual.prevPage()"><</button>
+                    <button class="manual-nav-btn toc-btn" onclick="ShipManual.goToPage(0)">Index</button>
+                    <span id="manual-page-indicator" class="manual-page-indicator">PAGE 1</span>
+                    <button id="manual-btn-next" class="manual-nav-btn" onclick="ShipManual.nextPage()">></button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="candidateGenerator.js"></script>
     <script src="terminalCLI.js"></script>
+    <script src="manual.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
