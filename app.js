@@ -29,12 +29,6 @@ function toggleLamp() {
         if (lampOffImg) lampOffImg.style.opacity = '1';
         if (flickerOverlay) flickerOverlay.style.display = 'none';
     }
-
-    const logConsole = document.getElementById('log-console');
-    if (logConsole) {
-        const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
-        TerminalCLI.printLog(logConsole, timeStr, `[HARDWARE] Desk lamp power switched ${isLampOn ? 'ON' : 'OFF'}.`, "cmd-echo", true);
-    }
 }
 window.toggleLamp = toggleLamp;
 

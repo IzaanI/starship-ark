@@ -250,8 +250,8 @@ html, body {
     background: rgba(20, 18, 2, 0.92);
     color: #fde047;
     border: 1px solid #eab308;
-    left: 50%;
-    top: -28px;
+    left: 75%;
+    top: 40%;
     transform: translateX(-50%);
 }
 
