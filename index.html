@@ -15,6 +15,10 @@
             
             <!-- ANIMATED RAIN CANVAS CONTAINED INSIDE WINDOW MASK -->
             <div id="rain-window-mask">
+                <!-- PROCEDURAL CANDIDATE AVATAR (inside window, behind the rain) -->
+                <div id="candidate-avatar-container" class="hidden">
+                    <canvas id="avatar-canvas" width="256" height="422"></canvas>
+                </div>
                 <canvas id="rain-canvas"></canvas>
             </div>
 
@@ -22,32 +26,32 @@
             <div id="lamp-flicker-overlay"></div>
 
             <!-- ANIMATED DESK COFFEE STEAM -->
-            <div id="coffee-steam-container" title="Hot Coffee">
+            <div id="coffee-steam-container">
                 <div class="steam-particle p1"></div>
                 <div class="steam-particle p2"></div>
                 <div class="steam-particle p3"></div>
             </div>
 
             <!-- CLICKABLE ANGLED PERSPECTIVE LAPTOP HOTSPOT ON DESK -->
-            <div id="laptop-hotspot" title="Click to access terminal">
+            <div id="laptop-hotspot">
                 <div class="hotspot-tooltip">ACCESS TERMINAL</div>
             </div>
 
             <!-- INTERACTIVE DESK LAMP TOGGLE HOTSPOT -->
-            <div id="desk-lamp-hotspot" title="Toggle Desk Lamp" onclick="toggleLamp()">
+            <div id="desk-lamp-hotspot" onclick="toggleLamp()">
                 <div class="wall-btn-tooltip tooltip-lamp">TOGGLE LAMP</div>
             </div>
 
             <!-- INTERACTIVE BROWN LEATHER BOOK HOTSPOT ON DESK -->
-            <div id="book-hotspot" title="Open Ship Operations Manual">
+            <div id="book-hotspot">
                 <div class="wall-btn-tooltip tooltip-book">SHIP MANUAL</div>
             </div>
 
             <!-- PHYSICAL WALL BUTTON HOTSPOTS (GREEN ACCEPT & RED REJECT) -->
-            <div id="wall-button-accept" class="wall-btn-hotspot" title="Accept Candidate Entry" onclick="acceptEntry()">
+            <div id="wall-button-accept" class="wall-btn-hotspot" onclick="acceptEntry()">
                 <div class="wall-btn-tooltip tooltip-accept">ACCEPT ENTRY</div>
             </div>
-            <div id="wall-button-reject" class="wall-btn-hotspot" title="Reject Candidate Entry" onclick="rejectEntry()">
+            <div id="wall-button-reject" class="wall-btn-hotspot" onclick="rejectEntry()">
                 <div class="wall-btn-tooltip tooltip-reject">REJECT ENTRY</div>
             </div>
         </div>
@@ -58,7 +62,7 @@
             
             <!-- TOP BAR WITH RETURN BUTTON & CREW SEAT TRACKER -->
             <div class="term-top-bar">
-                <button class="btn-return" onclick="closeTerminal()">RETURN TO BOOTH ROOM (ESC)</button>
+                <button class="btn-return" onclick="closeTerminal()">BOOTH (ESC)</button>
                 <div class="term-header-center">
                     <span class="term-header-title">Security_CLI</span>
                     <span class="term-sys-clock" id="term-sys-clock">SYS_DATE: 2030.10.14</span>
@@ -126,7 +130,7 @@
                     <div class="manual-header-left">
                         <span id="manual-chapter-tag" class="chapter-tag">CHAPTER 1: SURVIVAL PROTOCOL</span>
                     </div>
-                    <button class="manual-btn-close" onclick="ShipManual.closeManual()" title="Close Manual (ESC)">Close</button>
+                    <button class="manual-btn-close" onclick="ShipManual.closeManual()">Close</button>
                 </div>
 
                 <!-- BOOK CONTENT VIEWPORT -->

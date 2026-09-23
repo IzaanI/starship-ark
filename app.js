@@ -29,18 +29,93 @@ function toggleLamp() {
         if (lampOffImg) lampOffImg.style.opacity = '1';
         if (flickerOverlay) flickerOverlay.style.display = 'none';
     }
+
+    // Dynamically re-render avatar lighting to match lamp state
+    drawAvatar(currentAvatarIndex);
 }
 window.toggleLamp = toggleLamp;
 
+// Procedural Avatar Sprite System (Hazmat & Environmental Suits)
+const avatarBasesImg = new Image();
+avatarBasesImg.src = 'hazmat_bases.png';
+let currentAvatarIndex = 0;
+
+function drawAvatar(colIndex) {
+    const canvas = document.getElementById('avatar-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    // Pixel-perfect rendering without anti-aliasing blur
+    ctx.imageSmoothingEnabled = false;
+
+    const sw = 1024 / 4; // 256px wide per suit
+    const sh = 422;      // tight crop to character height (eliminating empty top/bottom space)
+    const sx = colIndex * sw;
+    const sy = 75;       // start at character head
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(avatarBasesImg, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+
+    // 1. Stormy Outdoor Blue/Teal Ambient Atmosphere (Underneath lamp layer)
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-atop';
+    const stormGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    stormGrad.addColorStop(0, 'rgba(16, 52, 64, 0.18)');   // Murky cyan-teal storm sky hue
+    stormGrad.addColorStop(1, 'rgba(8, 28, 36, 0.6)');    // Deeper cold shadow towards bottom sill
+    ctx.fillStyle = stormGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+
+    // 2. Dynamic Desk Lamp Rim-Lighting (On top of stormy base!)
+    if (isLampOn) {
+        ctx.save();
+        // source-atop paints strictly onto the character pixels without spilling
+        ctx.globalCompositeOperation = 'source-atop';
+        
+        // Gradient from right (near desk lamp) stretching gradually across the flat torso to the left chest
+        const lampGrad = ctx.createLinearGradient(canvas.width, 0, 0, 0);
+        lampGrad.addColorStop(0, 'rgba(253, 224, 71, 0.25)');     // Warm golden edge on right arm & shoulder
+        lampGrad.addColorStop(0.20, 'rgba(250, 195, 60, 0.24)');  // Warm amber light on right chest & visor
+        lampGrad.addColorStop(0.42, 'rgba(245, 165, 20, 0.16)');  // Soft mid-chest warmth
+        lampGrad.addColorStop(0.62, 'rgba(245, 158, 11, 0.07)');  // Faint warmth extending to left chest
+        lampGrad.addColorStop(0.76, 'rgba(0, 0, 0, 0)');          // Fully dissolves into cold shadow at far chest
+        
+        ctx.fillStyle = lampGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+    }
+}
+
+function renderProceduralAvatar() {
+    currentAvatarIndex = Math.floor(Math.random() * 4);
+    if (avatarBasesImg.complete && avatarBasesImg.naturalWidth > 0) {
+        drawAvatar(currentAvatarIndex);
+    } else {
+        avatarBasesImg.onload = () => drawAvatar(currentAvatarIndex);
+    }
+}
+
 // 1. Procedural Candidate Queue Manager
 function nextCandidate() {
-    currentCandidate = CandidateGenerator.generateCandidate();
-    renderCandidateDossier(currentCandidate);
+    try {
+        currentCandidate = CandidateGenerator.generateCandidate();
+        renderCandidateDossier(currentCandidate);
+    } catch(e) {
+        console.error('ERROR in candidate/dossier:', e);
+    }
 
     const logConsole = document.getElementById('log-console');
     if (logConsole) {
         const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
         TerminalCLI.printLog(logConsole, timeStr, `[CANDIDATE ARRIVED] Ref: ${currentCandidate.id} - ${currentCandidate.name}, ${currentCandidate.roleTitle}`, "cmd-echo");
+    }
+
+    // Render Procedural Avatar to Canvas
+    renderProceduralAvatar();
+
+    const avatarContainer = document.getElementById('candidate-avatar-container');
+    if (avatarContainer) {
+        avatarContainer.classList.remove('hidden');
     }
 }
 
@@ -95,7 +170,6 @@ function clearDocumentViewer() {
     if (viewer) {
         viewer.innerHTML = `
             <div class="doc-placeholder">
-                <div class="placeholder-icon">📄</div>
                 <div class="placeholder-text">NO DOCUMENT LOADED</div>
                 <div class="placeholder-sub">Type a CLI command to retrieve files into the viewer:</div>
                 <div class="placeholder-cmds">FETCH EDU | FETCH WATCH | FETCH FIN | FETCH BIO</div>
@@ -120,11 +194,14 @@ function acceptEntry() {
     const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
     TerminalCLI.printLog(logConsole, timeStr, `VERDICT: ACCEPTED ${currentCandidate.name} (${seatsFilled}/${maxSeats} Seats Filled)`, "normal", true);
 
+    const avatarContainer = document.getElementById('candidate-avatar-container');
+    if (avatarContainer) avatarContainer.classList.add('hidden');
+
     if (seatsFilled >= maxSeats) {
         TerminalCLI.printLog(logConsole, timeStr, `CAPACITY REACHED: Maximum seats filled. Starship Ark ready for launch.`, "cmd-echo", false);
         alert(`CAPACITY REACHED\n\nStarship Ark capacity filled with ${acceptedCrew.length + 2} total personnel. Ready for launch.`);
     } else {
-        nextCandidate();
+        setTimeout(() => nextCandidate(), 1000);
     }
 }
 
@@ -134,7 +211,10 @@ function rejectEntry() {
     const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
     TerminalCLI.printLog(logConsole, timeStr, `VERDICT: REJECTED ${currentCandidate.name}. Candidate turned away.`, "warning", true);
     
-    nextCandidate();
+    const avatarContainer = document.getElementById('candidate-avatar-container');
+    if (avatarContainer) avatarContainer.classList.add('hidden');
+
+    setTimeout(() => nextCandidate(), 1000);
 }
 
 // 3. CLI Input & Terminal Commands Parser

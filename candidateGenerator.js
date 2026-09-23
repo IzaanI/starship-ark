@@ -774,8 +774,7 @@ static unrelatedDisciplines = [
                     { label: "TOTAL SAVINGS BALANCE", val: `$${normalSavings}` },
                     { label: "PRIMARY INCOME SOURCE", val: `${city} Technical Payroll` },
                     { label: "PAYROLL RECORD START", val: `Continuous since ${payrollStartYear}` },
-                    { label: "RECENT LARGE DEPOSITS", val: "None" },
-                    { label: "LEDGER AUDIT NOTES", val: "No discrepancies" }
+                    { label: "RECENT LARGE DEPOSITS", val: "None" }
                 ]
             },
 
@@ -815,21 +814,41 @@ static unrelatedDisciplines = [
                 const orgVal = this.saboteurOrganizations[Math.floor(Math.random() * this.saboteurOrganizations.length)];
                 const wireAmt = (Math.floor(Math.random() * 450) + 50) * 1000;
                 candidate.finDoc.fields[5].val = `+$${wireAmt.toLocaleString()} wire transfer from ${orgVal}`;
-                candidate.finDoc.fields[6].val = "Flagged for extremist group financing";
             } else {
                 // Tell 3 (40% chance): Suspicious Minor Infraction (Clever/Subtle arrest history)
                 candidate.watchDoc.fields[2].val = this.suspiciousInfractions[Math.floor(Math.random() * this.suspiciousInfractions.length)];
             }
         } else if (candidate.trueIdentity === "RESOURCE_HOARDER") {
-            const inflatedSavings = Math.floor(Math.random() * 6500 + 3500) * 100; // $350,000 - $1,000,000
-            const incomeSource = this.hoarderIncomes[Math.floor(Math.random() * this.hoarderIncomes.length)];
-            const recentDeposit = this.hoarderDepositNotes[Math.floor(Math.random() * this.hoarderDepositNotes.length)];
-            const auditNote = this.hoarderAuditNotes[Math.floor(Math.random() * this.hoarderAuditNotes.length)];
+            const tellRoll = Math.random();
 
-            candidate.finDoc.fields[2] = { label: "TOTAL SAVINGS BALANCE", val: `$${inflatedSavings.toLocaleString()}` };
-            candidate.finDoc.fields[3] = { label: "PRIMARY INCOME SOURCE", val: incomeSource };
-            candidate.finDoc.fields[5] = { label: "RECENT LARGE DEPOSITS", val: recentDeposit };
-            candidate.finDoc.fields[6] = { label: "LEDGER AUDIT NOTES", val: auditNote };
+            if (tellRoll < 0.25) {
+                // Tell 1 (25% chance): Inflated Savings
+                const inflatedSavings = Math.floor(Math.random() * 6500 + 3500) * 100;
+                candidate.finDoc.fields[2].val = `$${inflatedSavings.toLocaleString()}`;
+            } else if (tellRoll < 0.50) {
+                // Tell 2 (25% chance): Sketchy Income Source
+                candidate.finDoc.fields[3].val = this.hoarderIncomes[Math.floor(Math.random() * this.hoarderIncomes.length)];
+            } else if (tellRoll < 0.75) {
+                // Tell 3 (25% chance): Suspicious Recent Deposit
+                candidate.finDoc.fields[5].val = this.hoarderDepositNotes[Math.floor(Math.random() * this.hoarderDepositNotes.length)];
+            } else {
+                // Tell 4 (25% chance): Cross-Doc Salary Mismatch (Massive Salary + Stretch Tier Role)
+                const stretchRoles = stationObj.roles.filter(r => r.tier === "Stretch");
+                const newRole = stretchRoles[Math.floor(Math.random() * stretchRoles.length)];
+                
+                candidate.roleTitle = newRole.name;
+                candidate.roleTier = "Stretch";
+                
+                const fakeDegree = this.generateDegree(stationObj, "Stretch", false);
+                candidate.eduDoc.fields[1].val = newRole.name;
+                candidate.eduDoc.fields[2].val = fakeDegree.title;
+                
+                const massiveSalary = Math.floor(Math.random() * 400 + 250) * 100; // $25k - $65k / month
+                const proportionalSavings = (Math.floor(Math.random() * 12 + 6) * massiveSalary).toLocaleString();
+                
+                candidate.finDoc.fields[1].val = `$${massiveSalary.toLocaleString()}`;
+                candidate.finDoc.fields[2].val = `$${proportionalSavings}`;
+            }
         } else if (candidate.trueIdentity === "CONTAGIOUS_CARRIER") {
             const lowO2 = (68.0 + Math.random() * 8.5).toFixed(1);
             const lowEEG = (0.25 + Math.random() * 0.22).toFixed(2);
