@@ -12,10 +12,19 @@ window.isTerminalOpen = isTerminalOpen;
 // Interactive Crew Ledger Controller (Wall Paper Manifest)
 const CrewLedger = {
     isOpen: false,
+    isDirty: true,
+
+    init() {
+        this.render();
+        this.isDirty = false;
+    },
 
     openLedger() {
         this.isOpen = true;
-        this.render();
+        if (this.isDirty) {
+            this.render();
+            this.isDirty = false;
+        }
         const modal = document.getElementById('crew-ledger-modal');
         if (modal) {
             modal.classList.remove('hidden');
@@ -190,6 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initCLIInput();
     initPowerSystem();
     updateBookState();
+    if (window.ShipManual && window.ShipManual.init) window.ShipManual.init();
+    if (window.CrewLedger && window.CrewLedger.init) window.CrewLedger.init();
     nextCandidate();
 });
 
@@ -454,7 +465,11 @@ function acceptEntry() {
     seatsFilled++;
 
     if (window.CrewLedger) {
-        window.CrewLedger.render();
+        window.CrewLedger.isDirty = true;
+        if (window.CrewLedger.isOpen) {
+            window.CrewLedger.render();
+            window.CrewLedger.isDirty = false;
+        }
     }
 
     const logConsole = document.getElementById('log-console');

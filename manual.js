@@ -354,12 +354,19 @@ const ShipManual = {
     ],
 
     // Controller Methods
+    init() {
+        this.renderPage(this.currentPageIndex);
+    },
+
     openManual() {
         this.isOpen = true;
         const modal = document.getElementById('manual-modal');
         if (modal) {
+            const contentArea = document.getElementById('manual-page-content-area');
+            if (contentArea && contentArea.children.length === 0) {
+                this.renderPage(this.currentPageIndex);
+            }
             modal.classList.remove('hidden');
-            this.renderPage(this.currentPageIndex);
         }
     },
 
