@@ -2,12 +2,88 @@
 
 let currentCandidate = null;
 let acceptedCrew = [];
-let seatsFilled = 2; // Captain + Assistant
-const maxSeats = 7;
+let seatsFilled = 1; // Security Officer (Player)
+const maxSeats = 6;
 let isLampOn = true;
 window.isLampOn = isLampOn;
 let isTerminalOpen = false;
 window.isTerminalOpen = isTerminalOpen;
+
+// Interactive Crew Ledger Controller (Wall Paper Manifest)
+const CrewLedger = {
+    isOpen: false,
+
+    openLedger() {
+        this.isOpen = true;
+        this.render();
+        const modal = document.getElementById('crew-ledger-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    },
+
+    closeLedger() {
+        this.isOpen = false;
+        const modal = document.getElementById('crew-ledger-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    },
+
+    onBackdropClick(event) {
+        if (event.target.id === 'crew-ledger-modal') {
+            this.closeLedger();
+        }
+    },
+
+    render() {
+        const list = document.getElementById('ledger-roster-list');
+        if (!list) return;
+
+        // Seat 1: Security Officer (Player)
+        let html = `
+            <div class="ledger-row player-row">
+                <div class="ledger-col-seat">SEAT 01</div>
+                <div class="ledger-col-name"><span class="ledger-col-lbl">NAME:</span> <strong>SECURITY OFFICER [YOU]</strong></div>
+                <div class="ledger-col-role"><span class="ledger-col-lbl">ROLE:</span> Station Security</div>
+                <div class="ledger-col-age"><span class="ledger-col-lbl">AGE:</span> 34</div>
+                <div class="ledger-col-status"><span class="ledger-stamp-mini stamp-stationed">STATIONED</span></div>
+            </div>
+        `;
+
+        // Seats 2 through 6: 5 Candidate positions
+        for (let i = 0; i < 5; i++) {
+            const seatNum = (i + 2).toString().padStart(2, '0');
+            const cand = acceptedCrew[i];
+
+            if (cand) {
+                html += `
+                    <div class="ledger-row filled-row">
+                        <div class="ledger-col-seat">SEAT ${seatNum}</div>
+                        <div class="ledger-col-name"><span class="ledger-col-lbl">NAME:</span> <strong>${cand.name}</strong></div>
+                        <div class="ledger-col-role"><span class="ledger-col-lbl">ROLE:</span> ${cand.roleTitle}</div>
+                        <div class="ledger-col-age"><span class="ledger-col-lbl">AGE:</span> ${cand.age}</div>
+                        <div class="ledger-col-status"><span class="ledger-stamp-mini stamp-accepted">ACCEPTED</span></div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="ledger-row vacant-row">
+                        <div class="ledger-col-seat">SEAT ${seatNum}</div>
+                        <div class="ledger-col-name unfilled-text"><span class="ledger-col-lbl">NAME:</span> <em>UNFILLED</em></div>
+                        <div class="ledger-col-role unfilled-text"><span class="ledger-col-lbl">ROLE:</span> —</div>
+                        <div class="ledger-col-age unfilled-text"><span class="ledger-col-lbl">AGE:</span> —</div>
+                        <div class="ledger-col-status"><span class="ledger-stamp-mini stamp-vacant">UNFILLED</span></div>
+                    </div>
+                `;
+            }
+        }
+
+        list.innerHTML = html;
+    }
+};
+
+window.CrewLedger = CrewLedger;
 
 // Station Auxiliary Power System (30 Units Initial Reserve)
 const PowerSystem = {
@@ -377,13 +453,17 @@ function acceptEntry() {
     acceptedCrew.push(currentCandidate);
     seatsFilled++;
 
+    if (window.CrewLedger) {
+        window.CrewLedger.render();
+    }
+
     const logConsole = document.getElementById('log-console');
     const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
     TerminalCLI.printLog(logConsole, timeStr, `VERDICT: ACCEPTED ${currentCandidate.name} (${seatsFilled}/${maxSeats} Seats Filled)`, "normal", true);
 
     if (seatsFilled >= maxSeats) {
         TerminalCLI.printLog(logConsole, timeStr, `CAPACITY REACHED: Maximum seats filled. Starship Ark ready for launch.`, "cmd-echo", false);
-        alert(`CAPACITY REACHED\n\nStarship Ark capacity filled with ${acceptedCrew.length + 2} total personnel. Ready for launch.`);
+        alert(`CAPACITY REACHED\n\nStarship Ark capacity filled with ${acceptedCrew.length + 1} total personnel. Ready for launch.`);
     } else {
         transitionToNextCandidate();
     }
@@ -460,6 +540,13 @@ function initKeyboardShortcuts() {
     }
 
     document.addEventListener('keydown', (e) => {
+        if (window.CrewLedger && window.CrewLedger.isOpen) {
+            if (e.key === 'Escape') {
+                CrewLedger.closeLedger();
+            }
+            return;
+        }
+
         if (window.ShipManual && window.ShipManual.isOpen) {
             if (e.key === 'Escape') {
                 ShipManual.closeManual();

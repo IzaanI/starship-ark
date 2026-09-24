@@ -228,6 +228,41 @@ html, body {
     transform: translateY(0);
 }
 
+/* INTERACTIVE CREW LEDGER (PAPER ON WALL BEHIND MONITOR) */
+#crew-ledger-hotspot {
+    position: absolute;
+    top: 36.8%;
+    left: 74.0%;
+    width: 9.6%;
+    height: 10.6%;
+    z-index: 15;
+    cursor: pointer;
+    background: rgba(245, 245, 240, 0);
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+#crew-ledger-hotspot:hover {
+    background: rgba(254, 243, 199, 0.08);
+    box-shadow: 0 0 14px rgba(254, 243, 199, 0.25);
+}
+
+.tooltip-ledger {
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    border-color: #a8a29e;
+    color: #f5f5f4;
+    background: rgba(28, 25, 23, 0.95);
+    font-family: monospace;
+    font-size: 10px;
+}
+
+#crew-ledger-hotspot:hover .tooltip-ledger {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
 /* PHYSICAL WALL BUTTON HOTSPOTS (GREEN ACCEPT & RED REJECT) */
 .wall-btn-hotspot {
     position: absolute;
@@ -1262,4 +1297,290 @@ html, body {
     opacity: 1;
     pointer-events: auto;
 }
+
+/* =============================================================
+   CREW LEDGER MODAL (ANALOG MANIFEST PAPER ON WALL)
+   ============================================================= */
+#crew-ledger-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(8, 12, 10, 0.78);
+    backdrop-filter: blur(4px);
+    z-index: 550;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+#crew-ledger-modal.hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(10px) scale(0.98);
+}
+
+.ledger-paper-container {
+    position: relative;
+    width: 76%;
+    max-width: 820px;
+    background: #fbf8ee;
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(240, 230, 205, 0.4) 0%, transparent 70%),
+        repeating-linear-gradient(transparent, transparent 27px, rgba(160, 145, 120, 0.08) 28px);
+    color: #1e1b18;
+    padding: 34px 40px 28px 40px;
+    border-radius: 2px 4px 3px 2px;
+    box-shadow: 
+        0 24px 60px rgba(0, 0, 0, 0.85),
+        0 2px 8px rgba(0, 0, 0, 0.45),
+        inset 0 0 40px rgba(180, 160, 125, 0.25);
+    border: 1px solid #dcd3be;
+    font-family: 'Courier New', Courier, monospace;
+    transform: rotate(-0.2deg);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Brass push pin at top center */
+.ledger-push-pin {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fef08a, #ca8a04 60%, #713f12 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+    z-index: 10;
+}
+.ledger-push-pin::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: #eab308;
+}
+
+/* Header */
+.ledger-paper-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 10px;
+}
+
+.ledger-kicker {
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    color: #786d5e;
+    text-transform: uppercase;
+}
+
+.ledger-headline {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #1a1614;
+    margin: 4px 0 2px 0;
+    text-transform: uppercase;
+}
+
+.ledger-subtext {
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #574e43;
+    font-weight: 600;
+}
+
+.ledger-stamp-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.ledger-ink-stamp {
+    display: inline-block;
+    border: 2px dashed #991b1b;
+    color: #991b1b;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    padding: 3px 8px;
+    text-transform: uppercase;
+    transform: rotate(2deg);
+    opacity: 0.88;
+    background: rgba(153, 27, 27, 0.04);
+}
+
+.ledger-close-btn {
+    background: #292524;
+    color: #f5f5f4;
+    border: 1px solid #1c1917;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.ledger-close-btn:hover {
+    background: #44403c;
+    color: #ffffff;
+}
+
+.ledger-divider {
+    height: 2px;
+    background: #1a1614;
+    margin: 6px 0 14px 0;
+    opacity: 0.85;
+}
+
+/* Horizontal Roster Rows */
+.ledger-roster-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 14px;
+}
+
+.ledger-row {
+    display: flex;
+    align-items: center;
+    background: rgba(240, 235, 222, 0.6);
+    border: 1px solid rgba(160, 145, 120, 0.4);
+    padding: 8px 14px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    border-radius: 2px;
+}
+
+.ledger-row.player-row {
+    background: rgba(230, 225, 210, 0.85);
+    border-left: 4px solid #1a1614;
+}
+
+.ledger-row.filled-row {
+    border-left: 4px solid #15803d;
+}
+
+.ledger-row.vacant-row {
+    border-left: 4px solid #a8a29e;
+    background: rgba(245, 242, 235, 0.35);
+    opacity: 0.65;
+}
+
+.ledger-col-seat {
+    width: 80px;
+    font-weight: 800;
+    color: #292524;
+    flex-shrink: 0;
+}
+
+.ledger-col-name {
+    flex: 2;
+    min-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ledger-col-role {
+    flex: 2;
+    min-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ledger-col-age {
+    width: 75px;
+    flex-shrink: 0;
+}
+
+.ledger-col-lbl {
+    font-size: 10px;
+    color: #78716c;
+    font-weight: 700;
+    margin-right: 4px;
+    letter-spacing: 0.5px;
+}
+
+.ledger-col-status {
+    width: 95px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.ledger-stamp-mini {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    border-radius: 2px;
+    text-transform: uppercase;
+}
+
+.stamp-stationed {
+    border: 1px solid #1c1917;
+    color: #1c1917;
+    background: rgba(28, 25, 23, 0.08);
+}
+
+.stamp-accepted {
+    border: 1px solid #15803d;
+    color: #15803d;
+    background: rgba(21, 128, 61, 0.08);
+}
+
+.stamp-vacant {
+    border: 1px dashed #78716c;
+    color: #78716c;
+    background: transparent;
+}
+
+.unfilled-text {
+    color: #a8a29e;
+    font-style: italic;
+}
+
+/* Footer */
+.ledger-paper-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed rgba(160, 145, 120, 0.5);
+    padding-top: 10px;
+    margin-top: auto;
+}
+
+.ledger-footer-note {
+    font-size: 10px;
+    color: #78716c;
+    max-width: 70%;
+    line-height: 1.4;
+    letter-spacing: 0.5px;
+}
+
+.ledger-official-seal {
+    font-size: 10px;
+    font-weight: 800;
+    color: #44403c;
+    letter-spacing: 1px;
+    text-align: right;
+}
+
 

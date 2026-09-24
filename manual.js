@@ -90,14 +90,13 @@ const ShipManual = {
 
                     <h3 class="manual-heading">Vessel Capacity Constraints</h3>
                     <div class="manual-callout-box">
-                        <strong>CREW CAPACITY LIMIT: 7 SEATS TOTAL</strong><br>
-                        • Seat 1: Ship Captain (Stationed)<br>
-                        • Seat 2: First Officer (Stationed)<br>
-                        • Seats 3–7: Candidate Positions (Evaluated by You)<br>
+                        <strong>CREW CAPACITY LIMIT: 6 SEATS TOTAL</strong><br>
+                        • Seat 1: Security Officer (Stationed — You)<br>
+                        • Seats 2–6: Candidate Positions (Evaluated by You)<br>
                     </div>
                     <p>
-                        Once you have assembled a qualified crew, the Ark will seal its airlocks and initiate space launch. Every candidate you accept fills 
-                        a vital station required for long-term vessel survival.
+                        Once you have assembled 5 qualified crew members, the Ark will seal its airlocks and initiate space launch. Every candidate you accept fills 
+                        a vital seat required for long-term vessel survival.
                     </p>
                 </div>
             `
@@ -345,7 +344,7 @@ const ShipManual = {
                     <p>Once you have thoroughly audited a candidate's dossier, you must render a final verdict using your booth controls.</p>
                     
                     <h3 class="manual-heading">Approval (Green Sequence)</h3>
-                    <p>Authorize entry only if the candidate is vital to the Ark's survival and passes all cross-document audits. Granting access permanently fills one of the seven available crew seats. Once filled, a seat cannot be easily vacated.</p>
+                    <p>Authorize entry only if the candidate is vital to the Ark's survival and passes all cross-document audits. Granting access permanently fills one of the six vessel crew seats. Once filled, a seat cannot be easily vacated.</p>
 
                     <h3 class="manual-heading">Rejection (Red Sequence)</h3>
                     <p>Turn away frauds, saboteurs, and unnecessary liabilities. Rejection simply denies them entry to the boarding ramp. However, if a candidate becomes hostile or attempts to force entry upon rejection, coordinate with your Brig officer to initiate <strong>Ejection Protocols</strong>.</p>

@@ -42,6 +42,11 @@
                 <div class="hotspot-tooltip">ACCESS TERMINAL</div>
             </div>
 
+            <!-- INTERACTIVE CREW LEDGER (PAPER ON WALL BEHIND LAPTOP) -->
+            <div id="crew-ledger-hotspot" onclick="CrewLedger.openLedger()">
+                <div class="wall-btn-tooltip tooltip-ledger">CURRENT CREW</div>
+            </div>
+
             <!-- INTERACTIVE DESK LAMP TOGGLE HOTSPOT -->
             <div id="desk-lamp-hotspot" onclick="toggleLamp()">
                 <div class="wall-btn-tooltip tooltip-lamp">TOGGLE LAMP</div>
@@ -81,7 +86,7 @@
                         </div>
                         <span class="pwr-val" id="term-power-val">30 / 30 PWR</span>
                     </div>
-                    <span class="term-status-badge" id="seat-capacity-badge">CREW SEATS: 2 / 7</span>
+                    <span class="term-status-badge" id="seat-capacity-badge">CREW SEATS: 1 / 6</span>
                 </div>
             </div>
 
@@ -162,8 +167,42 @@
                 </div>
             </div>
         </div>
+        
+        <!-- 4. CREW LEDGER MODAL (ANALOG MANIFEST PAPER ON WALL) -->
+        <div id="crew-ledger-modal" class="hidden" onclick="CrewLedger.onBackdropClick(event)">
+            <div class="ledger-paper-container" onclick="event.stopPropagation()">
+                <!-- PUSH PIN AT TOP -->
+                <div class="ledger-push-pin"></div>
+                
+                <div class="ledger-paper-header">
+                    <div class="ledger-meta-group">
+                        <div class="ledger-kicker">STATION SEC-04 // MANIFEST ARCHIVE</div>
+                        <h2 class="ledger-headline">CURRENT CREW LEDGER</h2>
+                        <div class="ledger-subtext">VESSEL COMPLEMENT: 6 AUTHORIZED PERSONNEL</div>
+                    </div>
+                    <div class="ledger-stamp-group">
+                        <div class="ledger-ink-stamp">STATION ROSTER</div>
+                        <button class="ledger-close-btn" onclick="CrewLedger.closeLedger()" title="Close (ESC)">CLOSE (ESC)</button>
+                    </div>
+                </div>
 
-        <!-- 4. FULLSCREEN CINEMATIC TRANSITION OVERLAY -->
+                <div class="ledger-divider"></div>
+
+                <!-- HORIZONTAL ROSTER LIST -->
+                <div id="ledger-roster-list" class="ledger-roster-list">
+                    <!-- Dynamic crew rows populated by app.js -->
+                </div>
+
+                <div class="ledger-paper-footer">
+                    <div class="ledger-footer-note">
+                        * ALL CREW SUBJECT TO STAGE II STATION ASSIGNMENTS UPON VESSEL LAUNCH INITIATION.
+                    </div>
+                    <div class="ledger-official-seal">CONFIDENTIAL // VESSEL SEC-04</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. FULLSCREEN CINEMATIC TRANSITION OVERLAY -->
         <div id="transition-overlay"></div>
     </div>
 
