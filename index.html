@@ -15,11 +15,16 @@
             
             <!-- ANIMATED RAIN CANVAS CONTAINED INSIDE WINDOW MASK -->
             <div id="rain-window-mask">
-                <!-- PROCEDURAL CANDIDATE AVATAR (inside window, behind the rain) -->
+                <!-- 1. BACKGROUND RAIN (falls behind candidate, in the distance) -->
+                <canvas id="rain-canvas-back" class="rain-canvas-layer"></canvas>
+
+                <!-- 2. PROCEDURAL CANDIDATE AVATAR (Pixelated resolution to match room grid) -->
                 <div id="candidate-avatar-container" class="hidden">
-                    <canvas id="avatar-canvas" width="256" height="422"></canvas>
+                    <canvas id="avatar-canvas" width="168" height="277"></canvas>
                 </div>
-                <canvas id="rain-canvas"></canvas>
+
+                <!-- 3. FOREGROUND RAIN (falls in front of candidate, on glass) -->
+                <canvas id="rain-canvas-front" class="rain-canvas-layer"></canvas>
             </div>
 
             <!-- ATMOSPHERIC LAMP FLICKER & ROOM AMBIENT LIGHT OVERLAY -->
@@ -44,7 +49,7 @@
 
             <!-- INTERACTIVE BROWN LEATHER BOOK HOTSPOT ON DESK -->
             <div id="book-hotspot">
-                <div class="wall-btn-tooltip tooltip-book">SHIP MANUAL</div>
+                <div class="wall-btn-tooltip tooltip-book" id="book-tooltip">SHIP MANUAL</div>
             </div>
 
             <!-- PHYSICAL WALL BUTTON HOTSPOTS (GREEN ACCEPT & RED REJECT) -->
@@ -60,14 +65,24 @@
         <div id="terminal-screen-view" class="hidden">
             <div class="crt-scanlines"></div>
             
-            <!-- TOP BAR WITH RETURN BUTTON & CREW SEAT TRACKER -->
+            <!-- TOP BAR WITH RETURN BUTTON, CLOCK, POWER GAUGE & CREW SEAT TRACKER -->
             <div class="term-top-bar">
                 <button class="btn-return" onclick="closeTerminal()">BOOTH (ESC)</button>
                 <div class="term-header-center">
                     <span class="term-header-title">Security_CLI</span>
                     <span class="term-sys-clock" id="term-sys-clock">SYS_DATE: 2030.10.14</span>
                 </div>
-                <span class="term-status-badge" id="seat-capacity-badge">CREW SEATS: 2 / 7</span>
+                <div class="term-header-right">
+                    <!-- AUXILIARY POWER METER -->
+                    <div class="term-power-gauge pwr-normal" id="term-power-gauge" title="Auxiliary Station Power. Private queries (WATCH, BIO) cost 2 PWR. Simultaneous lamp & terminal operation draws 1 PWR / 20s.">
+                        <span class="pwr-lbl">AUX_PWR:</span>
+                        <div class="pwr-bar-track">
+                            <div class="pwr-bar-fill" id="term-power-meter-fill" style="width: 100%;"></div>
+                        </div>
+                        <span class="pwr-val" id="term-power-val">30 / 30 PWR</span>
+                    </div>
+                    <span class="term-status-badge" id="seat-capacity-badge">CREW SEATS: 2 / 7</span>
+                </div>
             </div>
 
             <!-- MAIN TERMINAL CONTENT GRID (3-PANEL LAYOUT) -->
@@ -86,9 +101,9 @@
                         <div class="cmd-guide-box">
                             <div class="cmd-guide-title">FETCH COMMANDS</div>
                             <div class="cmd-item"><code>FETCH EDU</code> - Academic Transcript</div>
-                            <div class="cmd-item"><code>FETCH WATCH</code> - Police & Watchlist</div>
+                            <div class="cmd-item"><code>FETCH WATCH</code> - Police & Watchlist <span class="cmd-pwr-cost">(2 PWR)</span></div>
                             <div class="cmd-item"><code>FETCH FIN</code> - Financial Ledger</div>
-                            <div class="cmd-item"><code>FETCH BIO</code> - Biometric Medical</div>
+                            <div class="cmd-item"><code>FETCH BIO</code> - Biometric Medical <span class="cmd-pwr-cost">(2 PWR)</span></div>
                             <div class="cmd-item"><code>CLOSE DOC</code> - Clear Viewer</div>
                         </div>
                     </div>
@@ -147,6 +162,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- 4. FULLSCREEN CINEMATIC TRANSITION OVERLAY -->
+        <div id="transition-overlay"></div>
     </div>
 
     <script src="candidateGenerator.js"></script>

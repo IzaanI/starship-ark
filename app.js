@@ -5,17 +5,133 @@ let acceptedCrew = [];
 let seatsFilled = 2; // Captain + Assistant
 const maxSeats = 7;
 let isLampOn = true;
+window.isLampOn = isLampOn;
+let isTerminalOpen = false;
+window.isTerminalOpen = isTerminalOpen;
+
+// Station Auxiliary Power System (30 Units Initial Reserve)
+const PowerSystem = {
+    maxPower: 30,
+    currentPower: 30,
+
+    canAfford(amount) {
+        return this.currentPower >= amount;
+    },
+
+    drain(amount, reason = "") {
+        if (this.currentPower <= 0) return false;
+        this.currentPower = Math.max(0, this.currentPower - amount);
+        this.updateUI();
+
+        if (this.currentPower === 0) {
+            const logConsole = document.getElementById('log-console');
+            if (logConsole) {
+                const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
+                TerminalCLI.printLog(
+                    logConsole,
+                    timeStr,
+                    `[CRITICAL ALERT] Auxiliary power reserve fully depleted (0/${this.maxPower} PWR). Private database queries (WATCH, BIO) offline.`,
+                    "warning",
+                    true
+                );
+            }
+        }
+        return true;
+    },
+
+    setPower(val) {
+        this.currentPower = Math.max(0, Math.min(this.maxPower, val));
+        this.updateUI();
+    },
+
+    updateUI() {
+        const pwrVal = document.getElementById('term-power-val');
+        const pwrMeter = document.getElementById('term-power-meter-fill');
+        const pwrGauge = document.getElementById('term-power-gauge');
+        const laptopHint = document.getElementById('laptop-pwr-hint');
+
+        if (pwrVal) {
+            pwrVal.innerText = `${this.currentPower} / ${this.maxPower} PWR`;
+        }
+
+        const pct = Math.max(0, Math.min(100, (this.currentPower / this.maxPower) * 100));
+        if (pwrMeter) {
+            pwrMeter.style.width = `${pct}%`;
+        }
+
+        if (pwrGauge) {
+            pwrGauge.classList.remove('pwr-normal', 'pwr-warn', 'pwr-crit', 'pwr-empty');
+            if (this.currentPower === 0) {
+                pwrGauge.classList.add('pwr-empty');
+            } else if (this.currentPower <= 5) {
+                pwrGauge.classList.add('pwr-crit');
+            } else if (this.currentPower <= 15) {
+                pwrGauge.classList.add('pwr-warn');
+            } else {
+                pwrGauge.classList.add('pwr-normal');
+            }
+        }
+
+        if (laptopHint) {
+            laptopHint.innerText = `[${this.currentPower}/${this.maxPower} PWR]`;
+        }
+    }
+};
+window.PowerSystem = PowerSystem;
+
+let overloadSeconds = 0;
+function initPowerSystem() {
+    PowerSystem.updateUI();
+
+    setInterval(() => {
+        // Overload drain: 1 unit every 20 seconds if lamp AND terminal are simultaneously active
+        if (isLampOn && isTerminalOpen && PowerSystem.currentPower > 0) {
+            overloadSeconds++;
+            if (overloadSeconds >= 20) {
+                overloadSeconds = 0;
+                PowerSystem.drain(1, "Simultaneous Terminal & Lamp overload");
+                const logConsole = document.getElementById('log-console');
+                if (logConsole) {
+                    const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
+                    TerminalCLI.printLog(
+                        logConsole,
+                        timeStr,
+                        `[POWER DRAIN] -1 PWR: Simultaneous terminal & desk lamp operation (${PowerSystem.currentPower}/${PowerSystem.maxPower} PWR remaining).`,
+                        "warning",
+                        true
+                    );
+                }
+            }
+        } else {
+            overloadSeconds = 0;
+        }
+    }, 1000);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     initRainCanvas();
     initKeyboardShortcuts();
     initCLIInput();
+    initPowerSystem();
+    updateBookState();
     nextCandidate();
 });
+
+// Update Ship Manual Hotspot & Tooltip based on Lamp State
+function updateBookState() {
+    const bookTooltip = document.getElementById('book-tooltip');
+    if (bookTooltip) {
+        bookTooltip.innerText = isLampOn ? "SHIP MANUAL" : "Turn On Lamp";
+    }
+}
 
 // Interactive Desk Lamp Hardware Toggle
 function toggleLamp() {
     isLampOn = !isLampOn;
+    window.isLampOn = isLampOn;
+    if (!isLampOn) {
+        overloadSeconds = 0;
+    }
     const roomView = document.getElementById('room-view');
     const lampOffImg = document.getElementById('room-bg-lamp-off');
     const flickerOverlay = document.getElementById('lamp-flicker-overlay');
@@ -23,22 +139,38 @@ function toggleLamp() {
     if (isLampOn) {
         if (roomView) roomView.classList.remove('lamp-off');
         if (lampOffImg) lampOffImg.style.opacity = '0';
-        if (flickerOverlay) flickerOverlay.style.display = 'block';
+        if (flickerOverlay) {
+            flickerOverlay.style.opacity = '0.85';
+            flickerOverlay.style.visibility = 'visible';
+        }
     } else {
         if (roomView) roomView.classList.add('lamp-off');
         if (lampOffImg) lampOffImg.style.opacity = '1';
-        if (flickerOverlay) flickerOverlay.style.display = 'none';
+        if (flickerOverlay) {
+            flickerOverlay.style.opacity = '0';
+            flickerOverlay.style.visibility = 'hidden';
+        }
     }
+
+    // Update book tooltip based on lamp state (can only read with lamp on)
+    updateBookState();
 
     // Dynamically re-render avatar lighting to match lamp state
     drawAvatar(currentAvatarIndex);
 }
 window.toggleLamp = toggleLamp;
 
-// Procedural Avatar Sprite System (Hazmat & Environmental Suits)
-const avatarBasesImg = new Image();
-avatarBasesImg.src = 'hazmat_bases.png';
+// Procedural Avatar Sprite System (Hazmat & Environmental Suits - Dual Lit/Unlit Engine)
+const avatarUnlitImg = new Image();
+avatarUnlitImg.src = 'hazmat_bases.png';
+if (avatarUnlitImg.decode) avatarUnlitImg.decode().catch(() => {});
+
+const avatarLitImg = new Image();
+avatarLitImg.src = 'hazmat_bases_lit.png';
+if (avatarLitImg.decode) avatarLitImg.decode().catch(() => {});
+
 let currentAvatarIndex = 0;
+let lastAvatarIndex = -1;
 
 function drawAvatar(colIndex) {
     const canvas = document.getElementById('avatar-canvas');
@@ -48,31 +180,45 @@ function drawAvatar(colIndex) {
     // Pixel-perfect rendering without anti-aliasing blur
     ctx.imageSmoothingEnabled = false;
 
+    // Dynamically choose lit sprite sheet when desk lamp is ON, unlit when OFF!
+    const activeImg = isLampOn ? avatarLitImg : avatarUnlitImg;
+
     const sw = 1024 / 4; // 256px wide per suit
     const sh = 422;      // tight crop to character height (eliminating empty top/bottom space)
     const sx = colIndex * sw;
     const sy = 75;       // start at character head
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(avatarBasesImg, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(activeImg, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 
-    // 1. Stormy Outdoor Blue/Teal Ambient Atmosphere (Underneath lamp layer)
+    // 1. Stormy Outdoor Blue/Teal Ambient Atmosphere (Calibrated per lamp state)
     ctx.save();
     ctx.globalCompositeOperation = 'source-atop';
     const stormGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    stormGrad.addColorStop(0, 'rgba(16, 52, 64, 0.18)');   // Murky cyan-teal storm sky hue
-    stormGrad.addColorStop(1, 'rgba(8, 28, 36, 0.6)');    // Deeper cold shadow towards bottom sill
+    
+    // When lamp is ON, use lighter ambient wash so the left shadows aren't crushed
+    // When lamp is OFF, deepen the wash so the whole character is immersed in darkness
+    const topAlpha = isLampOn ? 0.08 : 0.24;
+    const botAlpha = isLampOn ? 0.35 : 0.68;
+    stormGrad.addColorStop(0, `rgba(16, 52, 64, ${topAlpha})`);
+    stormGrad.addColorStop(1, `rgba(8, 28, 36, ${botAlpha})`);
     ctx.fillStyle = stormGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
 
-    // 2. Dynamic Desk Lamp Rim-Lighting (On top of stormy base!)
+    // 2. Dynamic Desk Lamp Lighting & Shadow Lift
     if (isLampOn) {
         ctx.save();
-        // source-atop paints strictly onto the character pixels without spilling
         ctx.globalCompositeOperation = 'source-atop';
         
-        // Gradient from right (near desk lamp) stretching gradually across the flat torso to the left chest
+        // A. Subtle ambient sky bounce on the left (lifts the AI's deep shadow so it doesn't look overly dark)
+        const leftFillGrad = ctx.createLinearGradient(0, 0, canvas.width * 0.5, 0);
+        leftFillGrad.addColorStop(0, 'rgba(120, 175, 195, 0.18)'); // Soft cool ambient reflection on far left
+        leftFillGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = leftFillGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // B. Gradient from right (near desk lamp) stretching gradually across the flat torso to the left chest
         const lampGrad = ctx.createLinearGradient(canvas.width, 0, 0, 0);
         lampGrad.addColorStop(0, 'rgba(253, 224, 71, 0.25)');     // Warm golden edge on right arm & shoulder
         lampGrad.addColorStop(0.20, 'rgba(250, 195, 60, 0.24)');  // Warm amber light on right chest & visor
@@ -87,11 +233,22 @@ function drawAvatar(colIndex) {
 }
 
 function renderProceduralAvatar() {
-    currentAvatarIndex = Math.floor(Math.random() * 4);
-    if (avatarBasesImg.complete && avatarBasesImg.naturalWidth > 0) {
+    // 9 pristine suits: 3 classic hazmats + 3 heavy tactical + 3 plague doctors (scavenger cutouts excluded)
+    const numSuits = 9;
+    let nextIndex;
+    do {
+        nextIndex = Math.floor(Math.random() * numSuits);
+    } while (nextIndex === lastAvatarIndex && numSuits > 1);
+
+    currentAvatarIndex = nextIndex;
+    lastAvatarIndex = currentAvatarIndex;
+
+    const activeImg = isLampOn ? avatarLitImg : avatarUnlitImg;
+    if (activeImg.complete && activeImg.naturalWidth > 0) {
         drawAvatar(currentAvatarIndex);
     } else {
-        avatarBasesImg.onload = () => drawAvatar(currentAvatarIndex);
+        avatarLitImg.onload = () => drawAvatar(currentAvatarIndex);
+        avatarUnlitImg.onload = () => drawAvatar(currentAvatarIndex);
     }
 }
 
@@ -184,9 +341,39 @@ window.renderCandidateDossier = renderCandidateDossier;
 window.loadDocument = loadDocument;
 window.clearDocumentViewer = clearDocumentViewer;
 
-// 2. Decision Button Logic (Accept / Reject)
+// 2. Decision Button Logic (Accept / Reject) with Cinematic Fade-to-Black Transition
+let isTransitioning = false;
+
+function transitionToNextCandidate(delayBeforeFade = 250) {
+    if (isTransitioning) return;
+    isTransitioning = true;
+
+    const overlay = document.getElementById('transition-overlay');
+
+    setTimeout(() => {
+        // 1. Fade the entire screen smoothly to black
+        if (overlay) overlay.classList.add('active');
+
+        // 2. Once in total darkness (350ms fade duration)
+        setTimeout(() => {
+            // Load and render new candidate data, avatar, and dossier
+            nextCandidate();
+
+            // 3. Brief hold in darkness for cinematic weight, then reveal
+            setTimeout(() => {
+                if (overlay) overlay.classList.remove('active');
+
+                // Re-enable decisions once fade-in completes
+                setTimeout(() => {
+                    isTransitioning = false;
+                }, 350);
+            }, 250);
+        }, 350);
+    }, delayBeforeFade);
+}
+
 function acceptEntry() {
-    if (!currentCandidate) return;
+    if (!currentCandidate || isTransitioning) return;
     acceptedCrew.push(currentCandidate);
     seatsFilled++;
 
@@ -194,27 +381,21 @@ function acceptEntry() {
     const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
     TerminalCLI.printLog(logConsole, timeStr, `VERDICT: ACCEPTED ${currentCandidate.name} (${seatsFilled}/${maxSeats} Seats Filled)`, "normal", true);
 
-    const avatarContainer = document.getElementById('candidate-avatar-container');
-    if (avatarContainer) avatarContainer.classList.add('hidden');
-
     if (seatsFilled >= maxSeats) {
         TerminalCLI.printLog(logConsole, timeStr, `CAPACITY REACHED: Maximum seats filled. Starship Ark ready for launch.`, "cmd-echo", false);
         alert(`CAPACITY REACHED\n\nStarship Ark capacity filled with ${acceptedCrew.length + 2} total personnel. Ready for launch.`);
     } else {
-        setTimeout(() => nextCandidate(), 1000);
+        transitionToNextCandidate();
     }
 }
 
 function rejectEntry() {
-    if (!currentCandidate) return;
+    if (!currentCandidate || isTransitioning) return;
     const logConsole = document.getElementById('log-console');
     const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
     TerminalCLI.printLog(logConsole, timeStr, `VERDICT: REJECTED ${currentCandidate.name}. Candidate turned away.`, "warning", true);
     
-    const avatarContainer = document.getElementById('candidate-avatar-container');
-    if (avatarContainer) avatarContainer.classList.add('hidden');
-
-    setTimeout(() => nextCandidate(), 1000);
+    transitionToNextCandidate();
 }
 
 // 3. CLI Input & Terminal Commands Parser
@@ -246,6 +427,8 @@ function openTerminal() {
     const termView = document.getElementById('terminal-screen-view');
     if (termView) {
         termView.classList.remove('hidden');
+        isTerminalOpen = true;
+        window.isTerminalOpen = true;
     }
 }
 
@@ -253,6 +436,9 @@ function closeTerminal() {
     const termView = document.getElementById('terminal-screen-view');
     if (termView) {
         termView.classList.add('hidden');
+        isTerminalOpen = false;
+        window.isTerminalOpen = false;
+        overloadSeconds = 0;
     }
 }
 
@@ -267,7 +453,10 @@ function initKeyboardShortcuts() {
 
     const bookHotspot = document.getElementById('book-hotspot');
     if (bookHotspot) {
-        bookHotspot.addEventListener('click', () => ShipManual.openManual());
+        bookHotspot.addEventListener('click', () => {
+            if (!isLampOn) return; // Cannot read manual when lamp is off
+            ShipManual.openManual();
+        });
     }
 
     document.addEventListener('keydown', (e) => {
@@ -288,31 +477,52 @@ function initKeyboardShortcuts() {
     });
 }
 
-// 5. Dynamic Rain Canvas Animation
+// 5. Dynamic Dual-Layer Rain Parallax Animation (Back & Front of Candidate)
 function initRainCanvas() {
-    const canvas = document.getElementById('rain-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const canvasBack = document.getElementById('rain-canvas-back');
+    const canvasFront = document.getElementById('rain-canvas-front');
+    if (!canvasBack || !canvasFront) return;
 
-    function resizeCanvas() {
-        if (canvas.parentElement) {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
+    const ctxBack = canvasBack.getContext('2d');
+    const ctxFront = canvasFront.getContext('2d');
+
+    function resizeCanvases() {
+        const parent = canvasBack.parentElement;
+        if (parent) {
+            const w = parent.clientWidth;
+            const h = parent.clientHeight;
+            canvasBack.width = w;
+            canvasBack.height = h;
+            canvasFront.width = w;
+            canvasFront.height = h;
         }
     }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    resizeCanvases();
+    window.addEventListener('resize', resizeCanvases);
 
-    const drops = [];
-    const numDrops = 75;
+    // A. Background Rain: ~85% of rain falls BEHIND the candidate in the outdoor atmosphere
+    const backDrops = [];
+    const numBackDrops = 75;
+    for (let i = 0; i < numBackDrops; i++) {
+        backDrops.push({
+            x: Math.random() * (canvasBack.width || 600),
+            y: Math.random() * (canvasBack.height || 600),
+            length: Math.random() * 4.5 + 5,      // 5px - 9.5px (covers small, medium, and distant drops)
+            speed: Math.random() * 1.4 + 0.8,     // 0.8 - 2.2 (natural outdoor drift)
+            opacity: Math.random() * 0.28 + 0.20  // 0.20 - 0.48 (soft atmospheric rain)
+        });
+    }
 
-    for (let i = 0; i < numDrops; i++) {
-        drops.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            length: Math.random() * 3 + 6,
-            speed: Math.random() * 1.8 + 0.9,
-            opacity: Math.random() * 0.45 + 0.25
+    // B. Foreground Rain: Close drops streaking IN FRONT of candidate on glass
+    const frontDrops = [];
+    const numFrontDrops = 18;
+    for (let i = 0; i < numFrontDrops; i++) {
+        frontDrops.push({
+            x: Math.random() * (canvasFront.width || 600),
+            y: Math.random() * (canvasFront.height || 600),
+            length: Math.random() * 5 + 9,        // 9px - 14px (previous natural length)
+            speed: Math.random() * 1.8 + 3,     // 1.8 - 3.4 (previous speed)
+            opacity: Math.random() * 0.35 + 0.40  // 0.40 - 0.75 (previous opacity)
         });
     }
 
@@ -321,24 +531,49 @@ function initRainCanvas() {
         const dt = Math.min((now - lastTime) / 1000, 0.05); // Cap delta time at 50ms
         lastTime = now;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 0.95;
+        const w = canvasBack.width;
+        const h = canvasBack.height;
 
-        for (let i = 0; i < drops.length; i++) {
-            const d = drops[i];
-            ctx.beginPath();
-            ctx.globalAlpha = d.opacity;
-            ctx.moveTo(d.x, d.y);
-            ctx.lineTo(d.x - 1.0, d.y + d.length);
-            ctx.stroke();
+        ctxBack.clearRect(0, 0, w, h);
+        ctxFront.clearRect(0, 0, w, h);
+
+        // 1. Render Distant Background Rain (Thin, soft lines)
+        ctxBack.strokeStyle = '#38bdf8';
+        ctxBack.lineWidth = 0.8;
+        for (let i = 0; i < backDrops.length; i++) {
+            const d = backDrops[i];
+            ctxBack.beginPath();
+            ctxBack.globalAlpha = d.opacity;
+            ctxBack.moveTo(d.x, d.y);
+            ctxBack.lineTo(d.x - 0.9, d.y + d.length);
+            ctxBack.stroke();
 
             d.y += d.speed * dt * 60;
-            d.x -= 0.3 * dt * 60;
+            d.x -= 0.25 * dt * 60;
 
-            if (d.y > canvas.height) {
+            if (d.y > h) {
                 d.y = -d.length;
-                d.x = Math.random() * canvas.width;
+                d.x = Math.random() * w;
+            }
+        }
+
+        // 2. Render Close Foreground Rain (Natural glass streaks)
+        ctxFront.strokeStyle = '#7dd3fc';
+        ctxFront.lineWidth = 1.15;
+        for (let i = 0; i < frontDrops.length; i++) {
+            const d = frontDrops[i];
+            ctxFront.beginPath();
+            ctxFront.globalAlpha = d.opacity;
+            ctxFront.moveTo(d.x, d.y);
+            ctxFront.lineTo(d.x - 1.2, d.y + d.length);
+            ctxFront.stroke();
+
+            d.y += d.speed * dt * 60;
+            d.x -= 0.35 * dt * 60;
+
+            if (d.y > h) {
+                d.y = -d.length;
+                d.x = Math.random() * w;
             }
         }
 

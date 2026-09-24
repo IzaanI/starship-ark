@@ -55,9 +55,9 @@ const ShipManual = {
                         </div>
 
                         <div class="toc-section">
-                            <div class="toc-section-title">CHAPTER 3: CANDIDATE AUDIT CHEAT SHEET</div>
+                            <div class="toc-section-title">CHAPTER 3: BOOTH CONTROLS & TERMINAL PROTOCOL</div>
                             <ul class="toc-list">
-                                <li onclick="ShipManual.goToPage(11)"><span class="toc-page-num">10</span> Cross-Document Verification Guide</li>
+                                <li onclick="ShipManual.goToPage(11)"><span class="toc-page-num">10</span> Terminal Operations & Power Protocol</li>
                                 <li onclick="ShipManual.goToPage(12)"><span class="toc-page-num">11</span> Gate Decision & Wall Switch Protocol</li>
                             </ul>
                         </div>
@@ -172,7 +172,7 @@ const ShipManual = {
             contentHtml: `
                 <div class="manual-page-content">
                     <div class="section-stamp">COCKPIT: PILOTING & TRAJECTORY</div>
-                    <h3 class="manual-heading">Station Overview</h3>
+                    <h3 class="manual-heading">Cockpit Overview</h3>
                     <p>The Cockpit manages navigation, deep-space trajectory plotting, and orbital maneuvers. Efficient piloting ensures the Starship Ark reaches its destination within the projected timeline.</p>
                     
                     <h3 class="manual-heading">Recommended Profile</h3>
@@ -182,7 +182,7 @@ const ShipManual = {
                     <div class="manual-callout-box">
                         <strong>TRAJECTORY DELAYS:</strong> Inexperienced pilots will extend the total duration of the voyage.
                     </div>
-                    <p>If a candidate lacks sufficient years of high-level piloting experience, they will struggle with the Ark's advanced navigation systems. Constant course corrections and sub-optimal routing will significantly increase the length of the journey, forcing all other life-support stations to stretch their resources over a longer period.</p>
+                    <p>If a candidate lacks sufficient years of high-level piloting experience, they will struggle with the Ark's advanced navigation systems. Constant course corrections and sub-optimal routing will increase the total length of the journey, forcing all other life-support stations to stretch their resources over a longer period.</p>
                 </div>
             `
         },
@@ -194,7 +194,7 @@ const ShipManual = {
             contentHtml: `
                 <div class="manual-page-content">
                     <div class="section-stamp">MEDBAY: TRAUMA & DIAGNOSTICS</div>
-                    <h3 class="manual-heading">Station Overview</h3>
+                    <h3 class="manual-heading">Medbay Overview</h3>
                     <p>The Medbay is responsible for crew physical health, injury triage, and preventing biological outbreaks in closed quarters. A competent medical officer keeps the rest of the crew functioning optimally.</p>
                     
                     <h3 class="manual-heading">Recommended Profile</h3>
@@ -216,7 +216,7 @@ const ShipManual = {
             contentHtml: `
                 <div class="manual-page-content">
                     <div class="section-stamp">REACTOR: POWER & CORE STABILITY</div>
-                    <h3 class="manual-heading">Station Overview</h3>
+                    <h3 class="manual-heading">Reactor Overview</h3>
                     <p>The Reactor is the beating heart of the Starship Ark, supplying power to the propulsion drives and all internal grids. An inefficient reactor drains fuel exponentially faster, threatening to strand the vessel in deep space.</p>
                     
                     <h3 class="manual-heading">Recommended Profile</h3>
@@ -238,7 +238,7 @@ const ShipManual = {
             contentHtml: `
                 <div class="manual-page-content">
                     <div class="section-stamp">HYDROPONICS: FOOD CULTIVATION</div>
-                    <h3 class="manual-heading">Station Overview</h3>
+                    <h3 class="manual-heading">Hydroponics Overview</h3>
                     <p>The Hydroponics Bay is responsible for cultivating caloric sustenance and recycling the ship's water supply. A failure here guarantees slow starvation for the entire crew during the transit.</p>
                     
                     <h3 class="manual-heading">Recommended Profile</h3>
@@ -246,9 +246,9 @@ const ShipManual = {
 
                     <h3 class="manual-heading">Risk Factor: Crew Physical Mass</h3>
                     <div class="manual-callout-box">
-                        <strong>RATION DRAIN:</strong> Heavier crew members consume significantly more daily food and water.
+                        <strong>RATION DRAIN:</strong> Heavier crew members consume greater quantities of daily food and water.
                     </div>
-                    <p>If you approve heavy candidates for other stations, an elite Hydroponics officer is necessary to offset the massive resource drain. Be warned: assigning a heavy candidate to run Hydroponics will negate much of their own efficiency.</p>
+                    <p>If you approve heavy candidates for other stations, an elite Hydroponics officer is necessary to offset the massive resource drain. Bigger is not always better, so find balance in your crew to manage food/water consumption.</p>
                 </div>
             `
         },
@@ -260,7 +260,7 @@ const ShipManual = {
             contentHtml: `
                 <div class="manual-page-content">
                     <div class="section-stamp">O2 BAY: LIFE SUPPORT & SCRUBBERS</div>
-                    <h3 class="manual-heading">Station Overview</h3>
+                    <h3 class="manual-heading">O2 Bay Overview</h3>
                     <p>The O2 Bay manages atmospheric pressure, temperature regulation, and CO2 scrubbing. It is the primary life support mechanism preventing toxic air buildup within the vessel.</p>
                     
                     <h3 class="manual-heading">Recommended Profile</h3>
@@ -282,7 +282,7 @@ const ShipManual = {
             contentHtml: `
                 <div class="manual-page-content">
                     <div class="section-stamp">BRIG: INTERNAL SECURITY & THREAT CONTAINMENT</div>
-                    <h3 class="manual-heading">Station Overview</h3>
+                    <h3 class="manual-heading">Brig Overview</h3>
                     <p>The Brig serves as the internal law enforcement center of the Ark. The Chief of Security is responsible for maintaining order, mitigating crew panic, and carrying out executive disciplinary actions.</p>
                     
                     <h3 class="manual-heading">Recommended Profile</h3>
@@ -292,28 +292,44 @@ const ShipManual = {
                     <div class="manual-callout-box">
                         <strong>MAINTAINING ORDER:</strong> A qualified Brig officer suppresses panic and ensures bloodless ejections.
                     </div>
-                    <p>The immense psychological stress of deep-space travel inevitably causes crew panic levels to rise. A qualified Brig officer actively maintains discipline, keeping the crew calm and functioning. Furthermore, should a crew member become compromised and require removal, the Brig officer is needed to execute the ejection sequence. Without them, panic goes unchecked, and attempting to eject a hostile crew member will result in violent resistance, collateral damage to ship systems, or mutiny.</p>
+                    <p> A qualified Brig officer actively maintains discipline, keeping the crew calm and panic low. Should a crew member need to be discharged from the Ark, the Brig officer is needed to execute the ejection sequence. Without them, panic goes unchecked, and attempting to eject a hostile crew member may result in violent resistance or collateral damage to ship systems.</p>
                 </div>
             `
         },
 
-        // PAGE 11: CHEAT SHEET
+        // PAGE 11: TERMINAL & POWER PROTOCOL
         {
             id: "ch3-p10",
-            chapter: "CHAPTER 3: CANDIDATE AUDIT CHEAT SHEET",
+            chapter: "CHAPTER 3: BOOTH CONTROLS & TERMINAL PROTOCOL",
             contentHtml: `
                 <div class="manual-page-content">
-                    <div class="section-stamp">AUDIT CHEAT SHEET: CROSS-DOCUMENT VERIFICATION</div>
-                    <h3 class="manual-heading">The Four Pillars of Verification</h3>
-                    <p>Every candidate must provide four distinct documents. Use your terminal's <code>FETCH</code> commands to retrieve them:</p>
+                    <div class="section-stamp">OPERATIONS PROTOCOL: TERMINAL & POWER DIRECTIVES</div>
+                    
+                    <h3 class="manual-heading">The Security Terminal (Security_CLI)</h3>
+                    <p>
+                        The desktop workstation connects to the Ark embarkation datanet. Access the terminal by clicking the 
+                        desk console (or pressing ESC to return). Officers use the terminal to retrieve candidate files:
+                    </p>
                     <ul class="manual-bullet-list">
-                        <li><strong>EDU (Academic):</strong> Verifies degree authenticity and graduation year.</li>
-                        <li><strong>WATCH (Security):</strong> Flags criminal history, organizational ties, and lists National ID.</li>
-                        <li><strong>FIN (Financial):</strong> Exposes unexplained wealth, extreme debt, or money laundering.</li>
-                        <li><strong>BIO (Medical):</strong> Reveals respiratory baseline, body mass, and biological contagions.</li>
+                        <li><strong>FETCH EDU & FIN:</strong> Public records (academics, financials). Free of power cost.</li>
+                        <li><strong>FETCH WATCH:</strong> Police incident records and security flags. Drains <strong>2 PWR</strong> (initial fetch only).</li>
+                        <li><strong>FETCH BIO:</strong> Biometric scans, lung capacity, and medical flags. Drains <strong>2 PWR</strong> (initial fetch only).</li>
                     </ul>
-                    <h3 class="manual-heading">Execution Protocol</h3>
-                    <p>Never trust a single document in isolation. Check the <strong>Candidate Name</strong> across all four files for subtle spelling inconsistencies indicating a forgery. Cross-reference their <strong>Graduation Year</strong> against their claimed experience. Ensure their <strong>Medical Chart</strong> clears them for closed-loop air circulation.</p>
+
+                    <h3 class="manual-heading">Auxiliary Power Grid (30 PWR Reserve)</h3>
+                    <p>
+                        The checkpoint station operates on a finite 30-unit auxiliary battery reserve. Private queries 
+                        (WATCH and BIO) draw 2 PWR on their first retrieval per candidate; requerying cached records for the same candidate 
+                        costs 0 PWR. When reserves hit <strong>0 PWR</strong>, un-fetched private records cannot be accessed.
+                    </p>
+
+                    <h3 class="manual-heading">Desk Lamp & Power Overload Hazard</h3>
+                    <div class="manual-callout-box warning-box">
+                        <strong>CIRCUIT OVERLOAD NOTICE:</strong><br>
+                        Operating the terminal while the Halogen Desk Lamp is <strong>ON</strong> draws excess current from the backup cell, 
+                        draining <strong>1 additional PWR every 20 seconds</strong>.<br><br>
+                        <em>Protocol:</em> Always toggle the desk lamp <strong>OFF</strong> during extended terminal analysis to conserve auxiliary power.
+                    </div>
                 </div>
             `
         },
@@ -321,7 +337,7 @@ const ShipManual = {
         // PAGE 12: WALL SWITCH PROTOCOL
         {
             id: "ch3-p11",
-            chapter: "CHAPTER 3: CANDIDATE AUDIT CHEAT SHEET",
+            chapter: "CHAPTER 3: BOOTH CONTROLS & TERMINAL PROTOCOL",
             contentHtml: `
                 <div class="manual-page-content">
                     <div class="section-stamp">DECISION PROTOCOL: GATE CONTROLS</div>
