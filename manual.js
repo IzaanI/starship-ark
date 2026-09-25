@@ -313,6 +313,7 @@ const ShipManual = {
                         <li><strong>FETCH EDU & FIN:</strong> Public records (academics, financials). Free of power cost.</li>
                         <li><strong>FETCH WATCH:</strong> Police incident records and security flags. Drains <strong>2 PWR</strong> (initial fetch only).</li>
                         <li><strong>FETCH BIO:</strong> Biometric scans, lung capacity, and medical flags. Drains <strong>2 PWR</strong> (initial fetch only).</li>
+                        <li><strong>INITIATE LAUNCH:</strong> Authorizes liftoff and seals blast airlocks. Requires Y/N confirmation. Can be initiated with full or partial crew.</li>
                     </ul>
 
                     <h3 class="manual-heading">Auxiliary Power Grid (30 PWR Reserve)</h3>

@@ -4,6 +4,9 @@ let currentCandidate = null;
 let acceptedCrew = [];
 let seatsFilled = 1; // Security Officer (Player)
 const maxSeats = 6;
+window.acceptedCrew = acceptedCrew;
+window.seatsFilled = seatsFilled;
+window.maxSeats = maxSeats;
 let isLampOn = true;
 window.isLampOn = isLampOn;
 let isTerminalOpen = false;
@@ -53,8 +56,8 @@ const CrewLedger = {
         let html = `
             <div class="ledger-row player-row">
                 <div class="ledger-col-seat">SEAT 01</div>
-                <div class="ledger-col-name"><span class="ledger-col-lbl">NAME:</span> <strong>SECURITY OFFICER [YOU]</strong></div>
-                <div class="ledger-col-role"><span class="ledger-col-lbl">ROLE:</span> Station Security</div>
+                <div class="ledger-col-name"><span class="ledger-col-lbl">NAME:</span> <strong>ANDERDINGUS</strong></div>
+                <div class="ledger-col-role"><span class="ledger-col-lbl">ROLE:</span> CAPTAIN</div>
                 <div class="ledger-col-age"><span class="ledger-col-lbl">AGE:</span> 34</div>
                 <div class="ledger-col-status"><span class="ledger-stamp-mini stamp-stationed">STATIONED</span></div>
             </div>
@@ -463,6 +466,7 @@ function acceptEntry() {
     if (!currentCandidate || isTransitioning) return;
     acceptedCrew.push(currentCandidate);
     seatsFilled++;
+    window.seatsFilled = seatsFilled;
 
     if (window.CrewLedger) {
         window.CrewLedger.isDirty = true;
@@ -477,12 +481,23 @@ function acceptEntry() {
     TerminalCLI.printLog(logConsole, timeStr, `VERDICT: ACCEPTED ${currentCandidate.name} (${seatsFilled}/${maxSeats} Seats Filled)`, "normal", true);
 
     if (seatsFilled >= maxSeats) {
-        TerminalCLI.printLog(logConsole, timeStr, `CAPACITY REACHED: Maximum seats filled. Starship Ark ready for launch.`, "cmd-echo", false);
-        alert(`CAPACITY REACHED\n\nStarship Ark capacity filled with ${acceptedCrew.length + 1} total personnel. Ready for launch.`);
+        TerminalCLI.printLog(logConsole, timeStr, `[COMPLEMENT COMPLETE] Maximum vessel capacity reached (${seatsFilled}/${maxSeats}).`, "cmd-echo", false);
+        TerminalCLI.printLog(logConsole, timeStr, `Gate locked. Open Terminal CLI and type 'INITIATE LAUNCH' to begin departure sequence.`, "cmd-echo", false);
+        const badge = document.getElementById('seat-capacity-badge');
+        if (badge) {
+            badge.innerText = `CREW SEATS: ${seatsFilled} / ${maxSeats} [READY]`;
+        }
     } else {
         transitionToNextCandidate();
     }
 }
+
+window.onLaunchInitiated = function(details) {
+    const badge = document.getElementById('seat-capacity-badge');
+    if (badge) {
+        badge.innerText = `STATUS: LAUNCH ENGAGED (${details.seats}/${details.max})`;
+    }
+};
 
 function rejectEntry() {
     if (!currentCandidate || isTransitioning) return;
