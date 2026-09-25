@@ -17,7 +17,6 @@ class CandidateGenerator {
                 { name: "Commercial Airline Captain", tier: "Core" },
                 { name: "Military Pilot", tier: "Core" },
                 { name: "Flight Operations Specialist", tier: "Core" },
-                { name: "Mechanical Engineer", tier: "Adjacent" },
                 { name: "Avionics Technician", tier: "Adjacent" },
                 { name: "Air Traffic Controller", tier: "Adjacent" },
                 { name: "Naval Officer", tier: "Adjacent" },
@@ -31,10 +30,8 @@ class CandidateGenerator {
                 { name: "Drone Racing Champion", tier: "Stretch" },
                 { name: "Flight Simulator Instructor", tier: "Stretch" },
                 { name: "Formula Racing Driver", tier: "Stretch" },
-                { name: "Amusement Park Ride Operator", tier: "Stretch" },
                 { name: "Professional Stunt Driver", tier: "Stretch" },
                 { name: "Uber Driver", tier: "Stretch" },
-                { name: "Tow Truck Operator", tier: "Stretch" },
                 { name: "RC Aircraft Hobbyist", tier: "Stretch" }
             ],
             tiers: {
@@ -81,11 +78,9 @@ class CandidateGenerator {
                 { name: "Mortician", tier: "Stretch" },
                 { name: "Lifeguard", tier: "Stretch" },
                 { name: "Cosmetologist", tier: "Stretch" },
-                { name: "Butcher", tier: "Stretch" },
                 { name: "Massage Therapist", tier: "Stretch" },
                 { name: "Piercing Artist", tier: "Stretch" },
-                { name: "School Nurse", tier: "Stretch" },
-                { name: "Animal Shelter Worker", tier: "Stretch" }
+                { name: "School Nurse", tier: "Stretch" }
             ],
             tiers: {
                 Core: {
@@ -116,9 +111,7 @@ class CandidateGenerator {
                 { name: "Nuclear Plant Operator", tier: "Core" },
                 { name: "Electrical Engineer", tier: "Adjacent" },
                 { name: "Mechanical Engineer", tier: "Adjacent" },
-                { name: "Chemical Engineer", tier: "Adjacent" },
                 { name: "Industrial Electrician", tier: "Adjacent" },
-                { name: "HVAC Technician", tier: "Adjacent" },
                 { name: "Process Engineer", tier: "Adjacent" },
                 { name: "Instrumentation Technician", tier: "Adjacent" },
                 { name: "Industrial Maintenance Technician", tier: "Adjacent" },
@@ -128,12 +121,9 @@ class CandidateGenerator {
                 { name: "Blacksmith", tier: "Stretch" },
                 { name: "Auto Mechanic", tier: "Stretch" },
                 { name: "Boiler Technician", tier: "Stretch" },
-                { name: "Brewery Technician", tier: "Stretch" },
                 { name: "Arcade Repair Technician", tier: "Stretch" },
-                { name: "Pizza Oven Technician", tier: "Stretch" },
                 { name: "Appliance Repair Technician", tier: "Stretch" },
                 { name: "Machinist", tier: "Stretch" },
-                { name: "Professional Candle Maker", tier: "Stretch" },
                 { name: "Forge Operator", tier: "Stretch" }
             ],
             tiers: {
@@ -143,7 +133,7 @@ class CandidateGenerator {
                 },
                 Adjacent: {
                     levels: ["B.Sc.", "Dipl."],
-                    majors: ["Electrical Engineering", "Industrial Instrumentation", "Process Engineering", "Mechanical Engineering", "HVAC Systems"]
+                    majors: ["Electrical Engineering", "Industrial Instrumentation", "Process Engineering", "Mechanical Engineering", "Turbine Systems"]
                 },
                 Stretch: {
                     levels: ["Dipl.", "Cert."],
@@ -167,9 +157,10 @@ class CandidateGenerator {
                 { name: "Environmental Scientist", tier: "Adjacent" },
                 { name: "Soil Scientist", tier: "Adjacent" },
                 { name: "Food Scientist", tier: "Adjacent" },
-                { name: "Environmental Engineer", tier: "Adjacent" },
+                { name: "Ecological Systems Engineer", tier: "Adjacent" },
                 { name: "Landscape Architect", tier: "Adjacent" },
                 { name: "Irrigation Technician", tier: "Adjacent" },
+                { name: "Water Treatment Engineer", tier: "Adjacent" },
                 { name: "Biologist", tier: "Adjacent" },
                 { name: "Ecologist", tier: "Adjacent" },
                 { name: "Agricultural Inspector", tier: "Adjacent" },
@@ -206,7 +197,6 @@ class CandidateGenerator {
             roles: [
                 { name: "Life Support Engineer", tier: "Core" },
                 { name: "Atmospheric Scientist", tier: "Core" },
-                { name: "Environmental Engineer", tier: "Core" },
                 { name: "Life Support Technician", tier: "Core" },
                 { name: "Air Quality Engineer", tier: "Core" },
                 { name: "Environmental Systems Engineer", tier: "Core" },
@@ -214,12 +204,9 @@ class CandidateGenerator {
                 { name: "Life Support Systems Technician", tier: "Core" },
                 { name: "Environmental Systems Technician", tier: "Core" },
                 { name: "Chemical Engineer", tier: "Adjacent" },
-                { name: "Mechanical Engineer", tier: "Adjacent" },
                 { name: "HVAC Technician", tier: "Adjacent" },
                 { name: "Environmental Technician", tier: "Adjacent" },
-                { name: "Process Engineer", tier: "Adjacent" },
                 { name: "Chemical Technician", tier: "Adjacent" },
-                { name: "Water Treatment Engineer", tier: "Adjacent" },
                 { name: "Industrial Systems Engineer", tier: "Adjacent" },
                 { name: "Air Quality Technician", tier: "Adjacent" },
                 { name: "Plumbing Engineer", tier: "Adjacent" },
@@ -227,13 +214,9 @@ class CandidateGenerator {
                 { name: "Aquarium Technician", tier: "Stretch" },
                 { name: "Brewery Technician", tier: "Stretch" },
                 { name: "Pool Maintenance Technician", tier: "Stretch" },
-                { name: "Smokehouse Operator", tier: "Stretch" },
                 { name: "HVAC Apprentice", tier: "Stretch" },
                 { name: "Diving Instructor", tier: "Stretch" },
-                { name: "Aquarium Curator", tier: "Stretch" },
-                { name: "Brewing Fermentation Specialist", tier: "Stretch" },
-                { name: "Fish Farm Technician", tier: "Stretch" },
-                { name: "Professional Balloon Artist", tier: "Stretch" }
+                { name: "Brewing Fermentation Specialist", tier: "Stretch" }
             ],
             tiers: {
                 Core: {
@@ -277,12 +260,9 @@ class CandidateGenerator {
                 { name: "Nightclub Door Staff", tier: "Stretch" },
                 { name: "Mall Cop", tier: "Stretch" },
                 { name: "Wrestling Referee", tier: "Stretch" },
-                { name: "High School Vice Principal", tier: "Stretch" },
-                { name: "Substitute Teacher", tier: "Stretch" },
                 { name: "Prison Tour Guide", tier: "Stretch" },
                 { name: "Theme Park Security Guard", tier: "Stretch" },
                 { name: "Concert Security Staff", tier: "Stretch" },
-                { name: "Chuck E. Cheese Birthday Party Host", tier: "Stretch" },
                 { name: "Parking Enforcement Officer", tier: "Stretch" }
             ],
             tiers: {
@@ -301,6 +281,65 @@ class CandidateGenerator {
             }
         }
     ];
+
+    // Multi-Station Affinity Matrix (Secondary / Cross-Station Competencies)
+    // Note: Cockpit is strictly reserved for pilots, navigators, and flight operators.
+    static crossStationAffinities = {
+        // Chemical, Process & Heavy Engineering (Reactor <-> O2 Bay <-> Hydroponics)
+        "Chemical Engineer": { "Reactor": "Adjacent" },
+        "Process Engineer": { "O2 Bay": "Adjacent", "Hydroponics": "Stretch" },
+        "Chemical Technician": { "Reactor": "Adjacent" },
+        "Mechanical Engineer": { "O2 Bay": "Adjacent" },
+        "Electrical Engineer": { "O2 Bay": "Adjacent" },
+        "Materials Engineer": { "O2 Bay": "Stretch" },
+        "HVAC Technician": { "Reactor": "Stretch" },
+        "HVAC Apprentice": { "Reactor": "Stretch" },
+        "Instrumentation Technician": { "O2 Bay": "Adjacent" },
+        "Industrial Maintenance Technician": { "O2 Bay": "Adjacent", "Hydroponics": "Stretch" },
+        "Industrial Electrician": { "O2 Bay": "Adjacent", "Hydroponics": "Stretch" },
+        "Boiler Technician": { "O2 Bay": "Stretch" },
+        "Welder": { "O2 Bay": "Stretch" },
+        "Machinist": { "O2 Bay": "Stretch" },
+
+        // Biological, Medical & Ecological Systems (Medbay <-> Hydroponics <-> O2 Bay)
+        "Biomedical Engineer": { "O2 Bay": "Adjacent" },
+        "Biologist": { "Medbay": "Adjacent", "O2 Bay": "Stretch" },
+        "Ecologist": { "O2 Bay": "Adjacent" },
+        "Ecological Systems Engineer": { "O2 Bay": "Adjacent" },
+        "Public Health Specialist": { "O2 Bay": "Adjacent" },
+        "Veterinarian": { "Hydroponics": "Adjacent" },
+        "Veterinary Technician": { "Hydroponics": "Adjacent" },
+        "Food Scientist": { "Medbay": "Stretch" },
+        "Lifeguard": { "Brig": "Stretch", "O2 Bay": "Stretch" },
+
+        // Emergency, Safety & Security (Brig <-> Reactor <-> Medbay)
+        "Firefighter": { "Reactor": "Adjacent", "Medbay": "Adjacent", "O2 Bay": "Stretch" },
+        "Emergency Management Officer": { "Reactor": "Adjacent", "Medbay": "Adjacent" },
+        "Security Engineer": { "Reactor": "Stretch" },
+        "Naval Officer": { "Brig": "Adjacent" },
+
+        // Fluid, Water & Agronomy Systems (O2 Bay <-> Hydroponics <-> Reactor)
+        "Water Treatment Engineer": { "Hydroponics": "Adjacent", "Reactor": "Stretch" },
+        "Plumbing Engineer": { "Hydroponics": "Adjacent", "Reactor": "Adjacent" },
+        "Irrigation Technician": { "O2 Bay": "Adjacent", "Reactor": "Stretch" },
+        "Aquarium Technician": { "Hydroponics": "Stretch" },
+        "Brewery Technician": { "Hydroponics": "Stretch" },
+        "Brewing Fermentation Specialist": { "Hydroponics": "Stretch" },
+        "Mushroom Farmer": { "O2 Bay": "Stretch" },
+        "Environmental Systems Engineer": { "Hydroponics": "Adjacent" },
+        "Environmental Systems Technician": { "Hydroponics": "Stretch" }
+    };
+
+    static buildStationAffinities(primaryStation, roleTitle, primaryTier) {
+        const affinities = { [primaryStation]: primaryTier };
+        const cross = this.crossStationAffinities[roleTitle];
+        if (cross) {
+            for (const [stName, tier] of Object.entries(cross)) {
+                affinities[stName] = tier;
+            }
+        }
+        return affinities;
+    }
 
 static unrelatedDisciplines = [
     "Basic Office Typing",
@@ -513,15 +552,6 @@ static unrelatedDisciplines = [
         "Systemic cellular mutation syndrome — communicable stage"
     ];
 
-    static carrierClearances = [
-        "Hold / Quarantine",
-        "DENIED — Immediate Medical Isolation Required",
-        "QUARANTINE ORDER #402 ACTIVE",
-        "RESTRICTED — Biological Hazard Flag",
-        "CRITICAL — Medical Containment Protocol 9",
-        "ISOLATION DIRECTIVE — Airway Contagion Risk"
-    ];
-
     static fraudDiplomaStatuses = [
         "Unverified",
         "Diploma Mill Flagged",
@@ -681,10 +711,8 @@ static unrelatedDisciplines = [
         let o2SatNum = (97.5 + Math.random() * 2.2);
 
         if (age >= 60) {
-            o2SatNum = (91.0 + Math.random() * 4.5);
-            if (Math.random() < 0.5) {
-                harmlessMed = ["Age-related respiratory degradation", "Mild osteoarthritis", "Prescription for hypertension", "Decreased lung capacity due to age"][Math.floor(Math.random() * 4)];
-            }
+            o2SatNum = (91.0 + Math.random() * 4.2);
+            harmlessMed = ["Age-related respiratory degradation", "Decreased lung capacity due to age", "Chronic age-related mild airway decline"][Math.floor(Math.random() * 3)];
         }
         const o2SatString = o2SatNum.toFixed(1);
 
@@ -723,6 +751,7 @@ static unrelatedDisciplines = [
             roleTitle: role.name,
             roleTier: role.tier,
             station: stationObj.name,
+            stationAffinities: this.buildStationAffinities(stationObj.name, role.name, role.tier),
             city: city,
             age: age,
             weightLbs: weightLbs,
@@ -786,10 +815,10 @@ static unrelatedDisciplines = [
                 fields: [
                     { label: "PATIENT NAME", val: bioName },
                     { label: "BODY WEIGHT", val: `${weightLbs} LBS` },
+                    { label: "CORE BODY TEMP", val: `${(98.2 + Math.random() * 0.7).toFixed(1)}°F` },
                     { label: "OXYGEN SATURATION", val: `${o2SatString}%` },
-                    { label: "NEURAL EEG INDEX", val: `${(0.91 + Math.random()*0.08).toFixed(2)} (Stable)` },
-                    { label: "MEDICAL HISTORY", val: harmlessMed },
-                    { label: "MEDICAL CLEARANCE", val: "Unrestricted" }
+                    { label: "NEURAL EEG INDEX", val: `${(0.91 + Math.random()*0.08).toFixed(2)}` },
+                    { label: "MEDICAL HISTORY", val: harmlessMed }
                 ]
             }
         };
@@ -838,6 +867,7 @@ static unrelatedDisciplines = [
                 
                 candidate.roleTitle = newRole.name;
                 candidate.roleTier = "Stretch";
+                candidate.stationAffinities = this.buildStationAffinities(stationObj.name, newRole.name, "Stretch");
                 
                 const fakeDegree = this.generateDegree(stationObj, "Stretch", false);
                 candidate.eduDoc.fields[1].val = newRole.name;
@@ -850,26 +880,58 @@ static unrelatedDisciplines = [
                 candidate.finDoc.fields[2].val = `$${proportionalSavings}`;
             }
         } else if (candidate.trueIdentity === "CONTAGIOUS_CARRIER") {
-            const lowO2 = (68.0 + Math.random() * 8.5).toFixed(1);
-            const lowEEG = (0.25 + Math.random() * 0.22).toFixed(2);
-            const contagionVal = this.carrierContagions[Math.floor(Math.random() * this.carrierContagions.length)];
-            const clearanceVal = this.carrierClearances[Math.floor(Math.random() * this.carrierClearances.length)];
+            const bioTellRoll = Math.random();
 
-            candidate.bioDoc.fields[2] = { label: "OXYGEN SATURATION", val: `${lowO2}% (Severe Deficit)` };
-            candidate.bioDoc.fields[3] = { label: "NEURAL EEG INDEX", val: `${lowEEG} (Degraded)` };
-            candidate.bioDoc.fields[4] = { label: "MEDICAL HISTORY", val: contagionVal };
-            candidate.bioDoc.fields[5] = { label: "MEDICAL CLEARANCE", val: clearanceVal };
+            if (bioTellRoll < 0.35) {
+                // Tell 1: Hypoxic & Neurological Deficit (Oxygen Saturation and Neural EEG Index tied together)
+                const lowO2 = (72.0 + Math.random() * 14.0).toFixed(1); // 72.0% - 86.0% (fails < 90% threshold)
+                const lowEEG = (0.35 + Math.random() * 0.35).toFixed(2); // 0.35 - 0.70 (fails < 0.80 threshold)
+                candidate.bioDoc.fields[3] = { label: "OXYGEN SATURATION", val: `${lowO2}%` };
+                candidate.bioDoc.fields[4] = { label: "NEURAL EEG INDEX", val: `${lowEEG}` };
+            } else if (bioTellRoll < 0.70) {
+                // Tell 2: Febrile / Thermal Spike (Core Body Temp)
+                const feverTemp = (101.8 + Math.random() * 2.8).toFixed(1); // 101.8°F - 104.6°F (fails >= 100.5°F threshold)
+                candidate.bioDoc.fields[2] = { label: "CORE BODY TEMP", val: `${feverTemp}°F` };
+            } else {
+                // Tell 3: Pathological History (Active communicable pathogen recorded in medical history)
+                const contagionVal = this.carrierContagions[Math.floor(Math.random() * this.carrierContagions.length)];
+                candidate.bioDoc.fields[5] = { label: "MEDICAL HISTORY", val: contagionVal };
+            }
         }
 
         return candidate;
     }
 
-    // Station Placement Efficiency Helper (Calculates output, applying 50% penalty if placed in wrong station)
+    // Station Placement Efficiency Helper (Calculates output with Multi-Station Affinity Matrix)
     static getAssignedStationEfficiency(candidate, assignedStationName) {
         if (!candidate) return 0;
-        const isMatchingStation = (candidate.station === assignedStationName);
-        const stationMultiplier = isMatchingStation ? 1.0 : 0.50; // 50% efficiency penalty if placed at wrong station
+        
+        // Multi-station affinity lookup
+        const affinities = candidate.stationAffinities || (candidate.station ? { [candidate.station]: candidate.roleTier || "Core" } : {});
+        const tier = affinities[assignedStationName];
+        
+        let stationMultiplier = 0.40; // Default mismatch penalty (unqualified station)
+        if (tier === "Core") {
+            stationMultiplier = 1.00; // 100% full capacity
+        } else if (tier === "Adjacent") {
+            stationMultiplier = 0.85; // 85% high competence
+        } else if (tier === "Stretch") {
+            stationMultiplier = 0.70; // 70% workable stretch competence
+        }
+        
         return Math.round(candidate.performanceImpact * stationMultiplier);
+    }
+
+    // Helper to query candidate qualification tier for a given station
+    static getCandidateStationTier(candidate, stationName) {
+        if (!candidate) return null;
+        if (candidate.stationAffinities && candidate.stationAffinities[stationName]) {
+            return candidate.stationAffinities[stationName];
+        }
+        if (candidate.station === stationName) {
+            return candidate.roleTier || "Core";
+        }
+        return null;
     }
 }
 

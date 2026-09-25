@@ -28,7 +28,7 @@ const ShipManual = {
                 <div class="manual-toc-container">
                     <div class="toc-header-stamp">STATION SECURITY DIVISION // CONFIDENTIAL</div>
                     <p class="toc-intro">
-                        This manual contains official operational directives for the booth security officer aboard 
+                        This manual contains official operational directives for the booth captain on board 
                         the <strong>Starship Ark</strong>. Use the index below to jump directly to protocol guidelines and station directives.
                     </p>
                     
@@ -91,7 +91,7 @@ const ShipManual = {
                     <h3 class="manual-heading">Vessel Capacity Constraints</h3>
                     <div class="manual-callout-box">
                         <strong>CREW CAPACITY LIMIT: 6 SEATS TOTAL</strong><br>
-                        • Seat 1: Security Officer (Stationed — You)<br>
+                        • Seat 1: Captain (Stationed — You)<br>
                         • Seats 2–6: Candidate Positions (Evaluated by You)<br>
                     </div>
                     <p>
@@ -204,6 +204,17 @@ const ShipManual = {
                         <strong>UNVERIFIED PRACTITIONERS:</strong> Capable but unlicensed doctors carry severe internal risks.
                     </div>
                     <p>In desperate times, "back-alley" surgeons or candidates with flagged criminal histories may present themselves as medical professionals. While they might be capable of treating injuries, placing an unlicensed or unstable individual in control of the ship's pharmaceutical supplies drastically increases the risk of internal incidents, malpractice, or drug theft.</p>
+
+                    <h3 class="manual-heading">Quarantine Protocol: Biological Outbreaks</h3>
+                    <div class="manual-callout-box warning-box">
+                        <strong>CONTAGION CLEARANCE THRESHOLDS:</strong><br>
+                        In a sealed atmospheric habitat, airborne pathogen transmission is fatal. Officers must inspect biometric charts for physiological anomalies:
+                        <br><br>
+                        • <strong>Core Body Temp:</strong> Normothermic baseline is <strong>97.5°F – 99.5°F</strong>. Temperatures ≥ <strong>100°F</strong> often indicate potential respiratory infection.<br>
+                        • <strong>Oxygen Saturation & Neural EEG:</strong> Cerebral oxygenation directly impacts brainwave stability. Candidates should ideally have at least <strong>90.0% O2</strong> and <strong>0.80 EEG</strong>.<br>
+                        • <strong>Medical History:</strong> Inspect for active viral, spore, or parasitic pathogens.<br>
+                        • <strong>Senior Personnel (Age 60+):</strong> Senior recruits naturally tend to have weaker lungs (91.0% – 95.0% O2) due to aging. As long as their body temperature is normal and EEG remains sharp (≥ 0.80), they are non-infectious.
+                    </div>
                 </div>
             `
         },
@@ -311,15 +322,15 @@ const ShipManual = {
                     </p>
                     <ul class="manual-bullet-list">
                         <li><strong>FETCH EDU & FIN:</strong> Public records (academics, financials). Free of power cost.</li>
-                        <li><strong>FETCH WATCH:</strong> Police incident records and security flags. Drains <strong>2 PWR</strong> (initial fetch only).</li>
-                        <li><strong>FETCH BIO:</strong> Biometric scans, lung capacity, and medical flags. Drains <strong>2 PWR</strong> (initial fetch only).</li>
+                        <li><strong>FETCH WATCH:</strong> Police incident records and security flags. Drains <strong>1 PWR</strong> (initial fetch only).</li>
+                        <li><strong>FETCH BIO:</strong> Biometric scans (core body temperature, O2 saturation, neural EEG, and medical history). Drains <strong>1 PWR</strong> (initial fetch only).</li>
                         <li><strong>INITIATE LAUNCH:</strong> Authorizes liftoff and seals blast airlocks. Requires Y/N confirmation. Can be initiated with full or partial crew.</li>
                     </ul>
 
                     <h3 class="manual-heading">Auxiliary Power Grid (30 PWR Reserve)</h3>
                     <p>
                         The checkpoint station operates on a finite 30-unit auxiliary battery reserve. Private queries 
-                        (WATCH and BIO) draw 2 PWR on their first retrieval per candidate; requerying cached records for the same candidate 
+                        (WATCH and BIO) draw 1 PWR on their first retrieval per candidate; requerying cached records for the same candidate 
                         costs 0 PWR. When reserves hit <strong>0 PWR</strong>, un-fetched private records cannot be accessed.
                     </p>
 

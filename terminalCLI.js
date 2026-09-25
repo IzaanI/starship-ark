@@ -39,19 +39,19 @@ class TerminalCLI {
         } else if (cmd === "FETCH WATCH" || cmd === "SCAN WATCH" || cmd === "WATCHLIST" || cmd === "WATCH") {
             const alreadyFetched = candidate && candidate.watchFetched;
             if (!alreadyFetched) {
-                if (window.PowerSystem && !window.PowerSystem.canAfford(2)) {
-                    this.printLog(logConsole, timeStr, `[QUERY FAILED: POWER DEPLETED] Insufficient auxiliary power (Requires 2 PWR, Current: ${window.PowerSystem.currentPower}/${window.PowerSystem.maxPower}). Secure police link unavailable.`, "warning", true);
+                if (window.PowerSystem && !window.PowerSystem.canAfford(1)) {
+                    this.printLog(logConsole, timeStr, `[QUERY FAILED: POWER DEPLETED] Insufficient auxiliary power (Requires 1 PWR, Current: ${window.PowerSystem.currentPower}/${window.PowerSystem.maxPower}). Secure police link unavailable.`, "warning", true);
                     return;
                 }
                 if (window.PowerSystem) {
-                    window.PowerSystem.drain(2, "Secure police database lookup");
+                    window.PowerSystem.drain(1, "Secure police database lookup");
                 }
                 if (candidate) candidate.watchFetched = true;
             }
             if (candidate && candidate.watchDoc) {
                 if (window.loadDocument) window.loadDocument(candidate.watchDoc);
                 if (window.SoundFX) SoundFX.playDataFetch();
-                const pwrMsg = alreadyFetched ? `(Local Archive - 0 PWR)` : `(-2 PWR)`;
+                const pwrMsg = alreadyFetched ? `(Local Archive - 0 PWR)` : `(-1 PWR)`;
                 this.printLog(logConsole, timeStr, `[DOCUMENT RETRIEVED] ${candidate.watchDoc.title} loaded into viewer. ${pwrMsg}`, "normal", true);
             }
         } else if (cmd === "FETCH FIN" || cmd === "SCAN FIN" || cmd === "FINANCIALS" || cmd === "FIN") {
@@ -63,19 +63,19 @@ class TerminalCLI {
         } else if (cmd === "FETCH BIO" || cmd === "SCAN MED" || cmd === "MEDICAL" || cmd === "BIO") {
             const alreadyFetched = candidate && candidate.bioFetched;
             if (!alreadyFetched) {
-                if (window.PowerSystem && !window.PowerSystem.canAfford(2)) {
-                    this.printLog(logConsole, timeStr, `[QUERY FAILED: POWER DEPLETED] Insufficient auxiliary power (Requires 2 PWR, Current: ${window.PowerSystem.currentPower}/${window.PowerSystem.maxPower}). Biometric medical registry offline.`, "warning", true);
+                if (window.PowerSystem && !window.PowerSystem.canAfford(1)) {
+                    this.printLog(logConsole, timeStr, `[QUERY FAILED: POWER DEPLETED] Insufficient auxiliary power (Requires 1 PWR, Current: ${window.PowerSystem.currentPower}/${window.PowerSystem.maxPower}). Biometric medical registry offline.`, "warning", true);
                     return;
                 }
                 if (window.PowerSystem) {
-                    window.PowerSystem.drain(2, "Biometric medical scan query");
+                    window.PowerSystem.drain(1, "Biometric medical scan query");
                 }
                 if (candidate) candidate.bioFetched = true;
             }
             if (candidate && candidate.bioDoc) {
                 if (window.loadDocument) window.loadDocument(candidate.bioDoc);
                 if (window.SoundFX) SoundFX.playDataFetch();
-                const pwrMsg = alreadyFetched ? `(Local Archive - 0 PWR)` : `(-2 PWR)`;
+                const pwrMsg = alreadyFetched ? `(Local Archive - 0 PWR)` : `(-1 PWR)`;
                 this.printLog(logConsole, timeStr, `[DOCUMENT RETRIEVED] ${candidate.bioDoc.title} loaded into viewer. ${pwrMsg}`, "normal", true);
             }
         } else if (cmd === "INITIATE LAUNCH" || cmd === "LAUNCH" || cmd === "START LAUNCH") {
@@ -112,7 +112,7 @@ class TerminalCLI {
             this.printLog(logConsole, timeStr, `  CREW COMPLEMENT: ${seats} / ${max} personnel aboard`, "normal", true);
             this.printLog(logConsole, timeStr, `  AUXILIARY POWER: ${pwr}`, "normal", true);
             this.printLog(logConsole, timeStr, `  DESK HALOGEN LAMP: ${lampState}`, "normal", true);
-            this.printLog(logConsole, timeStr, `  SECURE QUERIES (WATCH, BIO): 2 PWR / query`, "normal", true);
+            this.printLog(logConsole, timeStr, `  SECURE QUERIES (WATCH, BIO): 1 PWR / query`, "normal", true);
             this.printLog(logConsole, timeStr, `  PUBLIC ARCHIVES (EDU, FIN): Free (0 PWR)`, "normal", true);
         } else {
             this.printLog(logConsole, timeStr, `Command not recognized: '${rawCommand}'. Type 'HELP' for a list of valid commands.`, "warning", true);
@@ -144,9 +144,9 @@ class TerminalCLI {
             "============== CLI COMMAND MANUAL ==============",
             "  HELP            - Display this CLI command directory",
             "  FETCH EDU       - Load Academic Transcript & Accreditation [0 PWR]",
-            "  FETCH WATCH     - Load Police Incident & Security Index [2 PWR]",
+            "  FETCH WATCH     - Load Police Incident & Security Index [1 PWR]",
             "  FETCH FIN       - Load Financial Transaction Ledger Audit [0 PWR]",
-            "  FETCH BIO       - Load Biometric & Medical Scan Chart [2 PWR]",
+            "  FETCH BIO       - Load Biometric & Medical Scan Chart [1 PWR]",
             "  INITIATE LAUNCH - Authorize liftoff & seal Ark airlocks (Y/N)",
             "  CLOSE DOC       - Unload active document from viewer",
             "  STATUS          - Check vessel complement, power & systems",

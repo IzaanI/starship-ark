@@ -79,7 +79,7 @@
                 </div>
                 <div class="term-header-right">
                     <!-- AUXILIARY POWER METER -->
-                    <div class="term-power-gauge pwr-normal" id="term-power-gauge" title="Auxiliary Station Power. Private queries (WATCH, BIO) cost 2 PWR. Simultaneous lamp & terminal operation draws 1 PWR / 20s.">
+                    <div class="term-power-gauge pwr-normal" id="term-power-gauge" title="Auxiliary Station Power. Private queries (WATCH, BIO) cost 1 PWR. Simultaneous lamp & terminal operation draws 1 PWR / 20s.">
                         <span class="pwr-lbl">AUX_PWR:</span>
                         <div class="pwr-bar-track">
                             <div class="pwr-bar-fill" id="term-power-meter-fill" style="width: 100%;"></div>
@@ -106,9 +106,9 @@
                         <div class="cmd-guide-box">
                             <div class="cmd-guide-title">TERMINAL COMMANDS</div>
                             <div class="cmd-item"><code>FETCH EDU</code> - Academic Transcript</div>
-                            <div class="cmd-item"><code>FETCH WATCH</code> - Police Records <span class="cmd-pwr-cost">(2 PWR)</span></div>
+                            <div class="cmd-item"><code>FETCH WATCH</code> - Police Records <span class="cmd-pwr-cost">(1 PWR)</span></div>
                             <div class="cmd-item"><code>FETCH FIN</code> - Financial Ledger</div>
-                            <div class="cmd-item"><code>FETCH BIO</code> - Biometric Medical <span class="cmd-pwr-cost">(2 PWR)</span></div>
+                            <div class="cmd-item"><code>FETCH BIO</code> - Biometric Medical <span class="cmd-pwr-cost">(1 PWR)</span></div>
                             <div class="cmd-item"><code>INITIATE LAUNCH</code> - Pre-Flight Auth</div>
                             <div class="cmd-item"><code>CLOSE DOC</code> - Clear Viewer</div>
                         </div>
@@ -162,7 +162,7 @@
                 <!-- BOOK FOOTER NAVIGATION BAR -->
                 <div class="manual-book-footer">
                     <button id="manual-btn-prev" class="manual-nav-btn" onclick="ShipManual.prevPage()"><</button>
-                    <button class="manual-nav-btn toc-btn" onclick="ShipManual.goToPage(0)">Index</button>
+                    <button class="manual-nav-btn toc-btn" onclick="ShipManual.goToPage(1)">Index</button>
                     <span id="manual-page-indicator" class="manual-page-indicator">PAGE 1</span>
                     <button id="manual-btn-next" class="manual-nav-btn" onclick="ShipManual.nextPage()">></button>
                 </div>
