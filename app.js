@@ -31,6 +31,7 @@ const CrewLedger = {
         const modal = document.getElementById('crew-ledger-modal');
         if (modal) {
             modal.classList.remove('hidden');
+            if (window.SoundFX) SoundFX.playLedger();
         }
     },
 
@@ -39,6 +40,7 @@ const CrewLedger = {
         const modal = document.getElementById('crew-ledger-modal');
         if (modal) {
             modal.classList.add('hidden');
+            if (window.SoundFX) SoundFX.playLedger();
         }
     },
 
@@ -219,6 +221,7 @@ function updateBookState() {
 function toggleLamp() {
     isLampOn = !isLampOn;
     window.isLampOn = isLampOn;
+    if (window.SoundFX) SoundFX.playLamp(isLampOn);
     if (!isLampOn) {
         overloadSeconds = 0;
     }
@@ -464,6 +467,7 @@ function transitionToNextCandidate(delayBeforeFade = 250) {
 
 function acceptEntry() {
     if (!currentCandidate || isTransitioning) return;
+    if (window.SoundFX) SoundFX.playAccept();
     acceptedCrew.push(currentCandidate);
     seatsFilled++;
     window.seatsFilled = seatsFilled;
@@ -501,6 +505,7 @@ window.onLaunchInitiated = function(details) {
 
 function rejectEntry() {
     if (!currentCandidate || isTransitioning) return;
+    if (window.SoundFX) SoundFX.playReject();
     const logConsole = document.getElementById('log-console');
     const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
     TerminalCLI.printLog(logConsole, timeStr, `VERDICT: REJECTED ${currentCandidate.name}. Candidate turned away.`, "warning", true);
@@ -513,6 +518,9 @@ function initCLIInput() {
     const input = document.getElementById('cli-input');
     if (input) {
         input.addEventListener('keydown', (e) => {
+            if (window.SoundFX && (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Enter')) {
+                SoundFX.playKeyClick(null, e.key === 'Enter');
+            }
             if (e.key === 'Enter') {
                 submitCLI();
             }
@@ -539,6 +547,7 @@ function openTerminal() {
         termView.classList.remove('hidden');
         isTerminalOpen = true;
         window.isTerminalOpen = true;
+        if (window.SoundFX) SoundFX.playTerminalOpen();
     }
 }
 
@@ -549,6 +558,7 @@ function closeTerminal() {
         isTerminalOpen = false;
         window.isTerminalOpen = false;
         overloadSeconds = 0;
+        if (window.SoundFX) SoundFX.playTerminalClose();
     }
 }
 

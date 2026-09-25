@@ -368,6 +368,7 @@ const ShipManual = {
                 this.renderPage(this.currentPageIndex);
             }
             modal.classList.remove('hidden');
+            if (window.SoundFX) SoundFX.playBook(false);
         }
     },
 
@@ -376,6 +377,7 @@ const ShipManual = {
         const modal = document.getElementById('manual-modal');
         if (modal) {
             modal.classList.add('hidden');
+            if (window.SoundFX) SoundFX.playBook(false);
         }
     },
 
@@ -383,6 +385,7 @@ const ShipManual = {
         if (index >= 0 && index < this.pages.length) {
             this.currentPageIndex = index;
             this.renderPage(this.currentPageIndex);
+            if (window.SoundFX) SoundFX.playBook(true);
         }
     },
 
@@ -390,6 +393,7 @@ const ShipManual = {
         if (this.currentPageIndex < this.pages.length - 1) {
             this.currentPageIndex++;
             this.renderPage(this.currentPageIndex);
+            if (window.SoundFX) SoundFX.playBook(true);
         }
     },
 
@@ -397,6 +401,7 @@ const ShipManual = {
         if (this.currentPageIndex > 0) {
             this.currentPageIndex--;
             this.renderPage(this.currentPageIndex);
+            if (window.SoundFX) SoundFX.playBook(true);
         }
     },
 

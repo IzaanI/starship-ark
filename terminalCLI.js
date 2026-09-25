@@ -33,6 +33,7 @@ class TerminalCLI {
         } else if (cmd === "FETCH EDU" || cmd === "SCAN EDU" || cmd === "EDUCATION" || cmd === "EDU") {
             if (candidate && candidate.eduDoc) {
                 if (window.loadDocument) window.loadDocument(candidate.eduDoc);
+                if (window.SoundFX) SoundFX.playDataFetch();
                 this.printLog(logConsole, timeStr, `[DOCUMENT RETRIEVED] ${candidate.eduDoc.title} loaded into viewer.`, "normal", true);
             }
         } else if (cmd === "FETCH WATCH" || cmd === "SCAN WATCH" || cmd === "WATCHLIST" || cmd === "WATCH") {
@@ -49,12 +50,14 @@ class TerminalCLI {
             }
             if (candidate && candidate.watchDoc) {
                 if (window.loadDocument) window.loadDocument(candidate.watchDoc);
+                if (window.SoundFX) SoundFX.playDataFetch();
                 const pwrMsg = alreadyFetched ? `(Local Archive - 0 PWR)` : `(-2 PWR)`;
                 this.printLog(logConsole, timeStr, `[DOCUMENT RETRIEVED] ${candidate.watchDoc.title} loaded into viewer. ${pwrMsg}`, "normal", true);
             }
         } else if (cmd === "FETCH FIN" || cmd === "SCAN FIN" || cmd === "FINANCIALS" || cmd === "FIN") {
             if (candidate && candidate.finDoc) {
                 if (window.loadDocument) window.loadDocument(candidate.finDoc);
+                if (window.SoundFX) SoundFX.playDataFetch();
                 this.printLog(logConsole, timeStr, `[DOCUMENT RETRIEVED] ${candidate.finDoc.title} loaded into viewer.`, "normal", true);
             }
         } else if (cmd === "FETCH BIO" || cmd === "SCAN MED" || cmd === "MEDICAL" || cmd === "BIO") {
@@ -71,6 +74,7 @@ class TerminalCLI {
             }
             if (candidate && candidate.bioDoc) {
                 if (window.loadDocument) window.loadDocument(candidate.bioDoc);
+                if (window.SoundFX) SoundFX.playDataFetch();
                 const pwrMsg = alreadyFetched ? `(Local Archive - 0 PWR)` : `(-2 PWR)`;
                 this.printLog(logConsole, timeStr, `[DOCUMENT RETRIEVED] ${candidate.bioDoc.title} loaded into viewer. ${pwrMsg}`, "normal", true);
             }
@@ -116,6 +120,7 @@ class TerminalCLI {
     }
 
     static executeLaunchSequence(logConsole, timeStr) {
+        if (window.SoundFX) SoundFX.playLaunchAlert();
         const seats = window.seatsFilled !== undefined ? window.seatsFilled : (window.acceptedCrew ? window.acceptedCrew.length + 1 : 1);
         const max = window.maxSeats || 6;
         const recruits = window.acceptedCrew ? window.acceptedCrew.length : (seats - 1);
