@@ -624,8 +624,37 @@ static unrelatedDisciplines = [
         };
     }
 
-    static generateCandidate() {
-        const stationObj = this.stations[Math.floor(Math.random() * this.stations.length)];
+    static pickWeightedStation(acceptedCrew = null) {
+        const crew = acceptedCrew || (typeof window !== 'undefined' ? window.acceptedCrew : null);
+        const acceptedStations = new Set();
+        if (Array.isArray(crew)) {
+            crew.forEach(c => {
+                if (c && c.station) acceptedStations.add(c.station);
+            });
+        }
+
+        // Base weight 100 for unfilled stations.
+        // Once a role/station has been accepted, chances of rolling that same station decrease by 40% (weight drops to 60).
+        const weighted = this.stations.map(st => ({
+            station: st,
+            weight: acceptedStations.has(st.name) ? 60 : 100
+        }));
+
+        const totalWeight = weighted.reduce((acc, s) => acc + s.weight, 0);
+        let roll = Math.random() * totalWeight;
+
+        for (const s of weighted) {
+            if (roll < s.weight) {
+                return s.station;
+            }
+            roll -= s.weight;
+        }
+
+        return this.stations[Math.floor(Math.random() * this.stations.length)];
+    }
+
+    static generateCandidate(acceptedCrew = null) {
+        const stationObj = this.pickWeightedStation(acceptedCrew);
         const role = stationObj.roles[Math.floor(Math.random() * stationObj.roles.length)];
         const name = this.firstNames[Math.floor(Math.random() * this.firstNames.length)] + " " + this.lastNames[Math.floor(Math.random() * this.lastNames.length)];
         const city = this.cities[Math.floor(Math.random() * this.cities.length)];

@@ -358,8 +358,8 @@ const ShipManual = {
                     <h3 class="manual-heading">Approval (Green Sequence)</h3>
                     <p>Authorize entry only if the candidate is vital to the Ark's survival and passes all cross-document audits. Granting access permanently fills one of the six vessel crew seats. Once filled, a seat cannot be easily vacated.</p>
 
-                    <h3 class="manual-heading">Rejection (Red Sequence)</h3>
-                    <p>Turn away frauds, saboteurs, and unnecessary liabilities. Rejection simply denies them entry to the boarding ramp. However, if a candidate becomes hostile or attempts to force entry upon rejection, coordinate with your Brig officer to initiate <strong>Ejection Protocols</strong>.</p>
+                    <h3 class="manual-heading">Rejection (Red Sequence) & Finite Queue Scarcity</h3>
+                    <p>Turn away frauds, saboteurs, and unnecessary liabilities. Rejection simply denies them entry to the boarding ramp. However, officers must balance standards against <strong>scarcity</strong>: Sector 4 maintains a finite evacuation manifest of only <strong>16 to 20 registered citizens</strong>. Indiscriminately rejecting candidates risks exhausting the queue before all vessel stations are staffed, forcing an emergency liftoff with an understaffed vessel.</p>
                 </div>
             `
         }

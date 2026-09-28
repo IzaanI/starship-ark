@@ -790,6 +790,25 @@ html, body {
     border-radius: 4px;
     font-size: 12px;
     font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.term-status-badge.queue-badge {
+    background: #1e293b;
+    color: #38bdf8;
+    border: 1px solid #0284c7;
+}
+
+.term-status-badge.queue-badge.queue-low {
+    background: #422006;
+    color: #fde047;
+    border-color: #ca8a04;
+}
+
+.term-status-badge.queue-badge.queue-depleted {
+    background: #450a0a;
+    color: #fca5a5;
+    border-color: #dc2626;
 }
 
 .term-header-right {

@@ -4,9 +4,19 @@ let currentCandidate = null;
 let acceptedCrew = [];
 let seatsFilled = 1; // Security Officer (Player)
 const maxSeats = 6;
+let maxApplicants = Math.floor(Math.random() * 5) + 16; // Random between 16 and 20 total evacuation applicants
+let totalProcessedApplicants = 0;
+let totalRejectedApplicants = 0;
+let isQueueDepleted = false;
+
+window.currentCandidate = currentCandidate;
 window.acceptedCrew = acceptedCrew;
 window.seatsFilled = seatsFilled;
 window.maxSeats = maxSeats;
+window.maxApplicants = maxApplicants;
+window.totalProcessedApplicants = totalProcessedApplicants;
+window.totalRejectedApplicants = totalRejectedApplicants;
+window.isQueueDepleted = isQueueDepleted;
 let isLampOn = true;
 window.isLampOn = isLampOn;
 let isTerminalOpen = false;
@@ -346,9 +356,58 @@ function renderProceduralAvatar() {
 }
 
 // 1. Procedural Candidate Queue Manager
+function clearCandidateDossier() {
+    const nameEl = document.getElementById('cand-name');
+    if (nameEl) nameEl.innerText = "---";
+    const roleEl = document.getElementById('cand-role');
+    if (roleEl) roleEl.innerText = "NO APPLICANT AT GATE";
+    const originEl = document.getElementById('cand-origin');
+    if (originEl) originEl.innerText = "---";
+    const ageEl = document.getElementById('cand-age');
+    if (ageEl) ageEl.innerText = "--";
+    const refEl = document.getElementById('cand-ref');
+    if (refEl) refEl.innerText = "---";
+    const quoteEl = document.getElementById('cand-quote');
+    if (quoteEl) quoteEl.innerText = '"The security gate holding area is empty. No further applicants registered."';
+    const titleEl = document.getElementById('cand-dossier-title');
+    if (titleEl) titleEl.innerText = `> CANDIDATE PROFILE: GATE EMPTY`;
+}
+
 function nextCandidate() {
+    if (seatsFilled >= maxSeats) {
+        return;
+    }
+
+    if (totalProcessedApplicants >= maxApplicants) {
+        isQueueDepleted = true;
+        window.isQueueDepleted = true;
+        currentCandidate = null;
+        window.currentCandidate = null;
+
+        const avatarContainer = document.getElementById('candidate-avatar-container');
+        if (avatarContainer) avatarContainer.classList.add('hidden');
+
+        clearCandidateDossier();
+        clearDocumentViewer();
+
+        const logConsole = document.getElementById('log-console');
+        if (logConsole) {
+            const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
+            TerminalCLI.printLog(logConsole, timeStr, `[GATE QUEUE DEPLETED] All ${maxApplicants} registered evacuation applicants in Sector 4 have been processed.`, "warning", true);
+            TerminalCLI.printLog(logConsole, timeStr, `No further citizens are waiting outside. Final vessel complement: ${seatsFilled}/${maxSeats} souls aboard.`, "normal", true);
+            TerminalCLI.printLog(logConsole, timeStr, `Type 'INITIATE LAUNCH' in the terminal CLI to authorize atmospheric ascent.`, "cmd-echo", false);
+        }
+        return;
+    }
+
+    totalProcessedApplicants++;
+    window.totalProcessedApplicants = totalProcessedApplicants;
+
     try {
-        currentCandidate = CandidateGenerator.generateCandidate();
+        currentCandidate = CandidateGenerator.generateCandidate(acceptedCrew);
+        window.currentCandidate = currentCandidate;
+        currentCandidate.queueIndex = totalProcessedApplicants;
+        currentCandidate.maxQueue = maxApplicants;
         renderCandidateDossier(currentCandidate);
     } catch(e) {
         console.error('ERROR in candidate/dossier:', e);
@@ -357,7 +416,7 @@ function nextCandidate() {
     const logConsole = document.getElementById('log-console');
     if (logConsole) {
         const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
-        TerminalCLI.printLog(logConsole, timeStr, `[CANDIDATE ARRIVED] Ref: ${currentCandidate.id} - ${currentCandidate.name}, ${currentCandidate.roleTitle}`, "cmd-echo");
+        TerminalCLI.printLog(logConsole, timeStr, `[CANDIDATE ARRIVED] [Applicant ${totalProcessedApplicants}/${maxApplicants}] Ref: ${currentCandidate.id} - ${currentCandidate.name}, ${currentCandidate.roleTitle}`, "cmd-echo");
     }
 
     // Render Procedural Avatar to Canvas
@@ -378,8 +437,8 @@ function renderCandidateDossier(cand) {
     document.getElementById('cand-ref').innerText = cand.id;
     document.getElementById('cand-quote').innerText = cand.quote;
     document.getElementById('cand-dossier-title').innerText = `> CANDIDATE PROFILE: ${cand.name.toUpperCase()}`;
-    document.getElementById('seat-capacity-badge').innerText = `CREW SEATS: ${seatsFilled} / ${maxSeats}`;
-
+    const badge = document.getElementById('seat-capacity-badge');
+    if (badge) badge.innerText = `CREW SEATS: ${seatsFilled} / ${maxSeats}`;
     clearDocumentViewer();
 }
 
@@ -466,7 +525,14 @@ function transitionToNextCandidate(delayBeforeFade = 250) {
 }
 
 function acceptEntry() {
-    if (!currentCandidate || isTransitioning) return;
+    if (isTransitioning) return;
+    if (isQueueDepleted || !currentCandidate) {
+        const logConsole = document.getElementById('log-console');
+        const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
+        TerminalCLI.printLog(logConsole, timeStr, `[COMMAND VOID] Security gate is clear. Evacuation queue is depleted.`, "warning", true);
+        TerminalCLI.printLog(logConsole, timeStr, `Type 'INITIATE LAUNCH' in terminal to authorize departure with current roster.`, "cmd-echo", false);
+        return;
+    }
     if (window.SoundFX) SoundFX.playAccept();
     acceptedCrew.push(currentCandidate);
     seatsFilled++;
@@ -504,8 +570,17 @@ window.onLaunchInitiated = function(details) {
 };
 
 function rejectEntry() {
-    if (!currentCandidate || isTransitioning) return;
+    if (isTransitioning) return;
+    if (isQueueDepleted || !currentCandidate) {
+        const logConsole = document.getElementById('log-console');
+        const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
+        TerminalCLI.printLog(logConsole, timeStr, `[COMMAND VOID] Security gate is clear. Evacuation queue is depleted.`, "warning", true);
+        TerminalCLI.printLog(logConsole, timeStr, `Type 'INITIATE LAUNCH' in terminal to authorize departure with current roster.`, "cmd-echo", false);
+        return;
+    }
     if (window.SoundFX) SoundFX.playReject();
+    totalRejectedApplicants++;
+    window.totalRejectedApplicants = totalRejectedApplicants;
     const logConsole = document.getElementById('log-console');
     const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
     TerminalCLI.printLog(logConsole, timeStr, `VERDICT: REJECTED ${currentCandidate.name}. Candidate turned away.`, "warning", true);

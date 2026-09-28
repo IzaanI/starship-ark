@@ -90,6 +90,9 @@ class TerminalCLI {
                 this.printLog(logConsole, timeStr, `[PRE-FLIGHT WARNING: INCOMPLETE COMPLEMENT]`, "warning", true);
                 this.printLog(logConsole, timeStr, `Current roster has only ${seats} of ${max} authorized seats filled (${recruits} recruit(s) + 1 Security Officer).`, "warning", true);
                 this.printLog(logConsole, timeStr, `${remaining} station position(s) remain UNFILLED. Operating with an understaffed crew increases risk of critical station failure.`, "warning", true);
+                if (window.isQueueDepleted) {
+                    this.printLog(logConsole, timeStr, `[HOLDING QUEUE EXHAUSTED] Sector 4 queue is empty. No further candidates are available to recruit.`, "normal", true);
+                }
                 this.printLog(logConsole, timeStr, `Are you sure you want to authorize emergency departure now? [Y/N]`, "cmd-echo", true);
             } else {
                 this.printLog(logConsole, timeStr, `[LAUNCH READINESS VERIFIED]`, "normal", true);
@@ -108,12 +111,36 @@ class TerminalCLI {
             const lampState = window.isLampOn ? "ACTIVE (Overload: +1 PWR / 20s while terminal open)" : "OFF";
             const seats = window.seatsFilled !== undefined ? window.seatsFilled : (window.acceptedCrew ? window.acceptedCrew.length + 1 : 1);
             const max = window.maxSeats || 6;
+            const maxQ = window.maxApplicants || 20;
+            const currIdx = window.totalProcessedApplicants || 0;
+            const remQ = Math.max(0, maxQ - currIdx);
+            const qStatus = window.isQueueDepleted ? "DEPLETED (0 citizens outside)" : `Applicant ${currIdx}/${maxQ} at gate (${remQ} waiting in line)`;
+
             this.printLog(logConsole, timeStr, `SYSTEM STATUS: Security Terminal online.`, "normal", true);
             this.printLog(logConsole, timeStr, `  CREW COMPLEMENT: ${seats} / ${max} personnel aboard`, "normal", true);
+            this.printLog(logConsole, timeStr, `  EVACUATION QUEUE: ${qStatus}`, "normal", true);
             this.printLog(logConsole, timeStr, `  AUXILIARY POWER: ${pwr}`, "normal", true);
             this.printLog(logConsole, timeStr, `  DESK HALOGEN LAMP: ${lampState}`, "normal", true);
             this.printLog(logConsole, timeStr, `  SECURE QUERIES (WATCH, BIO): 1 PWR / query`, "normal", true);
             this.printLog(logConsole, timeStr, `  PUBLIC ARCHIVES (EDU, FIN): Free (0 PWR)`, "normal", true);
+        } else if (cmd === "QUEUE" || cmd === "APPLICANTS" || cmd === "LINE" || cmd === "CHECK QUEUE") {
+            const maxQ = window.maxApplicants || 20;
+            const currIdx = window.totalProcessedApplicants || 0;
+            const remQ = Math.max(0, maxQ - currIdx);
+            const acceptedCount = window.acceptedCrew ? window.acceptedCrew.length : 0;
+            const rejectedCount = window.totalRejectedApplicants || 0;
+            const cand = window.currentCandidate;
+
+            this.printLog(logConsole, timeStr, `[HOLDING LINE MANIFEST]`, "cmd-echo", false);
+            this.printLog(logConsole, timeStr, `  Decisions Rendered: ${acceptedCount + rejectedCount} (${acceptedCount} Accepted, ${rejectedCount} Rejected)`, "normal", true);
+            if (cand && !window.isQueueDepleted) {
+                this.printLog(logConsole, timeStr, `  At Checkpoint: Applicant ${currIdx} of ${maxQ} (${cand.name} - ${cand.roleTitle})`, "normal", true);
+            }
+            if (window.isQueueDepleted || (remQ === 0 && !cand)) {
+                this.printLog(logConsole, timeStr, `  Line Status: QUEUE EXHAUSTED (0 citizens remaining outside)`, "warning", true);
+            } else {
+                this.printLog(logConsole, timeStr, `  Waiting in Line: ${remQ} applicant(s) waiting outside in rain`, "normal", true);
+            }
         } else {
             this.printLog(logConsole, timeStr, `Command not recognized: '${rawCommand}'. Type 'HELP' for a list of valid commands.`, "warning", true);
         }
@@ -147,6 +174,7 @@ class TerminalCLI {
             "  FETCH WATCH     - Load Police Incident & Security Index [1 PWR]",
             "  FETCH FIN       - Load Financial Transaction Ledger Audit [0 PWR]",
             "  FETCH BIO       - Load Biometric & Medical Scan Chart [1 PWR]",
+            "  QUEUE           - Check Sector 4 holding area line & manifest",
             "  INITIATE LAUNCH - Authorize liftoff & seal Ark airlocks (Y/N)",
             "  CLOSE DOC       - Unload active document from viewer",
             "  STATUS          - Check vessel complement, power & systems",
