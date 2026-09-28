@@ -2,8 +2,8 @@
 
 let currentCandidate = null;
 let acceptedCrew = [];
-let seatsFilled = 1; // Security Officer (Player)
-const maxSeats = 6;
+let seatsFilled = 1; // Captain (Player)
+const maxSeats = 7;
 let maxApplicants = Math.floor(Math.random() * 5) + 16; // Random between 16 and 20 total evacuation applicants
 let totalProcessedApplicants = 0;
 let totalRejectedApplicants = 0;
@@ -75,8 +75,8 @@ const CrewLedger = {
             </div>
         `;
 
-        // Seats 2 through 6: 5 Candidate positions
-        for (let i = 0; i < 5; i++) {
+        // Seats 2 through 7: 6 Candidate positions (for 6 ship stations)
+        for (let i = 0; i < 6; i++) {
             const seatNum = (i + 2).toString().padStart(2, '0');
             const cand = acceptedCrew[i];
 
@@ -217,6 +217,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.ShipManual && window.ShipManual.init) window.ShipManual.init();
     if (window.CrewLedger && window.CrewLedger.init) window.CrewLedger.init();
     nextCandidate();
+
+    // Immediate attempt on load + capture-phase listeners for first click/gesture anywhere
+    const triggerAudio = () => {
+        if (window.SoundFX) {
+            window.SoundFX.startAmbient();
+        }
+    };
+
+    // Try immediately on page load (if browser or tab already allows autoplay)
+    triggerAudio();
+
+    // Standard Chromium user activation events: click, mouseup, keydown, touchstart
+    const onFirstGesture = () => {
+        triggerAudio();
+        if (window.SoundFX && window.SoundFX.isAmbientPlaying) {
+            ['click', 'mouseup', 'keydown', 'touchstart'].forEach(evt => {
+                document.removeEventListener(evt, onFirstGesture, true);
+            });
+        }
+    };
+
+    ['click', 'mouseup', 'keydown', 'touchstart'].forEach(evt => {
+        document.addEventListener(evt, onFirstGesture, { capture: true, passive: true });
+    });
 });
 
 // Update Ship Manual Hotspot & Tooltip based on Lamp State

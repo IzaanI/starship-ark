@@ -9,6 +9,8 @@ class SoundEngine {
         
         // Individual volume levels for each sound effect (0.0 to 1.0)
         this.volumes = {
+            ambient: 0.25,    // Background rain & thunderstorm loop
+            lampHum: 0.06,    // Faint electrical booth mains hum
             lamp: 0.15,       // Desk lamp switch toggle
             accept: 0.5,      // Wall accept button & authorization chime
             reject: 0.5,      // Wall reject button & denial buzzer
@@ -24,7 +26,14 @@ class SoundEngine {
         this.masterGain = null;
         this.initialized = false;
         this.sounds = {};
+        this.ambientAudio = null;
+        this.isAmbientPlaying = false;
+        this.lampHumOsc1 = null;
+        this.lampHumOsc2 = null;
+        this.lampHumGain = null;
+
         this.initAudioPool();
+        this.initAmbient();
     }
 
     setMasterVolume(vol) {
@@ -32,12 +41,21 @@ class SoundEngine {
         if (this.masterGain && this.ctx) {
             this.masterGain.gain.setValueAtTime(0.55 * this.masterVolume, this.ctx.currentTime);
         }
+        if (this.ambientAudio) {
+            this.ambientAudio.volume = Math.min(1, Math.max(0, this.volumes.ambient * this.masterVolume));
+        }
+        if (this.lampHumGain && this.ctx) {
+            this.lampHumGain.gain.setValueAtTime(this.volumes.lampHum * this.masterVolume, this.ctx.currentTime);
+        }
     }
 
     // Adjust individual effect volume dynamically (e.g., SoundFX.setEffectVolume('lamp', 0.2))
     setEffectVolume(effectName, vol) {
         if (this.volumes[effectName] !== undefined) {
             this.volumes[effectName] = Math.min(1, Math.max(0, vol));
+            if (effectName === 'ambient' && this.ambientAudio) {
+                this.ambientAudio.volume = Math.min(1, Math.max(0, this.volumes.ambient * this.masterVolume));
+            }
         }
     }
 
@@ -76,6 +94,101 @@ class SoundEngine {
             }
         } catch (e) {
             console.warn("Audio playback error:", e);
+        }
+    }
+
+    initAmbient() {
+        if (this.ambientAudio) return;
+        try {
+            this.ambientAudio = new Audio('audio/ambient_rain_thunder.mp3');
+            this.ambientAudio.loop = true;
+            this.ambientAudio.volume = Math.min(1, Math.max(0, this.volumes.ambient * this.masterVolume));
+            this.ambientAudio.preload = 'auto';
+
+            this.ambientAudio.addEventListener('ended', () => {
+                this.ambientAudio.currentTime = 0;
+                this.ambientAudio.play().catch(() => {});
+            });
+        } catch (e) {
+            console.warn("Failed to initialize ambient audio:", e);
+        }
+    }
+
+    startAmbient() {
+        if (this.isMuted) return;
+        this.ensureContext();
+        if (!this.ambientAudio) {
+            this.initAmbient();
+        }
+        if (this.ambientAudio) {
+            this.ambientAudio.volume = Math.min(1, Math.max(0, this.volumes.ambient * this.masterVolume));
+            if (this.ambientAudio.paused) {
+                const p = this.ambientAudio.play();
+                if (p !== undefined) {
+                    p.then(() => {
+                        this.isAmbientPlaying = true;
+                    }).catch(() => {
+                        this.isAmbientPlaying = false;
+                    });
+                }
+            } else {
+                this.isAmbientPlaying = true;
+            }
+        }
+        this.startLampHum();
+    }
+
+    stopAmbient() {
+        if (this.ambientAudio) {
+            this.ambientAudio.pause();
+            this.isAmbientPlaying = false;
+        }
+        this.stopLampHum();
+    }
+
+    startLampHum() {
+        if (!this.ctx || this.lampHumGain) return;
+        try {
+            const t = this.ctx.currentTime;
+            this.lampHumGain = this.ctx.createGain();
+            const humVol = this.volumes.lampHum * this.masterVolume;
+            this.lampHumGain.gain.setValueAtTime(humVol, t);
+
+            // 60 Hz electrical mains hum + 120 Hz second harmonic
+            this.lampHumOsc1 = this.ctx.createOscillator();
+            this.lampHumOsc1.type = "sine";
+            this.lampHumOsc1.frequency.setValueAtTime(60, t);
+
+            this.lampHumOsc2 = this.ctx.createOscillator();
+            this.lampHumOsc2.type = "sine";
+            this.lampHumOsc2.frequency.setValueAtTime(120, t);
+
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = "lowpass";
+            filter.frequency.setValueAtTime(250, t);
+
+            this.lampHumOsc1.connect(filter);
+            this.lampHumOsc2.connect(filter);
+            filter.connect(this.lampHumGain);
+            this.lampHumGain.connect(this.masterGain);
+
+            this.lampHumOsc1.start(t);
+            this.lampHumOsc2.start(t);
+        } catch(e) {
+            console.warn("Booth hum init failed:", e);
+        }
+    }
+
+    stopLampHum() {
+        if (this.lampHumGain && this.ctx) {
+            const t = this.ctx.currentTime;
+            this.lampHumGain.gain.cancelScheduledValues(t);
+            this.lampHumGain.gain.linearRampToValueAtTime(0, t + 0.15);
+            setTimeout(() => {
+                if (this.lampHumOsc1) { try { this.lampHumOsc1.stop(); } catch(e){} this.lampHumOsc1 = null; }
+                if (this.lampHumOsc2) { try { this.lampHumOsc2.stop(); } catch(e){} this.lampHumOsc2 = null; }
+                this.lampHumGain = null;
+            }, 200);
         }
     }
 

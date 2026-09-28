@@ -10,7 +10,10 @@ const MIME_TYPES = {
     '.json': 'application/json',
     '.png': 'image/png',
     '.jpg': 'image/jpeg',
-    '.gif': 'image/gif'
+    '.gif': 'image/gif',
+    '.mp3': 'audio/mpeg',
+    '.wav': 'audio/wav',
+    '.ogg': 'audio/ogg'
 };
 
 const server = http.createServer((req, res) => {
@@ -18,28 +21,42 @@ const server = http.createServer((req, res) => {
     let filePath = cleanUrl === '/' ? './index.html' : '.' + cleanUrl;
     filePath = path.join(__dirname, filePath);
 
-    const ext = path.extname(filePath);
+    const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
-    fs.readFile(filePath, (err, content) => {
-        const headers = {
-            'Content-Type': contentType,
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-        };
-
+    fs.stat(filePath, (err, stats) => {
         if (err) {
-            if (err.code === 'ENOENT') {
-                res.writeHead(404, headers);
-                res.end('<h1>404 Not Found</h1>', 'utf-8');
-            } else {
-                res.writeHead(500, headers);
-                res.end(`Server Error: ${err.code}`);
-            }
+            res.writeHead(err.code === 'ENOENT' ? 404 : 500, { 'Content-Type': 'text/plain' });
+            return res.end(err.code === 'ENOENT' ? '404 Not Found' : `Server Error: ${err.code}`);
+        }
+
+        if (stats.isDirectory()) {
+            res.writeHead(403);
+            return res.end('Forbidden');
+        }
+
+        const range = req.headers.range;
+        if (range) {
+            const parts = range.replace(/bytes=/, "").split("-");
+            const start = parseInt(parts[0], 10);
+            const end = parts[1] ? parseInt(parts[1], 10) : stats.size - 1;
+            const chunksize = (end - start) + 1;
+            const file = fs.createReadStream(filePath, { start, end });
+            res.writeHead(206, {
+                'Content-Range': `bytes ${start}-${end}/${stats.size}`,
+                'Accept-Ranges': 'bytes',
+                'Content-Length': chunksize,
+                'Content-Type': contentType
+            });
+            file.pipe(res);
         } else {
-            res.writeHead(200, headers);
-            res.end(content, 'utf-8');
+            res.writeHead(200, {
+                'Content-Length': stats.size,
+                'Content-Type': contentType,
+                'Accept-Ranges': 'bytes',
+                'Cache-Control': ext === '.html' || ext === '.js' || ext === '.css' ? 'no-cache' : 'public, max-age=3600'
+            });
+            fs.createReadStream(filePath).pipe(res);
         }
     });
 });

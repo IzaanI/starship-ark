@@ -77,26 +77,26 @@ const ShipManual = {
                     <h3 class="manual-heading">The Crisis & Earth Evacuation</h3>
                     <p>
                         It is the year <strong>2030</strong>. Atmospheric degradation on Earth has reached critical thresholds. 
-                        The <em>Starship Ark</em> represents humanity's final deep-space evacuation vessel. As the designated 
-                        Booth Security Officer, your primary mandate is assembling a team built for <strong> survival</strong>.
+                        The <em>Starship Ark</em> represents humanity's final deep-space evacuation vessel. As the Expedition Captain, 
+                        your primary mandate is assembling a qualified complement built for <strong>orbital survival</strong>.
                     </p>
 
-                    <h3 class="manual-heading">Security Officer Duties</h3>
+                    <h3 class="manual-heading">Embarkation Protocol</h3>
                     <p>
-                        You are stationed at the primary embarkation booth. Candidates arrive continuously requesting passage aboard the Ark. 
+                        You are overseeing the checkpoint at Sector 4. Candidates arrive requesting passage aboard the Ark. 
                         You must scrutinize their identification, clearance documentation, work history, and payroll records to separate genuine, 
-                        qualified crew candidates from desperate frauds or saboteurs.
+                        qualified station officers from desperate frauds or saboteurs.
                     </p>
 
                     <h3 class="manual-heading">Vessel Capacity Constraints</h3>
                     <div class="manual-callout-box">
-                        <strong>CREW CAPACITY LIMIT: 6 SEATS TOTAL</strong><br>
+                        <strong>CREW CAPACITY LIMIT: 7 SEATS TOTAL</strong><br>
                         • Seat 1: Captain (Stationed — You)<br>
-                        • Seats 2–6: Candidate Positions (Evaluated by You)<br>
+                        • Seats 2–7: Station Positions (Evaluated by You)<br>
                     </div>
                     <p>
-                        Once you have assembled 5 qualified crew members, the Ark will seal its airlocks and initiate space launch. Every candidate you accept fills 
-                        a vital seat required for long-term vessel survival.
+                        Once you have assembled 6 qualified crew members, the Ark will seal its airlocks and initiate space launch. Every candidate you accept fills 
+                        one of the vessel's 6 operational stations (Cockpit, Reactor Core, O2 Bay, Hydroponics Bay, Medbay, or The Brig).
                     </p>
                 </div>
             `

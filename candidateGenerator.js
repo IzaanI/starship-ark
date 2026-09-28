@@ -352,17 +352,17 @@ static unrelatedDisciplines = [
     "Advanced Spreadsheet Formatting",
     "Recreational Dance Instruction",
     "Introductory Floral Arrangement",
-    "Basic Aquarium Maintenance",
+    "Rocket League Rank-up Training",
     "Wedding Event Coordination",
     "Commercial Window Cleaning",
     "Retail Customer Service",
     "Introduction to Interior Decorating",
     "Professional Gift Wrapping",
     "Elementary Photography",
-    "Recreational Baking",
+    "Fortnite: Zero to Hero Playbook",
     "Basic Sewing & Alterations",
     "Introduction to Pet Grooming",
-    "Amateur Birdwatching",
+    "Terarria: Noob to Pro Guide",
     "Commercial Ice Cream Preparation",
     "Basic Musical Theatre",
     "Introductory Calligraphy",
@@ -371,35 +371,14 @@ static unrelatedDisciplines = [
     "Professional Tour Guiding",
     "Introductory Pottery",
     "Residential Lawn Maintenance",
-    "Basic Cake Decorating",
+    "Road to Radiant Bootcamp",
     "Children's Party Entertainment",
     "Retail Merchandising",
     "Introductory Yoga Instruction",
     "Commercial Upholstery",
     "Basic Candle Making",
     "Recreational Photography",
-    "Introductory Wine Appreciation",
-    "Professional Closet Organization",
-    "Basic Carpet Installation",
-    "Introduction to Stand-Up Comedy",
-    "Amateur Magic Performance",
-    "Decorative Cookie Design",
-    "Recreational Origami",
-    "Introductory Disc Jockeying",
-    "Basic Antique Restoration",
-    "Commercial Balloon Animal Fabrication",
-    "Introductory Cheese Presentation",
-    "Professional Queue Management",
-    "Basic Gift Basket Assembly",
-    "Recreational Kite Construction",
-    "Introduction to Competitive Trivia",
-    "Domestic Fermentation",
-    "Advanced Sandwich Assembly",
-    "Introductory Escape Room Design",
-    "Professional Mascot Performance",
-    "Basic Aquarium Fish Identification",
-    "Recreational Miniature Painting",
-    "Commercial Birthday Cake Assembly"
+    "Rags to Riches: GTA VI How-to",
 ];
 
     static legitInstitutions = [
@@ -414,7 +393,9 @@ static unrelatedDisciplines = [
         "Stockholm Institute of Technology",
         "Buenos Aires Polytechnic Academy",
         "Zurich Federal Institute of Technology",
-        "Tokyo University of Science & Engineering"
+        "Tokyo University of Science & Engineering", "Berlin Institute of Technology", "London School of Engineering", "New York Institute of Technology", "Kyoto University of Applied Sciences", 
+        "Geneva Institute of Advanced Studies", "Edmonton School of Engineering", "Cairo University of Science & Technology", "Valparaiso Institute of Technology", "Reykjavik Polytechnic University",
+        "Helsinki Institute of Applied Sciences", "Lisbon School of Engineering", "Bangkok Institute of Technology", "Barcelona Polytechnic University", "Warsaw Institute of Science & Technology",
     ];
 
     static unaccreditedInstitutions = [
@@ -500,6 +481,9 @@ static unrelatedDisciplines = [
         "Sons of Sol Demolition Society",
         "Redacted Sol Defense Syndicate",
         "Silent Sun Resistance",
+        "Project Shivinci Resolve",
+        "The Last Horizon Initiative",
+        "Black Don't Clack Corp.",
         "Terrestrial Reclamation Front"
     ];
 
@@ -565,13 +549,17 @@ static unrelatedDisciplines = [
         "Vance", "Elena", "Marcus", "Kaito", "Zahra", "Sven", "Nadia", "Liam", "Yuki", "Cassandra", 
         "Tariq", "Astrid", "Dante", "Mateo", "Freja", "Amara", "Kenji", "Callum", "Priya", "Aisha", 
         "Omar", "Jamal", "Mei", "Wei", "Chloe", "Diego", "Isabella", "Lars", "Ananya", "Ravi", 
-        "Nina", "Ivan", "Fatima", "Kwame", "Nia", "Hiroshi", "Santiago", "Sofia", "Aarav", "Chen"
+        "Nina", "Ivan", "Fatima", "Kwame", "Nia", "Hiroshi", "Santiago", "Sofia", "Aarav", "Chen",
+        "Leila", "Mateusz", "Yara", "Dmitri", "Sakura", "Rafael", "Amira", "Hassan", "Elif", "Luca",
+        "Shivin", "Sperg", "Swág", "Avery", "Kiran", "Maya", "Rohan", "Sofia", "Ethan", "Ava", "Noah", "Olivia"
     ];
     static lastNames = [
         "Sterling", "Rostova", "Vance", "Tanaka", "Al-Mansoor", "Lindqvist", "Kowalski", "Chen", "Sato", 
         "Moreau", "O'Connor", "Dubois", "Varga", "Novak", "Takahashi", "Patel", "Singh", "Garcia", 
         "Rodriguez", "Kim", "Nguyen", "Ali", "Hassan", "Müller", "Smirnov", "Silva", "Santos", 
-        "Cohen", "Levy", "Mwangi", "Okafor", "Gomez", "Ruiz", "Wong", "Liu", "Ivanov", "Popov"
+        "Cohen", "Levy", "Mwangi", "Okafor", "Gomez", "Ruiz", "Wong", "Liu", "Ivanov", "Popov",
+        "Kowalczyk", "Nowak", "Jensen", "Hansen", "Larsen", "Andersen", "Nielsen", "Olsen",
+        "Jain", "McGoon", "Mitchel", "Bettesworth", "Fitzgerald", "O'Malley", "MacLeod"
     ];
 
     static genericQuotes = [
@@ -584,10 +572,14 @@ static unrelatedDisciplines = [
         "I just want to survive. Please review my dossier.",
         "All my clearances are attached. I'm ready to board.",
         "My background makes me a vital asset for the transit ahead.",
+        "I can contribute significantly to the mission. Please verify my qualifications.",
         "I can be useful up there. Just look at my transcripts."
     ];
 
-    static cities = ["Geneva", "Zurich", "Tokyo", "Berlin", "New York", "London", "Kyoto", "Edmonton", "Cairo", "Valparaiso", "Singapore", "Reykjavik", "Seoul", "Melbourne"];
+    static cities = ["Geneva", "Zurich", "Tokyo", "Berlin", "New York", "London", "Kyoto", "Edmonton", "Cairo", "Valparaiso", "Singapore", "Reykjavik", "Seoul",
+         "Melbourne", "Lahore", "Buenos Aires", "Stockholm", "Toronto", "Osaka", "Copenhagen", "Munich", "Dubai", "Helsinki", "Lisbon", "Bangkok", "Barcelona", 
+         "Warsaw", "Prague", "Budapest", "Dublin", "Athens", "Brussels", "Amsterdam", "Vienna", "Oslo", "Havana", "Santiago", "Manila", "Jakarta", "Kuala Lumpur",
+        "Lima", "Bogota", "Caracas", "Riyadh", "Tehran", "Baghdad", "Jerusalem", "Beijing", "Shanghai", "Hong Kong"];
 
     static trueIdentities = [
         { type: "LEGITIMATE_EXPERT", weight: 35, label: "Legitimate Expert" },
@@ -677,15 +669,25 @@ static unrelatedDisciplines = [
         }
 
         const isFraud = (chosenIdentity.type === "DESPERATE_FRAUD");
-        const degreeData = this.generateDegree(stationObj, role.tier, isFraud);
+
+        // Desperate Frauds exhibit EXACTLY ONE flaw (mutually exclusive):
+        // 1. Fake/Useless Degree / Unaccredited Credential (with valid, spotless timeline math)
+        // 2. Impossible Timeline Experience Math (with a fully legitimate, accredited degree)
+        let fraudTellType = null;
+        if (isFraud) {
+            fraudTellType = (Math.random() < 0.5) ? "FAKE_DEGREE" : "IMPOSSIBLE_TIMELINE";
+        }
+
+        const isFakeDegree = (fraudTellType === "FAKE_DEGREE");
+        const degreeData = this.generateDegree(stationObj, role.tier, isFakeDegree);
 
         // Cross-Document Timeline Experience Math
         const actualYearsExp = Math.max(1, this.SETTING_YEAR - gradYear);
         let claimedYearsExp = actualYearsExp;
         let payrollStartYear = gradYear;
 
-        // Apply Timeline Discrepancy Flaws (Specific to Desperate Frauds)
-        if (isFraud) {
+        // Apply Timeline Discrepancy Flaws ONLY if fraud tell is IMPOSSIBLE_TIMELINE
+        if (fraudTellType === "IMPOSSIBLE_TIMELINE") {
             const timelineFlawType = Math.floor(Math.random() * 3);
             if (timelineFlawType === 0) {
                 // Flaw Type 0: Inflation Mismatch (e.g. Graduated in 2027, claims 15 years practice!)
@@ -706,20 +708,6 @@ static unrelatedDisciplines = [
         let watchName = name;
         let finName = name;
         let bioName = name;
-
-        if (isFraud && Math.random() < 0.40) {
-            let mismatchedName = name;
-            if (mismatchedName.includes('a')) mismatchedName = mismatchedName.replace('a', 'e');
-            else if (mismatchedName.includes('e')) mismatchedName = mismatchedName.replace('e', 'a');
-            else if (mismatchedName.includes('i')) mismatchedName = mismatchedName.replace('i', 'y');
-            else mismatchedName = mismatchedName + "son";
-
-            const targetDoc = Math.floor(Math.random() * 4);
-            if (targetDoc === 0) eduName = mismatchedName;
-            else if (targetDoc === 1) watchName = mismatchedName;
-            else if (targetDoc === 2) finName = mismatchedName;
-            else bioName = mismatchedName;
-        }
 
         // Tier-Scaled Realistic Salaries (in 2030 $)
         let monthlySalaryNum = 2400;
@@ -815,7 +803,7 @@ static unrelatedDisciplines = [
                 fields: [
                     { label: "CITIZEN NAME", val: watchName },
                     { label: "NATIONAL ID", val: `NID-${Math.floor(Math.random()*899999 + 100000)}` },
-                    { label: "ARREST HISTORY", val: harmlessInfract },
+                    { label: "LEGAL HISTORY", val: harmlessInfract },
                     { label: "KNOWN ORGANIZATIONS", val: "None" },
                     { label: "SECURITY CLEARANCE", val: (role.tier === "Core" ? "Level 3 Security Clearance" : "Level 2 Technical") }
                 ]

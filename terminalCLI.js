@@ -80,7 +80,7 @@ class TerminalCLI {
             }
         } else if (cmd === "INITIATE LAUNCH" || cmd === "LAUNCH" || cmd === "START LAUNCH") {
             const seats = window.seatsFilled !== undefined ? window.seatsFilled : (window.acceptedCrew ? window.acceptedCrew.length + 1 : 1);
-            const max = window.maxSeats || 6;
+            const max = window.maxSeats || 7;
             const recruits = window.acceptedCrew ? window.acceptedCrew.length : (seats - 1);
             const remaining = max - seats;
 
@@ -88,7 +88,7 @@ class TerminalCLI {
 
             if (remaining > 0) {
                 this.printLog(logConsole, timeStr, `[PRE-FLIGHT WARNING: INCOMPLETE COMPLEMENT]`, "warning", true);
-                this.printLog(logConsole, timeStr, `Current roster has only ${seats} of ${max} authorized seats filled (${recruits} recruit(s) + 1 Security Officer).`, "warning", true);
+                this.printLog(logConsole, timeStr, `Current roster has only ${seats} of ${max} authorized seats filled (${recruits} recruit(s) + 1 Captain).`, "warning", true);
                 this.printLog(logConsole, timeStr, `${remaining} station position(s) remain UNFILLED. Operating with an understaffed crew increases risk of critical station failure.`, "warning", true);
                 if (window.isQueueDepleted) {
                     this.printLog(logConsole, timeStr, `[HOLDING QUEUE EXHAUSTED] Sector 4 queue is empty. No further candidates are available to recruit.`, "normal", true);
@@ -110,7 +110,7 @@ class TerminalCLI {
             const pwr = window.PowerSystem ? `${window.PowerSystem.currentPower}/${window.PowerSystem.maxPower} PWR` : "30/30 PWR";
             const lampState = window.isLampOn ? "ACTIVE (Overload: +1 PWR / 20s while terminal open)" : "OFF";
             const seats = window.seatsFilled !== undefined ? window.seatsFilled : (window.acceptedCrew ? window.acceptedCrew.length + 1 : 1);
-            const max = window.maxSeats || 6;
+            const max = window.maxSeats || 7;
             const maxQ = window.maxApplicants || 20;
             const currIdx = window.totalProcessedApplicants || 0;
             const remQ = Math.max(0, maxQ - currIdx);
@@ -149,14 +149,14 @@ class TerminalCLI {
     static executeLaunchSequence(logConsole, timeStr) {
         if (window.SoundFX) SoundFX.playLaunchAlert();
         const seats = window.seatsFilled !== undefined ? window.seatsFilled : (window.acceptedCrew ? window.acceptedCrew.length + 1 : 1);
-        const max = window.maxSeats || 6;
+        const max = window.maxSeats || 7;
         const recruits = window.acceptedCrew ? window.acceptedCrew.length : (seats - 1);
 
         this.printLog(logConsole, timeStr, `=========================================================`, "cmd-echo", false);
         this.printLog(logConsole, timeStr, `[LAUNCH SEQUENCE ENGAGED]`, "cmd-echo", false);
         this.printLog(logConsole, timeStr, `Airlock security seals engaged. External boarding ramp retracted.`, "normal", true);
         this.printLog(logConsole, timeStr, `Gantry umbilicals released. Main drive ignition sequence verified.`, "normal", true);
-        this.printLog(logConsole, timeStr, `Final Vessel Roster: ${seats} / ${max} Souls (${recruits} Recruits + 1 Security Officer).`, "normal", true);
+        this.printLog(logConsole, timeStr, `Final Vessel Roster: ${seats} / ${max} Souls (${recruits} Recruits + 1 Captain).`, "normal", true);
         this.printLog(logConsole, timeStr, `Checkpoint Security Post 04 decommissioned. Atmospheric ascent initiated.`, "normal", true);
         this.printLog(logConsole, timeStr, `=========================================================`, "cmd-echo", false);
         this.printLog(logConsole, timeStr, `[ARK FLIGHT CORE] Phase I complete. Standing by for Phase II orbital station deployment.`, "normal", true);
