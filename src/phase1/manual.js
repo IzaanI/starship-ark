@@ -78,7 +78,7 @@ const ShipManual = {
                     <p>
                         It is the year <strong>2030</strong>. Atmospheric degradation on Earth has reached critical thresholds. 
                         The <em>Starship Ark</em> represents humanity's final deep-space evacuation vessel. As the Expedition Captain, 
-                        your primary mandate is assembling a qualified complement built for <strong>orbital survival</strong>.
+                        your primary mandate is assembling a qualified team built for <strong>space survival</strong>.
                     </p>
 
                     <h3 class="manual-heading">Embarkation Protocol</h3>
@@ -151,7 +151,8 @@ const ShipManual = {
                         <strong>TIMELINE DISCREPANCY MATH FORMULA:</strong><br>
                         <code>2030 - Graduation Year = Registered Experience</code><br><br>
                         <em>Example of Flaw:</em> If a candidate graduated in 2024, their maximum legitimate experience in 2030 is <strong>6 years</strong>. 
-                        If their watch-doc claims 10 years of experience, it is an inflated fraud!
+                        If their watch-doc claims 10 years of experience, it is an inflated fraud!<br><br>
+                        <em>Note on Junior Recruits:</em> Candidates graduating in 2030 or completing upcoming degree requirements in 2031 may legitimately present 1–3 years of student or intern experience instead of full professional practice.
                     </div>
 
                     <h3 class="manual-heading">Red Flag Indicators</h3>
@@ -201,7 +202,7 @@ const ShipManual = {
 
                     <h3 class="manual-heading">Risk Factor: Malpractice & Watchlist Flags</h3>
                     <div class="manual-callout-box warning-box">
-                        <strong>UNVERIFIED PRACTITIONERS:</strong> Capable but unlicensed doctors carry severe internal risks.
+                        <strong>UNVERIFIED PRACTITIONERS:</strong> Unlicensed practitioners carry severe internal risks.
                     </div>
                     <p>In desperate times, "back-alley" surgeons or candidates with flagged criminal histories may present themselves as medical professionals. While they might be capable of treating injuries, placing an unlicensed or unstable individual in control of the ship's pharmaceutical supplies drastically increases the risk of internal incidents, malpractice, or drug theft.</p>
 

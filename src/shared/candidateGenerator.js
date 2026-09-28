@@ -618,19 +618,25 @@ static unrelatedDisciplines = [
 
     static pickWeightedStation(acceptedCrew = null) {
         const crew = acceptedCrew || (typeof window !== 'undefined' ? window.acceptedCrew : null);
-        const acceptedStations = new Set();
+        const stationCounts = {};
         if (Array.isArray(crew)) {
             crew.forEach(c => {
-                if (c && c.station) acceptedStations.add(c.station);
+                if (c && c.station) {
+                    stationCounts[c.station] = (stationCounts[c.station] || 0) + 1;
+                }
             });
         }
 
         // Base weight 100 for unfilled stations.
-        // Once a role/station has been accepted, chances of rolling that same station decrease by 40% (weight drops to 60).
-        const weighted = this.stations.map(st => ({
-            station: st,
-            weight: acceptedStations.has(st.name) ? 60 : 100
-        }));
+        // Once a role/station has been accepted, chances of rolling that station decrease further by 65% (weight drops to 35).
+        // If a station is recruited multiple times (2+), weight drops to 15.
+        const weighted = this.stations.map(st => {
+            const count = stationCounts[st.name] || 0;
+            let weight = 100;
+            if (count === 1) weight = 35;
+            else if (count >= 2) weight = 15;
+            return { station: st, weight };
+        });
 
         const totalWeight = weighted.reduce((acc, s) => acc + s.weight, 0);
         let roll = Math.random() * totalWeight;
@@ -682,16 +688,18 @@ static unrelatedDisciplines = [
         const degreeData = this.generateDegree(stationObj, role.tier, isFakeDegree);
 
         // Cross-Document Timeline Experience Math
-        const actualYearsExp = Math.max(1, this.SETTING_YEAR - gradYear);
+        const actualYearsExp = Math.max(0, this.SETTING_YEAR - gradYear);
         let claimedYearsExp = actualYearsExp;
         let payrollStartYear = gradYear;
+        let isInflationFraud = false;
 
         // Apply Timeline Discrepancy Flaws ONLY if fraud tell is IMPOSSIBLE_TIMELINE
         if (fraudTellType === "IMPOSSIBLE_TIMELINE") {
             const timelineFlawType = Math.floor(Math.random() * 3);
             if (timelineFlawType === 0) {
                 // Flaw Type 0: Inflation Mismatch (e.g. Graduated in 2027, claims 15 years practice!)
-                claimedYearsExp = actualYearsExp + Math.floor(Math.random() * 7 + 6);
+                isInflationFraud = true;
+                claimedYearsExp = Math.max(1, actualYearsExp) + Math.floor(Math.random() * 7 + 6);
             } else if (timelineFlawType === 1) {
                 // Flaw Type 1: Payroll Pre-dates Graduation (e.g. Graduated 2026, but payroll active since 2017)
                 payrollStartYear = gradYear - Math.floor(Math.random() * 7 + 6);
@@ -700,7 +708,20 @@ static unrelatedDisciplines = [
                 const childGradYear = birthYear + Math.floor(Math.random() * 4 + 9);
                 claimedYearsExp = this.SETTING_YEAR - childGradYear;
                 gradYear = childGradYear;
+                payrollStartYear = childGradYear;
             }
+        }
+
+        // Format Experience String & Adjust Junior Payroll
+        let experienceDisplay = "";
+        if (gradYear >= this.SETTING_YEAR && !isInflationFraud) {
+            const internYears = Math.floor(Math.random() * 3 + 1); // 1 - 3 years
+            experienceDisplay = `${internYears} ${internYears === 1 ? "Year" : "Years"} Student / Intern Experience`;
+            if (fraudTellType !== "IMPOSSIBLE_TIMELINE") {
+                payrollStartYear = Math.min(this.SETTING_YEAR, this.SETTING_YEAR - (internYears - 1));
+            }
+        } else {
+            experienceDisplay = `${claimedYearsExp} ${claimedYearsExp === 1 ? "Year" : "Years"} Professional Practice`;
         }
 
         // Apply Document Mismatch Flaws (Clerical errors on name)
@@ -790,7 +811,7 @@ static unrelatedDisciplines = [
                     { label: "CLAIMED PROFESSION", val: role.name },
                     { label: "REGISTERED DEGREE ON FILE", val: degreeData.title },
                     { label: "GRADUATION YEAR", val: gradYear.toString() },
-                    { label: "REGISTERED EXPERIENCE", val: `${claimedYearsExp} Years Professional Practice` },
+                    { label: "REGISTERED EXPERIENCE", val: experienceDisplay },
                     { label: "ACADEMIC RECORD", val: gpaHonors }
                 ]
             },
@@ -952,3 +973,6 @@ static unrelatedDisciplines = [
     }
 }
 
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = CandidateGenerator;
+}

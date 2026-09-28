@@ -1,7 +1,10 @@
 const { Jimp } = require('jimp');
+const path = require('path');
 
 async function processHazmat() {
-    const img = await Jimp.read('hazmat_bases.jpg');
+    const inputPath = path.join(__dirname, '../assets/phase1/hazmat_bases.jpg');
+    const outputPath = path.join(__dirname, '../assets/phase1/hazmat_bases.png');
+    const img = await Jimp.read(inputPath);
     const width = img.bitmap.width;
     const height = img.bitmap.height;
     console.log('Loaded hazmat_bases.jpg:', width, 'x', height);
@@ -46,7 +49,7 @@ async function processHazmat() {
         }
     }
 
-    img.write('hazmat_bases.png');
+    img.write(outputPath);
     console.log('Successfully saved hazmat_bases.png via boundary flood-fill!');
 }
 

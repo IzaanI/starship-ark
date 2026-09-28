@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ark-04 Transit Simulation — Flight Deck Prototype</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: #020307;
+            color: #c9d1d9;
+            font-family: 'Consolas', 'Courier New', monospace;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Fullscreen Deep-Space Background Canvas */
+        #space-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Phase II Master Viewport Grid (Left 25% | Center 50% | Right 25%) */
+        .flight-deck-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        /* Top Header Bar */
+        .flight-top-header {
+            height: 52px;
+            background: linear-gradient(180deg, rgba(8, 14, 24, 0.95), rgba(4, 8, 14, 0.85));
+            border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+            z-index: 20;
+        }
+
+        .header-title-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .vessel-badge {
+            background: rgba(0, 240, 255, 0.15);
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 3px 10px;
+            letter-spacing: 1.5px;
+            border-radius: 2px;
+        }
+
+        .destination-progress {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+        }
+
+        .progress-bar-bg {
+            width: 240px;
+            height: 12px;
+            background: #111a24;
+            border: 1px solid #2a3b4c;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            width: 38%;
+            height: 100%;
+            background: linear-gradient(90deg, #0088ff, #00f0ff);
+            box-shadow: 0 0 10px #00f0ff;
+            transition: width 0.3s;
+        }
+
+        .time-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .time-btn {
+            background: #0d1620;
+            border: 1px solid #1f3448;
+            color: #8da6c0;
+            padding: 5px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            border-radius: 2px;
+            transition: all 0.15s;
+        }
+
+        .time-btn:hover {
+            border-color: #00f0ff;
+            color: #00f0ff;
+        }
+
+        .time-btn.active {
+            background: rgba(0, 240, 255, 0.2);
+            border-color: #00f0ff;
+            color: #00f0ff;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+        }
+
+        /* 3-Column Tactical Layout */
+        .flight-main-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 24% 52% 24%;
+            height: calc(100vh - 52px);
+            overflow: hidden;
+        }
+
+        /* Side Panels (Dark HUD Glass) */
+        .hud-side-panel {
+            background: linear-gradient(90deg, rgba(4, 8, 14, 0.90), rgba(6, 12, 20, 0.78));
+            border-right: 1px solid rgba(0, 240, 255, 0.15);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            backdrop-filter: blur(4px);
+            z-index: 15;
+        }
+
+        .hud-side-panel.right-panel {
+            border-right: none;
+            border-left: 1px solid rgba(0, 240, 255, 0.15);
+            background: linear-gradient(-90deg, rgba(4, 8, 14, 0.90), rgba(6, 12, 20, 0.78));
+        }
+
+        .panel-header-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #00f0ff;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            padding-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Crew Cards */
+        .crew-card {
+            background: rgba(13, 22, 32, 0.75);
+            border: 1px solid #1a2a3a;
+            padding: 10px 12px;
+            display: flex;
+            gap: 12px;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .crew-card:hover {
+            border-color: #00f0ff;
+            background: rgba(18, 30, 44, 0.85);
+        }
+
+        .crew-avatar-mini {
+            width: 46px;
+            height: 46px;
+            background: #09121a;
+            border: 1px solid #28445f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #79c0ff;
+            border-radius: 2px;
+        }
+
+        .crew-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .crew-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e6edf3;
+        }
+
+        .crew-role-badge {
+            font-size: 11px;
+            color: #79c0ff;
+            font-weight: 500;
+        }
+
+        .vitals-row {
+            display: flex;
+            gap: 5px;
+            margin-top: 2px;
+        }
+
+        .vital-mini-bar {
+            flex: 1;
+            height: 5px;
+            background: #162432;
+            overflow: hidden;
+            border-radius: 1px;
+        }
+
+        .vital-fill-hp { width: 100%; height: 100%; background: #3fb950; }
+        .vital-fill-san { width: 85%; height: 100%; background: #58a6ff; }
+        .vital-fill-eng { width: 70%; height: 100%; background: #d29922; }
+
+        /* Center Column: Cutaway Viewport */
+        .ship-viewport-center {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        #ship-container {
+            position: relative;
+            height: 94%;
+            max-width: 90%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            will-change: transform;
+        }
+
+        .ship-cutaway-img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 25px rgba(0, 200, 255, 0.15));
+            pointer-events: none;
+        }
+
+        /* Interactive Room Overlay Targets */
+        .room-interactive-overlay {
+            position: absolute;
+            border: 1px dashed rgba(0, 240, 255, 0.0);
+            background: rgba(0, 240, 255, 0.0);
+            transition: all 0.2s;
+            cursor: pointer;
+            z-index: 20;
+        }
+
+        .room-interactive-overlay:hover {
+            border: 1px solid rgba(0, 240, 255, 0.7);
+            background: rgba(0, 240, 255, 0.08);
+        }
+
+        .room-tooltip-tag {
+            position: absolute;
+            top: 4px;
+            left: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #00f0ff;
+            background: rgba(2, 8, 16, 0.9);
+            padding: 3px 6px;
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            border-radius: 2px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            letter-spacing: 0.5px;
+        }
+
+        .room-interactive-overlay:hover .room-tooltip-tag {
+            opacity: 1;
+        }
+
+        /* Right Panel Widgets */
+        .telemetry-gauge {
+            background: rgba(13, 22, 32, 0.75);
+            border: 1px solid #1a2a3a;
+            padding: 9px 12px;
+            border-radius: 3px;
+        }
+
+        .gauge-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .gauge-track {
+            height: 8px;
+            background: #111a24;
+            border: 1px solid #203548;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .gauge-bar {
+            height: 100%;
+            transition: width 0.4s ease;
+        }
+
+        .bar-power { width: 88%; background: #388bfd; }
+        .bar-o2 { width: 94%; background: #56d364; }
+        .bar-food { width: 76%; background: #e3b341; }
+        .bar-hull { width: 100%; background: #2ea043; }
+        .bar-san { width: 82%; background: #a371f7; }
+
+        /* CRT Comms Log */
+        .comms-log-box {
+            flex: 1;
+            background: rgba(4, 10, 16, 0.88);
+            border: 1px solid #1c2d3d;
+            padding: 10px;
+            font-size: 12px;
+            overflow-y: auto;
+            color: #7ee787;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-radius: 2px;
+        }
+
+        .log-entry {
+            line-height: 1.4;
+        }
+
+        .log-time {
+            color: #8b949e;
+            font-weight: 600;
+        }
+
+        .log-warn {
+            color: #f0883e;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dynamic Canvas Background for Stars, Warp Streaks, and Animated Thruster Boost -->
+    <canvas id="space-canvas"></canvas>
+
+    <div class="flight-deck-container">
+        <!-- Top Status Bar -->
+        <header class="flight-top-header">
+            <div class="header-title-box">
+                <span class="vessel-badge">ARK-04 TRANSIT</span>
+                <span style="font-size: 13px; color: #8b949e; font-weight: 500;">TACTICAL FLIGHT OPS</span>
+            </div>
+
+            <div class="destination-progress">
+                <span style="color: #79c0ff; font-weight: 600;">DESTINATION: TITAN HAVEN 4</span>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill"></div>
+                </div>
+                <span style="color: #00f0ff; font-weight: 700;">ETA: 06:42</span>
+            </div>
+
+            <div class="time-controls">
+                <button class="time-btn" id="btn-pause">|| PAUSE</button>
+                <button class="time-btn active" id="btn-cruise">> 1x CRUISE</button>
+                <button class="time-btn" id="btn-warp">>> 2x WARP</button>
+                <button class="time-btn" id="btn-hyper">>>> 3x HYPER</button>
+                <button class="time-btn" id="btn-toggle-boost" style="border-color: #f0883e; color: #f0883e; margin-left: 8px;">BOOST: ON</button>
+            </div>
+        </header>
+
+        <!-- 3-Column Tactical Layout -->
+        <main class="flight-main-grid">
+            
+            <!-- Left Column: Crew Roster -->
+            <section class="hud-side-panel left-panel">
+                <div class="panel-header-title">
+                    <span>CREW MANIFEST</span>
+                    <span style="color: #8b949e;">7 / 7 ACTIVE</span>
+                </div>
+
+                <!-- Sample Roster Cards -->
+                <div class="crew-card">
+                    <div class="crew-avatar-mini">CAPT</div>
+                    <div class="crew-info">
+                        <div class="crew-name">Commander (You)</div>
+                        <div class="crew-role-badge">COMMAND CHAIR</div>
+                        <div class="vitals-row">
+                            <div class="vital-mini-bar"><div class="vital-fill-hp"></div></div>
+                            <div class="vital-mini-bar"><div class="vital-fill-san"></div></div>
+                            <div class="vital-mini-bar"><div class="vital-fill-eng"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="crew-card">
+                    <div class="crew-avatar-mini">HELM</div>
+                    <div class="crew-info">
+                        <div class="crew-name">Sarah Chen</div>
+                        <div class="crew-role-badge">COCKPIT • CORE</div>
+                        <div class="vitals-row">
+                            <div class="vital-mini-bar"><div class="vital-fill-hp"></div></div>
+                            <div class="vital-mini-bar"><div class="vital-fill-san"></div></div>
+                            <div class="vital-mini-bar" style="width: 60%;"><div class="vital-fill-eng"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="crew-card">
+                    <div class="crew-avatar-mini">MED</div>
+                    <div class="crew-info">
+                        <div class="crew-name">Dr. Elena Rostova</div>
+                        <div class="crew-role-badge">MEDBAY • CORE</div>
+                        <div class="vitals-row">
+                            <div class="vital-mini-bar"><div class="vital-fill-hp"></div></div>
+                            <div class="vital-mini-bar"><div class="vital-fill-san"></div></div>
+                            <div class="vital-mini-bar"><div class="vital-fill-eng"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="crew-card">
+                    <div class="crew-avatar-mini">ENG</div>
+                    <div class="crew-info">
+                        <div class="crew-name">Marcus Vance</div>
+                        <div class="crew-role-badge">REACTOR • CORE</div>
+                        <div class="vitals-row">
+                            <div class="vital-mini-bar"><div class="vital-fill-hp"></div></div>
+                            <div class="vital-mini-bar"><div class="vital-fill-san"></div></div>
+                            <div class="vital-mini-bar" style="width: 45%;"><div class="vital-fill-eng"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="crew-card">
+                    <div class="crew-avatar-mini">BIO</div>
+                    <div class="crew-info">
+                        <div class="crew-name">Kaito Tanaka</div>
+                        <div class="crew-role-badge">HYDROPONICS • ADJACENT</div>
+                        <div class="vitals-row">
+                            <div class="vital-mini-bar"><div class="vital-fill-hp"></div></div>
+                            <div class="vital-mini-bar"><div class="vital-fill-san"></div></div>
+                            <div class="vital-mini-bar"><div class="vital-fill-eng"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="crew-card">
+                    <div class="crew-avatar-mini">SEC</div>
+                    <div class="crew-info">
+                        <div class="crew-name">Tariq Al-Mansoor</div>
+                        <div class="crew-role-badge">THE BRIG • OFFICER</div>
+                        <div class="vitals-row">
+                            <div class="vital-mini-bar"><div class="vital-fill-hp"></div></div>
+                            <div class="vital-mini-bar"><div class="vital-fill-san"></div></div>
+                            <div class="vital-mini-bar"><div class="vital-fill-eng"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="crew-card">
+                    <div class="crew-avatar-mini">O2</div>
+                    <div class="crew-info">
+                        <div class="crew-name">Lyra Novak</div>
+                        <div class="crew-role-badge">O2 BAY • CORE</div>
+                        <div class="vitals-row">
+                            <div class="vital-mini-bar"><div class="vital-fill-hp"></div></div>
+                            <div class="vital-mini-bar"><div class="vital-fill-san"></div></div>
+                            <div class="vital-mini-bar"><div class="vital-fill-eng"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center Column: Vertical Ship Cutaway Viewport -->
+            <section class="ship-viewport-center">
+                <div id="ship-container">
+                    <img src="assets/phase2/starship_cutaway.png?v=fresh_noburn_2" alt="Starship Ark Cutaway" class="ship-cutaway-img" id="ship-img">
+
+                    <!-- Interactive Room Hover Overlays (Mapped relative to cutaway) -->
+                    <!-- Deck 6: Cockpit Bridge -->
+                    <div class="room-interactive-overlay" style="top: 2%; left: 34%; width: 32%; height: 12%;">
+                        <div class="room-tooltip-tag">DECK 6: COCKPIT / BRIDGE</div>
+                    </div>
+
+                    <!-- Deck 5: Medbay (Left) -->
+                    <div class="room-interactive-overlay" style="top: 15%; left: 35%; width: 14%; height: 11%;">
+                        <div class="room-tooltip-tag">DECK 5: MEDBAY CLINIC</div>
+                    </div>
+
+                    <!-- Deck 5: Sleep Pods (Right) -->
+                    <div class="room-interactive-overlay" style="top: 15%; left: 51%; width: 15%; height: 11%;">
+                        <div class="room-tooltip-tag">DECK 5: SLEEP PODS</div>
+                    </div>
+
+                    <!-- Deck 4: Hydroponics (Left) -->
+                    <div class="room-interactive-overlay" style="top: 27%; left: 34%; width: 15%; height: 19%;">
+                        <div class="room-tooltip-tag">DECK 4: HYDROPONICS BIO-DOME</div>
+                    </div>
+
+                    <!-- Deck 4: O2 Bay (Right) -->
+                    <div class="room-interactive-overlay" style="top: 27%; left: 51%; width: 15%; height: 19%;">
+                        <div class="room-tooltip-tag">DECK 4: O2 BAY / LIFE SUPPORT</div>
+                    </div>
+
+                    <!-- Deck 2: The Brig (Left) -->
+                    <div class="room-interactive-overlay" style="top: 47%; left: 35%; width: 14%; height: 12%;">
+                        <div class="room-tooltip-tag">DECK 2: THE BRIG</div>
+                    </div>
+
+                    <!-- Deck 2: Maintenance / Workshop (Right) -->
+                    <div class="room-interactive-overlay" style="top: 47%; left: 51%; width: 15%; height: 12%;">
+                        <div class="room-tooltip-tag">DECK 2: WORKSHOP / STORES</div>
+                    </div>
+
+                    <!-- Deck 1: Reactor Core -->
+                    <div class="room-interactive-overlay" style="top: 60%; left: 35%; width: 30%; height: 25%;">
+                        <div class="room-tooltip-tag">DECK 1: MAIN REACTOR CORE</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: Ship Vitals, Gauges & CRT Comms Feed -->
+            <section class="hud-side-panel right-panel">
+                <div class="panel-header-title">
+                    <span>VESSEL TELEMETRY</span>
+                    <span style="color: #3fb950;">NORMAL</span>
+                </div>
+
+                <!-- Global Dials -->
+                <div class="telemetry-gauge">
+                    <div class="gauge-label-row">
+                        <span>AUX POWER GRID</span>
+                        <span style="color: #388bfd;">88% (420 kW)</span>
+                    </div>
+                    <div class="gauge-track"><div class="gauge-bar bar-power"></div></div>
+                </div>
+
+                <div class="telemetry-gauge">
+                    <div class="gauge-label-row">
+                        <span>O2 SATURATION</span>
+                        <span style="color: #56d364;">94% (Nominal)</span>
+                    </div>
+                    <div class="gauge-track"><div class="gauge-bar bar-o2"></div></div>
+                </div>
+
+                <div class="telemetry-gauge">
+                    <div class="gauge-label-row">
+                        <span>FOOD RESERVES</span>
+                        <span style="color: #e3b341;">76% (48 Rations)</span>
+                    </div>
+                    <div class="gauge-track"><div class="gauge-bar bar-food"></div></div>
+                </div>
+
+                <div class="telemetry-gauge">
+                    <div class="gauge-label-row">
+                        <span>HULL INTEGRITY</span>
+                        <span style="color: #2ea043;">100% (Pressurized)</span>
+                    </div>
+                    <div class="gauge-track"><div class="gauge-bar bar-hull"></div></div>
+                </div>
+
+                <div class="telemetry-gauge">
+                    <div class="gauge-label-row">
+                        <span>CREW DISCIPLINE</span>
+                        <span style="color: #a371f7;">82% (Stable)</span>
+                    </div>
+                    <div class="gauge-track"><div class="gauge-bar bar-san"></div></div>
+                </div>
+
+                <!-- CRT Comms Feed -->
+                <div class="panel-header-title" style="margin-top: 6px;">
+                    <span>TACTICAL CRT LOG</span>
+                    <span style="color: #7ee787;">LIVE</span>
+                </div>
+
+                <div class="comms-log-box" id="comms-log">
+                    <div class="log-entry">
+                        <span class="log-time">[00:01]</span> <span style="color: #58a6ff;">SYS:</span> Atmospheric ascent completed. Sub-orbital burn steady.
+                    </div>
+                    <div class="log-entry">
+                        <span class="log-time">[00:03]</span> <span style="color: #79c0ff;">HELM:</span> Vector locked on Titan Haven 4. ETA calculated at 06:42.
+                    </div>
+                    <div class="log-entry">
+                        <span class="log-time">[00:08]</span> <span style="color: #3fb950;">ENG:</span> Reactor core synchronized. Output stable at 420 kW.
+                    </div>
+                    <div class="log-entry">
+                        <span class="log-time">[00:14]</span> <span class="log-warn">ALERT:</span> Minor cosmic radiation flux detected along forward shields.
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Starfield Engine Initialization -->
+    <script src="src/phase2/starfield.js"></script>
+    <script>
+        const starfield = new StarfieldEngine('space-canvas', {
+            shipElement: document.getElementById('ship-container'),
+            initialMode: 'cruise'
+        });
+        starfield.start();
+
+        // Speed Control Button Handlers
+        const buttons = {
+            pause: document.getElementById('btn-pause'),
+            cruise: document.getElementById('btn-cruise'),
+            warp: document.getElementById('btn-warp'),
+            hyper: document.getElementById('btn-hyper')
+        };
+
+        function setSpeed(mode) {
+            starfield.setSpeedMode(mode);
+            for (let k in buttons) {
+                buttons[k].classList.remove('active');
+            }
+            if (buttons[mode]) buttons[mode].classList.add('active');
+
+            // Log event in CRT log
+            const logBox = document.getElementById('comms-log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const now = new Date();
+            const timeStr = `[${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}]`;
+            
+            let msg = '';
+            if (mode === 'pause') msg = `<span class="log-warn">ENG: Thrusters idle. Flight simulation paused.</span>`;
+            else if (mode === 'cruise') msg = `<span style="color: #79c0ff;">HELM: Cruising speed engaged (1x Impulse).</span>`;
+            else if (mode === 'warp') msg = `<span style="color: #388bfd;">NAV: Warp acceleration burn (2x Vector).</span>`;
+            else if (mode === 'hyper') msg = `<span style="color: #00f0ff; font-weight: bold;">WARP: Hyperdrive engaged (3x Speed)!</span>`;
+
+            entry.innerHTML = `<span class="log-time">${timeStr}</span> ${msg}`;
+            logBox.appendChild(entry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        buttons.pause.addEventListener('click', () => setSpeed('pause'));
+        buttons.cruise.addEventListener('click', () => setSpeed('cruise'));
+        buttons.warp.addEventListener('click', () => setSpeed('warp'));
+        buttons.hyper.addEventListener('click', () => setSpeed('hyper'));
+
+        let boostActive = true;
+        const btnBoost = document.getElementById('btn-toggle-boost');
+        btnBoost.addEventListener('click', () => {
+            boostActive = !boostActive;
+            starfield.setBoostEnabled(boostActive);
+            btnBoost.textContent = boostActive ? 'BOOST: ON' : 'BOOST: OFF';
+            btnBoost.style.borderColor = boostActive ? '#f0883e' : '#555';
+            btnBoost.style.color = boostActive ? '#f0883e' : '#888';
+        });
+    </script>
+</body>
+</html>

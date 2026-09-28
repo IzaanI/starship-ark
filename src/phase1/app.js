@@ -289,11 +289,11 @@ window.toggleLamp = toggleLamp;
 
 // Procedural Avatar Sprite System (Hazmat & Environmental Suits - Dual Lit/Unlit Engine)
 const avatarUnlitImg = new Image();
-avatarUnlitImg.src = 'hazmat_bases.png';
+avatarUnlitImg.src = 'assets/phase1/hazmat_bases.png';
 if (avatarUnlitImg.decode) avatarUnlitImg.decode().catch(() => {});
 
 const avatarLitImg = new Image();
-avatarLitImg.src = 'hazmat_bases_lit.png';
+avatarLitImg.src = 'assets/phase1/hazmat_bases_lit.png';
 if (avatarLitImg.decode) avatarLitImg.decode().catch(() => {});
 
 let currentAvatarIndex = 0;
@@ -734,7 +734,7 @@ function initRainCanvas() {
             x: Math.random() * (canvasBack.width || 600),
             y: Math.random() * (canvasBack.height || 600),
             length: Math.random() * 4.5 + 5,      // 5px - 9.5px (covers small, medium, and distant drops)
-            speed: Math.random() * 1.4 + 0.8,     // 0.8 - 2.2 (natural outdoor drift)
+            speed: Math.random() * 2.0 + 1.8,     // 0.8 - 2.2 (natural outdoor drift)
             opacity: Math.random() * 0.28 + 0.20  // 0.20 - 0.48 (soft atmospheric rain)
         });
     }
@@ -747,7 +747,7 @@ function initRainCanvas() {
             x: Math.random() * (canvasFront.width || 600),
             y: Math.random() * (canvasFront.height || 600),
             length: Math.random() * 5 + 9,        // 9px - 14px (previous natural length)
-            speed: Math.random() * 1.8 + 3,     // 1.8 - 3.4 (previous speed)
+            speed: Math.random() * 2.8 + 3,     // 1.8 - 3.4 (previous speed)
             opacity: Math.random() * 0.35 + 0.40  // 0.40 - 0.75 (previous opacity)
         });
     }

@@ -54,7 +54,7 @@ const server = http.createServer((req, res) => {
                 'Content-Length': stats.size,
                 'Content-Type': contentType,
                 'Accept-Ranges': 'bytes',
-                'Cache-Control': ext === '.html' || ext === '.js' || ext === '.css' ? 'no-cache' : 'public, max-age=3600'
+                'Cache-Control': 'no-cache, no-store, must-revalidate'
             });
             fs.createReadStream(filePath).pipe(res);
         }
