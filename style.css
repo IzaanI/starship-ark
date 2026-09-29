@@ -274,6 +274,13 @@ html, body {
     border-radius: 4px;
 }
 
+.wall-btn-hotspot.disabled-btn {
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+    opacity: 0.3 !important;
+    filter: grayscale(1) !important;
+}
+
 #wall-button-accept {
     top: 30.5%;
     left: 54.2%;
@@ -1612,6 +1619,546 @@ html, body {
     color: #44403c;
     letter-spacing: 1px;
     text-align: right;
+}
+
+/* =============================================================
+   PHASE II: STARSHIP FLIGHT OPERATIONS STYLES
+   ============================================================= */
+
+@keyframes launchRumble {
+    0% { transform: translate(0, 0); }
+    20% { transform: translate(-3px, 2px); }
+    40% { transform: translate(3px, -2px); }
+    60% { transform: translate(-2px, -3px); }
+    80% { transform: translate(2px, 3px); }
+    100% { transform: translate(0, 0); }
+}
+
+.launch-shake {
+    animation: launchRumble 0.08s infinite !important;
+}
+
+.phase2-viewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    background: #020307;
+    overflow: hidden;
+    font-family: 'Consolas', 'Courier New', monospace;
+    user-select: none;
+}
+
+.phase2-viewport.hidden {
+    display: none !important;
+}
+
+#phase2-starfield-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.flight-deck-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+}
+
+.flight-top-header {
+    height: 52px;
+    background: linear-gradient(180deg, rgba(8, 14, 24, 0.95), rgba(4, 8, 14, 0.85));
+    border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+    z-index: 20;
+}
+
+.header-title-box {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.vessel-badge {
+    background: rgba(0, 240, 255, 0.15);
+    border: 1px solid #00f0ff;
+    color: #00f0ff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 10px;
+    letter-spacing: 1.5px;
+    border-radius: 2px;
+}
+
+.destination-progress {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+}
+
+.progress-bar-bg {
+    width: 240px;
+    height: 12px;
+    background: #111a24;
+    border: 1px solid #2a3b4c;
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar-fill {
+    width: 38%;
+    height: 100%;
+    background: linear-gradient(90deg, #0088ff, #00f0ff);
+    box-shadow: 0 0 10px #00f0ff;
+    transition: width 0.3s;
+}
+
+.time-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.time-btn {
+    background: #0d1620;
+    border: 1px solid #1f3448;
+    color: #8da6c0;
+    padding: 5px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    border-radius: 2px;
+    transition: all 0.15s;
+}
+
+.time-btn:hover {
+    border-color: #00f0ff;
+    color: #00f0ff;
+}
+
+.time-btn.active {
+    background: rgba(0, 240, 255, 0.2);
+    border-color: #00f0ff;
+    color: #00f0ff;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+}
+
+.flight-main-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 24% 52% 24%;
+    height: calc(100vh - 52px);
+    overflow: hidden;
+}
+
+.hud-side-panel {
+    background: linear-gradient(90deg, rgba(4, 8, 14, 0.90), rgba(6, 12, 20, 0.78));
+    border-right: 1px solid rgba(0, 240, 255, 0.15);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    backdrop-filter: blur(4px);
+    z-index: 15;
+}
+
+.hud-side-panel.right-panel {
+    border-right: none;
+    border-left: 1px solid rgba(0, 240, 255, 0.15);
+    background: linear-gradient(-90deg, rgba(4, 8, 14, 0.90), rgba(6, 12, 20, 0.78));
+}
+
+.panel-header-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #00f0ff;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+    padding-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.crew-card {
+    background: rgba(13, 22, 32, 0.75);
+    border: 1px solid #1a2a3a;
+    padding: 10px 12px;
+    display: flex;
+    gap: 12px;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.crew-card:hover {
+    border-color: #00f0ff;
+    background: rgba(18, 30, 44, 0.85);
+}
+
+.crew-card.card-selected {
+    border-color: #00f0ff !important;
+    background: rgba(0, 240, 255, 0.16) !important;
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.45);
+}
+
+.crew-avatar-mini {
+    width: 46px;
+    height: 46px;
+    background: #09121a;
+    border: 1px solid #28445f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.crew-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.crew-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e6edf3;
+}
+
+.crew-role-badge {
+    font-size: 11px;
+    color: #79c0ff;
+    font-weight: 500;
+}
+
+.vitals-row {
+    display: flex;
+    gap: 5px;
+    margin-top: 2px;
+}
+
+.vital-mini-bar {
+    flex: 1;
+    height: 5px;
+    background: #162432;
+    overflow: hidden;
+    border-radius: 1px;
+}
+
+.vital-fill-hp { width: 100%; height: 100%; background: #3fb950; transition: width 0.3s ease; }
+.vital-fill-san { width: 85%; height: 100%; background: #58a6ff; transition: width 0.3s ease; }
+.vital-fill-eng { width: 70%; height: 100%; background: #d29922; transition: width 0.3s ease; }
+
+.officer-act-btn {
+    background: #101c28;
+    border: 1px solid #243d54;
+    color: #8da6c0;
+    font-size: 10px;
+    font-family: inherit;
+    font-weight: bold;
+    padding: 2px 7px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+}
+
+.officer-act-btn:hover {
+    border-color: #00f0ff;
+    color: #00f0ff;
+}
+
+.ship-viewport-center {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 10;
+}
+
+#phase2-ship-container {
+    position: relative;
+    height: 94%;
+    max-width: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+}
+
+.ship-cutaway-img {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 25px rgba(0, 200, 255, 0.15));
+    pointer-events: none;
+}
+
+.room-interactive-overlay {
+    position: absolute;
+    border: 1px dashed rgba(0, 240, 255, 0.0);
+    background: rgba(0, 240, 255, 0.0);
+    transition: all 0.2s;
+    cursor: pointer;
+    z-index: 20;
+}
+
+.room-interactive-overlay:hover {
+    border: 1px solid rgba(0, 240, 255, 0.7);
+    background: rgba(0, 240, 255, 0.08);
+}
+
+.room-tooltip-tag {
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #00f0ff;
+    background: rgba(2, 8, 16, 0.9);
+    padding: 3px 6px;
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    border-radius: 2px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    letter-spacing: 0.5px;
+    z-index: 28;
+}
+
+.room-interactive-overlay:hover .room-tooltip-tag {
+    opacity: 1;
+}
+
+.room-capacity-badge {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #8b949e;
+    background: rgba(4, 10, 18, 0.85);
+    padding: 1px 5px;
+    border: 1px solid #1c2d3d;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 26;
+}
+
+.room-occupants {
+    position: absolute;
+    bottom: 5px;
+    left: 6px;
+    right: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    pointer-events: none;
+    z-index: 25;
+}
+
+.officer-token {
+    background: rgba(3, 8, 14, 0.94);
+    border: 1px solid #00f0ff;
+    border-radius: 3px;
+    padding: 2px 6px 2px 3px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #e6edf3;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.35);
+    pointer-events: auto;
+    transition: all 0.15s ease;
+    backdrop-filter: blur(2px);
+}
+
+.officer-token:hover {
+    border-color: #38bdf8;
+    background: rgba(8, 20, 34, 0.98);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+    transform: scale(1.04);
+}
+
+.token-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 2px;
+    border: 1px solid rgba(0, 240, 255, 0.5);
+    background: #060c14;
+    display: block;
+    flex-shrink: 0;
+}
+
+.token-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: #e6edf3;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+}
+
+.officer-token.in-transit {
+    border-color: #f0883e;
+    color: #f0883e;
+    border-style: dashed;
+    background: rgba(24, 12, 4, 0.92);
+    animation: transitPulse 0.8s infinite alternate;
+}
+
+.officer-token.in-transit .token-avatar {
+    border-color: rgba(240, 136, 62, 0.7);
+}
+
+.token-transit-badge {
+    font-size: 9px;
+    color: #f0883e;
+    font-weight: 700;
+    margin-left: 1px;
+}
+
+/* Tactical Dispatch Mode */
+.dispatch-mode-active .room-interactive-overlay {
+    border: 1px dashed rgba(0, 240, 255, 0.5) !important;
+    background: rgba(0, 240, 255, 0.05);
+    animation: dispatchPulse 1.2s infinite alternate;
+}
+
+.dispatch-mode-active .room-interactive-overlay:hover {
+    border: 1px solid #00f0ff !important;
+    background: rgba(0, 240, 255, 0.22) !important;
+    box-shadow: inset 0 0 18px rgba(0, 240, 255, 0.4);
+}
+
+@keyframes dispatchPulse {
+    0% { border-color: rgba(0, 240, 255, 0.3); }
+    100% { border-color: rgba(0, 240, 255, 0.85); }
+}
+
+.dispatch-banner {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(4, 12, 22, 0.96);
+    border: 1px solid #00f0ff;
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.5);
+    padding: 6px 16px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #00f0ff;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 35;
+    animation: fadeIn 0.2s ease;
+}
+
+.dispatch-banner.hidden {
+    display: none !important;
+}
+
+.dispatch-cancel-btn {
+    background: #101c28;
+    border: 1px solid #388bfd;
+    color: #79c0ff;
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 600;
+    padding: 3px 10px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+}
+
+.dispatch-cancel-btn:hover {
+    color: #f85149;
+    border-color: #f85149;
+}
+
+.telemetry-gauge {
+    background: rgba(13, 22, 32, 0.75);
+    border: 1px solid #1a2a3a;
+    padding: 9px 12px;
+    border-radius: 3px;
+}
+
+.gauge-label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.gauge-track {
+    height: 8px;
+    background: #111a24;
+    border: 1px solid #203548;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.gauge-bar {
+    height: 100%;
+    transition: width 0.4s ease;
+}
+
+.bar-power { width: 88%; background: #388bfd; }
+.bar-o2 { width: 94%; background: #56d364; }
+.bar-food { width: 76%; background: #e3b341; }
+.bar-hull { width: 100%; background: #2ea043; }
+.bar-san { width: 82%; background: #a371f7; }
+
+.comms-log-box {
+    flex: 1;
+    background: rgba(4, 10, 16, 0.88);
+    border: 1px solid #1c2d3d;
+    padding: 10px;
+    font-size: 12px;
+    overflow-y: auto;
+    color: #7ee787;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-radius: 2px;
+}
+
+.log-entry {
+    line-height: 1.4;
+}
+
+.log-time {
+    color: #8b949e;
+    font-weight: 600;
+}
+
+.log-warn {
+    color: #f0883e;
+    font-weight: 600;
 }
 
 

@@ -369,6 +369,9 @@ function renderProceduralAvatar() {
 
     currentAvatarIndex = nextIndex;
     lastAvatarIndex = currentAvatarIndex;
+    if (currentCandidate) {
+        currentCandidate.avatarIndex = currentAvatarIndex;
+    }
 
     const activeImg = isLampOn ? avatarLitImg : avatarUnlitImg;
     if (activeImg.complete && activeImg.naturalWidth > 0) {
@@ -550,6 +553,15 @@ function transitionToNextCandidate(delayBeforeFade = 250) {
 
 function acceptEntry() {
     if (isTransitioning) return;
+    if (seatsFilled >= maxSeats) {
+        const logConsole = document.getElementById('log-console');
+        const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
+        if (logConsole) {
+            TerminalCLI.printLog(logConsole, timeStr, `[GATE LOCKED] Maximum vessel capacity reached (${maxSeats}/${maxSeats}). No further entries permitted.`, "warning", true);
+            TerminalCLI.printLog(logConsole, timeStr, `Type 'INITIATE LAUNCH' in terminal or click status badge to depart.`, "cmd-echo", false);
+        }
+        return;
+    }
     if (isQueueDepleted || !currentCandidate) {
         const logConsole = document.getElementById('log-console');
         const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
@@ -575,11 +587,26 @@ function acceptEntry() {
     TerminalCLI.printLog(logConsole, timeStr, `VERDICT: ACCEPTED ${currentCandidate.name} (${seatsFilled}/${maxSeats} Seats Filled)`, "normal", true);
 
     if (seatsFilled >= maxSeats) {
+        // Visually disable wall decision buttons
+        const acceptBtn = document.getElementById('wall-button-accept');
+        const rejectBtn = document.getElementById('wall-button-reject');
+        if (acceptBtn) acceptBtn.classList.add('disabled-btn');
+        if (rejectBtn) rejectBtn.classList.add('disabled-btn');
+
         TerminalCLI.printLog(logConsole, timeStr, `[COMPLEMENT COMPLETE] Maximum vessel capacity reached (${seatsFilled}/${maxSeats}).`, "cmd-echo", false);
         TerminalCLI.printLog(logConsole, timeStr, `Gate locked. Open Terminal CLI and type 'INITIATE LAUNCH' to begin departure sequence.`, "cmd-echo", false);
         const badge = document.getElementById('seat-capacity-badge');
         if (badge) {
-            badge.innerText = `CREW SEATS: ${seatsFilled} / ${maxSeats} [READY]`;
+            badge.innerText = `CREW SEATS: ${seatsFilled} / ${maxSeats} [READY — CLICK TO LAUNCH]`;
+            badge.style.cursor = 'pointer';
+            badge.style.borderColor = '#00f0ff';
+            badge.style.color = '#00f0ff';
+            badge.style.boxShadow = '0 0 10px rgba(0, 240, 255, 0.5)';
+            badge.onclick = () => {
+                if (window.onLaunchInitiated) {
+                    window.onLaunchInitiated({ seats: seatsFilled + 1, max: maxSeats + 1, recruits: seatsFilled });
+                }
+            };
         }
     } else {
         transitionToNextCandidate();
@@ -587,14 +614,28 @@ function acceptEntry() {
 }
 
 window.onLaunchInitiated = function(details) {
+    if (typeof closeTerminal === 'function') {
+        closeTerminal();
+    }
     const badge = document.getElementById('seat-capacity-badge');
     if (badge) {
         badge.innerText = `STATUS: LAUNCH ENGAGED (${details.seats}/${details.max})`;
+    }
+    if (window.Phase2Bridge) {
+        window.Phase2Bridge.launch({ acceptedCrew: acceptedCrew });
     }
 };
 
 function rejectEntry() {
     if (isTransitioning) return;
+    if (seatsFilled >= maxSeats) {
+        const logConsole = document.getElementById('log-console');
+        const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);
+        if (logConsole) {
+            TerminalCLI.printLog(logConsole, timeStr, `[GATE LOCKED] Maximum vessel capacity reached (${maxSeats}/${maxSeats}). Gate is locked for departure.`, "warning", true);
+        }
+        return;
+    }
     if (isQueueDepleted || !currentCandidate) {
         const logConsole = document.getElementById('log-console');
         const timeStr = new Date().toTimeString().split(' ')[0].substring(0, 5);

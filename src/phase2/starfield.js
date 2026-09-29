@@ -22,6 +22,7 @@ class StarfieldEngine {
         this.currentMode = options.initialMode || 'cruise';
         this.speedMultiplier = this.baseSpeeds[this.currentMode];
         this.targetSpeedMultiplier = this.speedMultiplier;
+        this.boostEnabled = true;
         
         this.shipElement = options.shipElement || document.getElementById('ship-container');
         
@@ -107,6 +108,7 @@ class StarfieldEngine {
         if (this.baseSpeeds[mode] !== undefined) {
             this.currentMode = mode;
             this.targetSpeedMultiplier = this.baseSpeeds[mode];
+            this.setBoostEnabled(mode !== 'pause');
         }
     }
 

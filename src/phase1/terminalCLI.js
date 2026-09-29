@@ -164,6 +164,11 @@ class TerminalCLI {
         if (window.onLaunchInitiated) {
             window.onLaunchInitiated({ seats, max, recruits });
         }
+        if (typeof window.closeTerminal === 'function') {
+            setTimeout(() => {
+                window.closeTerminal();
+            }, 400);
+        }
     }
 
     static printHelp(logConsole, timeStr) {
