@@ -226,8 +226,8 @@
                     </div>
 
                     <div class="time-controls">
-                        <button class="time-btn" id="phase2-btn-pause">|| PAUSE</button>
-                        <button class="time-btn active" id="phase2-btn-cruise">> 1x CRUISE</button>
+                        <button class="time-btn active" id="phase2-btn-pause">|| PAUSE</button>
+                        <button class="time-btn" id="phase2-btn-cruise">> 1x CRUISE</button>
                         <button class="time-btn" id="phase2-btn-warp">>> 2x CRUISE</button>
                     </div>
                 </header>
@@ -237,10 +237,21 @@
                     <!-- Left Column: Transferred Crew Manifest -->
                     <section class="hud-side-panel left-panel">
                         <div class="panel-header-title">
-                            <span>CREW MANIFEST</span>
-                            <span id="phase2-manifest-counter" style="color: #8b949e;">6 OFFICERS</span>
+                            <span class="manifest-title-text">CREW MANIFEST</span>
+                            <span id="phase2-manifest-counter" class="manifest-counter-text">6 OFFICERS</span>
                         </div>
-                        <div id="phase2-crew-roster" style="display: flex; flex-direction: column; gap: 10px;">
+                        <div class="manifest-table-header">
+                            <span class="th-col-num">#</span>
+                            <span class="th-col-name">NAME / ROLE</span>
+                            <span class="th-col-vitals">VITALS</span>
+                            <span class="th-col-status">STATUS</span>
+                        </div>
+                        <div id="phase2-crew-roster" class="crew-roster-list">
+                            <!-- Populated dynamically by Phase2Bridge -->
+                        </div>
+
+                        <!-- Bottom Left: Brig & Security Protocol Console -->
+                        <div id="phase2-security-console" class="security-console-panel">
                             <!-- Populated dynamically by Phase2Bridge -->
                         </div>
                     </section>
@@ -253,7 +264,10 @@
                             <!-- Tactical Dispatch Mode Banner -->
                             <div id="dispatch-banner" class="dispatch-banner hidden">
                                 <span id="dispatch-banner-text">SELECT COMPARTMENT TO DISPATCH</span>
-                                <button class="dispatch-cancel-btn" onclick="Phase2Bridge.cancelDispatch()">CANCEL</button>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <button class="dispatch-unassign-btn hidden" id="dispatch-btn-unassign" onclick="Phase2Bridge.unassignSelectedOfficer()">UNASSIGN TO STANDBY</button>
+                                    <button class="dispatch-cancel-btn" onclick="Phase2Bridge.cancelDispatch()">CANCEL</button>
+                                </div>
                             </div>
 
                             <!-- Interactive Room Overlays (Deck 6 down to Deck 1) -->
@@ -265,49 +279,49 @@
                             </div>
 
                             <!-- Deck 5: Medbay (Left) -->
-                            <div class="room-interactive-overlay" data-room-id="medbay" style="top: 15%; left: 35%; width: 14%; height: 11%;">
+                            <div class="room-interactive-overlay" data-room-id="medbay" style="top: 15%; left: 27%; width: 22%; height: 11%;">
                                 <div class="room-tooltip-tag">DECK 5: MEDBAY</div>
                                 <div class="room-capacity-badge" id="cap-badge-medbay">0/2</div>
                                 <div class="room-occupants" id="occupants-medbay"></div>
                             </div>
 
                             <!-- Deck 5: Sleep Pods (Right) -->
-                            <div class="room-interactive-overlay" data-room-id="sleepPods" style="top: 15%; left: 51%; width: 15%; height: 11%;">
+                            <div class="room-interactive-overlay" data-room-id="sleepPods" style="top: 15%; left: 51%; width: 22%; height: 11%;">
                                 <div class="room-tooltip-tag">DECK 5: SLEEP PODS</div>
                                 <div class="room-capacity-badge" id="cap-badge-sleepPods">0/2</div>
                                 <div class="room-occupants" id="occupants-sleepPods"></div>
                             </div>
 
                             <!-- Deck 4: Hydroponics (Left) -->
-                            <div class="room-interactive-overlay" data-room-id="hydroponics" style="top: 27%; left: 34%; width: 15%; height: 19%;">
+                            <div class="room-interactive-overlay" data-room-id="hydroponics" style="top: 27%; left: 27%; width: 22%; height: 20%;">
                                 <div class="room-tooltip-tag">DECK 4: HYDROPONICS</div>
                                 <div class="room-capacity-badge" id="cap-badge-hydroponics">0/2</div>
                                 <div class="room-occupants" id="occupants-hydroponics"></div>
                             </div>
 
                             <!-- Deck 4: O2 Bay (Right) -->
-                            <div class="room-interactive-overlay" data-room-id="o2bay" style="top: 27%; left: 51%; width: 15%; height: 19%;">
+                            <div class="room-interactive-overlay" data-room-id="o2bay" style="top: 27%; left: 51%; width: 22%; height: 20%;">
                                 <div class="room-tooltip-tag">DECK 4: O2 BAY</div>
                                 <div class="room-capacity-badge" id="cap-badge-o2bay">0/2</div>
                                 <div class="room-occupants" id="occupants-o2bay"></div>
                             </div>
 
                             <!-- Deck 2: The Brig (Left) -->
-                            <div class="room-interactive-overlay" data-room-id="brig" style="top: 47%; left: 35%; width: 14%; height: 12%;">
+                            <div class="room-interactive-overlay" data-room-id="brig" style="top: 47%; left: 27%; width: 22%; height: 12%;">
                                 <div class="room-tooltip-tag">DECK 2: THE BRIG</div>
                                 <div class="room-capacity-badge" id="cap-badge-brig">0/2</div>
                                 <div class="room-occupants" id="occupants-brig"></div>
                             </div>
 
                             <!-- Deck 2: Maintenance / Workshop (Right) -->
-                            <div class="room-interactive-overlay" data-room-id="workshop" style="top: 47%; left: 51%; width: 15%; height: 12%;">
+                            <div class="room-interactive-overlay" data-room-id="workshop" style="top: 47%; left: 51%; width: 22%; height: 12%;">
                                 <div class="room-tooltip-tag">DECK 2: WORKSHOP / STORES</div>
                                 <div class="room-capacity-badge" id="cap-badge-workshop">0/2</div>
                                 <div class="room-occupants" id="occupants-workshop"></div>
                             </div>
 
                             <!-- Deck 1: Reactor Core -->
-                            <div class="room-interactive-overlay" data-room-id="reactor" style="top: 60%; left: 35%; width: 30%; height: 25%;">
+                            <div class="room-interactive-overlay" data-room-id="reactor" style="top: 60%; left: 35%; width: 30%; height: 23%;">
                                 <div class="room-tooltip-tag">DECK 1: REACTOR CORE</div>
                                 <div class="room-capacity-badge" id="cap-badge-reactor">0/2</div>
                                 <div class="room-occupants" id="occupants-reactor"></div>
@@ -326,7 +340,7 @@
                         <div class="telemetry-gauge">
                             <div class="gauge-label-row">
                                 <span>POWER GRID</span>
-                                <span id="gauge-txt-power" style="color: #388bfd;">88% (440 kW)</span>
+                                <span id="gauge-txt-power" style="color: #388bfd;">100% (500 kW)</span>
                             </div>
                             <div class="gauge-track"><div class="gauge-bar bar-power" id="gauge-bar-power"></div></div>
                         </div>
@@ -334,7 +348,7 @@
                         <div class="telemetry-gauge">
                             <div class="gauge-label-row">
                                 <span>O2 SATURATION</span>
-                                <span id="gauge-txt-o2" style="color: #56d364;">96% (Nominal)</span>
+                                <span id="gauge-txt-o2" style="color: #56d364;">100% (Nominal)</span>
                             </div>
                             <div class="gauge-track"><div class="gauge-bar bar-o2" id="gauge-bar-o2"></div></div>
                         </div>
@@ -342,7 +356,7 @@
                         <div class="telemetry-gauge">
                             <div class="gauge-label-row">
                                 <span>FOOD RESERVES</span>
-                                <span id="gauge-txt-food" style="color: #e3b341;">80% (48 Rations)</span>
+                                <span id="gauge-txt-food" style="color: #e3b341;">100% (60 Rations)</span>
                             </div>
                             <div class="gauge-track"><div class="gauge-bar bar-food" id="gauge-bar-food"></div></div>
                         </div>
@@ -363,14 +377,17 @@
                             <div class="gauge-track"><div class="gauge-bar bar-san" id="gauge-bar-discipline"></div></div>
                         </div>
 
-                        <!-- CRT Comms Feed -->
-                        <div class="panel-header-title" style="margin-top: 6px;">
-                            <span>CRT LOG</span>
-                            <span style="color: #7ee787;">LIVE</span>
+                        <!-- Tactical Incident & Alert Dashboard -->
+                        <div class="panel-header-title alert-header-bar" style="margin-top: 6px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span>INCIDENTS & ALERTS</span>
+                                <span id="alert-counter-badge" class="alert-counter-badge zero">0</span>
+                            </div>
+                            <button id="btn-clear-alerts" class="clear-alerts-btn" onclick="Phase2Bridge.clearAllNotices()" title="Clear all alerts">CLEAR</button>
                         </div>
 
-                        <div class="comms-log-box" id="phase2-comms-log">
-                            <!-- Live entries written by Phase2Bridge -->
+                        <div class="alerts-container" id="phase2-alerts-container">
+                            <!-- Dynamic alert cards rendered by Phase2Bridge -->
                         </div>
                     </section>
                 </main>

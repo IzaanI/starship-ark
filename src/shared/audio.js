@@ -375,35 +375,57 @@ class SoundEngine {
         });
     }
 
-    // 10. LAUNCH SEQUENCE / EMERGENCY ALARM KLXON
+    // 10. LAUNCH SEQUENCE / EMERGENCY ALARM KLAXON (Deep naval pitch, 4x slower pulse)
     playLaunchAlert() {
+        this.playCrisisAlert();
+    }
+
+    playCrisisAlert() {
         this.ensureContext();
         if (!this.ctx || this.isMuted) return;
+
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+
         const t = this.ctx.currentTime;
         const scale = (this.volumes.launchAlert !== undefined ? this.volumes.launchAlert : 0.6) * (1 / 0.6);
+        const startT = t + 0.04; // Safety lead time for AudioContext render quantum
 
-        for (let i = 0; i < 2; i++) {
-            const sweepT = t + i * 0.35;
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            osc.type = "sawtooth";
-            osc.frequency.setValueAtTime(260, sweepT);
-            osc.frequency.linearRampToValueAtTime(520, sweepT + 0.22);
-            osc.frequency.linearRampToValueAtTime(240, sweepT + 0.32);
+        // Primary Klaxon: slightly deeper pitch (200Hz -> 380Hz -> 190Hz, was 260Hz -> 520Hz)
+        const osc = this.ctx.createOscillator();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(200, startT);
+        osc.frequency.linearRampToValueAtTime(380, startT + 0.35);
+        osc.frequency.linearRampToValueAtTime(190, startT + 0.70);
 
-            const filter = this.ctx.createBiquadFilter();
-            filter.type = "lowpass";
-            filter.frequency.setValueAtTime(900, sweepT);
+        // Sub harmonic oscillator for rich ship hull presence (100Hz -> 190Hz -> 95Hz)
+        const subOsc = this.ctx.createOscillator();
+        subOsc.type = "sine";
+        subOsc.frequency.setValueAtTime(100, startT);
+        subOsc.frequency.linearRampToValueAtTime(190, startT + 0.35);
+        subOsc.frequency.linearRampToValueAtTime(95, startT + 0.70);
 
-            gain.gain.setValueAtTime(0.24 * scale, sweepT);
-            gain.gain.exponentialRampToValueAtTime(0.001, sweepT + 0.34);
+        // Lowpass filter: 750Hz for warm, naval alarm tone with crisp audible presence
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(750, startT);
 
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(this.masterGain);
-            osc.start(sweepT);
-            osc.stop(sweepT + 0.35);
-        }
+        // Envelope with smooth 50ms attack preventing click, decaying over 0.78s
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.001, startT);
+        gain.gain.linearRampToValueAtTime(0.30 * scale, startT + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, startT + 0.78);
+
+        osc.connect(filter);
+        subOsc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.start(startT);
+        subOsc.start(startT);
+        osc.stop(startT + 0.82);
+        subOsc.stop(startT + 0.82);
     }
 }
 

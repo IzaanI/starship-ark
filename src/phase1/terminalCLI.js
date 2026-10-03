@@ -78,6 +78,10 @@ class TerminalCLI {
                 const pwrMsg = alreadyFetched ? `(Local Archive - 0 PWR)` : `(-1 PWR)`;
                 this.printLog(logConsole, timeStr, `[DOCUMENT RETRIEVED] ${candidate.bioDoc.title} loaded into viewer. ${pwrMsg}`, "normal", true);
             }
+        } else if (cmd === "LAUNCH Y" || cmd === "INITIATE LAUNCH Y" || cmd === "START LAUNCH Y" || cmd === "LAUNCH -Y" || cmd === "INITIATE LAUNCH -Y") {
+            this.pendingLaunchConfirm = false;
+            this.executeLaunchSequence(logConsole, timeStr);
+            return;
         } else if (cmd === "INITIATE LAUNCH" || cmd === "LAUNCH" || cmd === "START LAUNCH") {
             const seats = window.seatsFilled !== undefined ? window.seatsFilled : (window.acceptedCrew ? window.acceptedCrew.length + 1 : 1);
             const max = window.maxSeats || 7;
@@ -103,6 +107,28 @@ class TerminalCLI {
         } else if (cmd === "CLOSE DOC" || cmd === "CLEAR DOC") {
             if (window.clearDocumentViewer) window.clearDocumentViewer();
             this.printLog(logConsole, timeStr, `Document viewer cleared.`, "normal", true);
+        } else if (cmd.startsWith("CRISIS ") || cmd === "CRISIS") {
+            const target = cmd.replace("CRISIS", "").trim().toLowerCase();
+            const station = (target === "pwr" || target === "reactor") ? "reactor"
+                          : (target === "o2" || target === "o2bay") ? "o2bay"
+                          : (target === "hydro" || target === "hydroponics" || target === "bio") ? "hydroponics"
+                          : (target === "cockpit" || target === "helm" || target === "nav") ? "cockpit"
+                          : "random";
+            if (window.triggerCrisis) {
+                const res = window.triggerCrisis(station);
+                if (res) {
+                    this.printLog(logConsole, timeStr, `[HAZARD INJECTED] ${res.title} triggered on ${res.stationName}.`, "warning", true);
+                } else {
+                    this.printLog(logConsole, timeStr, `[CRISIS NOTICE] Hazard already active or station unavailable: '${target}'.`, "warning", true);
+                }
+            } else {
+                this.printLog(logConsole, timeStr, `[STANDBY] Flight Engine offline. Crises active post-launch.`, "warning", true);
+            }
+        } else if (cmd === "RESOLVE ALL" || cmd === "CLEAR CRISIS" || cmd === "RESOLVE CRISIS") {
+            if (window.resolveAllCrises) {
+                window.resolveAllCrises();
+                this.printLog(logConsole, timeStr, `[HAZARDS CLEARED] All active station crises resolved.`, "normal", true);
+            }
         } else if (cmd === "CLEAR") {
             logConsole.innerHTML = "";
             this.printLog(logConsole, timeStr, "CRT console buffer cleared.", "normal", true);
@@ -140,6 +166,46 @@ class TerminalCLI {
                 this.printLog(logConsole, timeStr, `  Line Status: QUEUE EXHAUSTED (0 citizens remaining outside)`, "warning", true);
             } else {
                 this.printLog(logConsole, timeStr, `  Waiting in Line: ${remQ} applicant(s) waiting outside in rain`, "normal", true);
+            }
+        } else if (cmd.startsWith("CRISIS")) {
+            const parts = rawCommand.trim().split(/\s+/);
+            const target = parts[1] || 'random';
+            if (window.triggerCrisis) {
+                const crisis = window.triggerCrisis(target.toLowerCase());
+                if (crisis) {
+                    this.printLog(logConsole, timeStr, `CRISIS TRIGGERED: ${crisis.title} on ${crisis.stationName}`, "warning", true);
+                } else {
+                    this.printLog(logConsole, timeStr, `Could not trigger crisis on: ${target}`, "warning", true);
+                }
+            }
+        } else if (cmd.startsWith("PANIC")) {
+            const name = rawCommand.substring(5).trim();
+            if (window.triggerPanic) {
+                const ok = window.triggerPanic(name || null);
+                this.printLog(logConsole, timeStr, ok ? `PANIC ATTACK INDUCED: ${name || 'Lead Officer'}` : `Officer not found: ${name}`, ok ? "warning" : "error", true);
+            }
+        } else if (cmd.startsWith("INFECT")) {
+            const name = rawCommand.substring(6).trim();
+            if (window.triggerInfection) {
+                const ok = window.triggerInfection(name || null);
+                this.printLog(logConsole, timeStr, ok ? `PATHOGEN INFECTION INOCULATED: ${name || 'Lead Officer'}` : `Officer not found: ${name}`, ok ? "warning" : "error", true);
+            }
+        } else if (cmd.startsWith("CURE")) {
+            const name = rawCommand.substring(4).trim();
+            if (name.toUpperCase() === 'ALL' || !name) {
+                if (window.cureAll) window.cureAll();
+                this.printLog(logConsole, timeStr, `ALL OFFICERS CLEARED OF MEDICAL CONDITIONS`, "normal", true);
+            } else {
+                if (window.cureOfficer) {
+                    const ok = window.cureOfficer(name);
+                    this.printLog(logConsole, timeStr, ok ? `OFFICER CURED: ${name}` : `Officer not found: ${name}`, "normal", true);
+                }
+            }
+        } else if (cmd.startsWith("KILL")) {
+            const name = rawCommand.substring(4).trim();
+            if (window.killOfficer) {
+                const ok = window.killOfficer(name || null);
+                this.printLog(logConsole, timeStr, ok ? `FATAL CASUALTY RECORDED: ${name || 'Officer'}` : `Officer not found: ${name}`, ok ? "warning" : "error", true);
             }
         } else {
             this.printLog(logConsole, timeStr, `Command not recognized: '${rawCommand}'. Type 'HELP' for a list of valid commands.`, "warning", true);
