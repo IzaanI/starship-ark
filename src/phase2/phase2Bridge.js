@@ -144,7 +144,6 @@ class Phase2BridgeEngine {
                 trueIdentity: c.trueIdentity || "LEGITIMATE_EXPERT",
                 weightLbs: weightLbs,
                 hp: 100,
-                san: 100,
                 eng: 100,
                 conditions: {},
                 status: "UNASSIGNED",
@@ -236,10 +235,14 @@ class Phase2BridgeEngine {
 
             const isPanicked = (officer.conditions && officer.conditions['PANIC_ATTACK']) || (window.FlightEngine && window.FlightEngine.hasCondition(officer, 'PANIC_ATTACK'));
             const isContagious = (officer.conditions && officer.conditions['CONTAGIOUS_INFECTION']) || (window.FlightEngine && window.FlightEngine.hasCondition(officer, 'CONTAGIOUS_INFECTION'));
+            const isInjured = (officer.conditions && officer.conditions['PHYSICAL_INJURY']) || (window.FlightEngine && window.FlightEngine.hasCondition(officer, 'PHYSICAL_INJURY'));
             const isTransit = officer.status && officer.status.startsWith('TRANSIT');
             const isUnassigned = officer.status === 'UNASSIGNED';
 
             let displayStatus = officer.status;
+            if (displayStatus && displayStatus.startsWith('ASSIGNED: ')) {
+                displayStatus = displayStatus.replace(/^ASSIGNED:\s*/, '');
+            }
             let statusColor = '#8b949e';
             let statusWeight = '500';
             let statusLetterSpacing = 'normal';
@@ -259,6 +262,13 @@ class Phase2BridgeEngine {
                 statusLetterSpacing = '0.5px';
             } else if (isContagious) {
                 displayStatus = 'CONTAGIOUS (SYMPTOMATIC)';
+                statusColor = '#e3b341';
+                statusWeight = '700';
+                statusLetterSpacing = '0.5px';
+            } else if (isInjured) {
+                const cond = (officer.conditions && officer.conditions['PHYSICAL_INJURY']) || {};
+                const part = cond.bodyPart ? cond.bodyPart.toUpperCase() : 'SPRAIN';
+                displayStatus = `INJURED (${part})`;
                 statusColor = '#e3b341';
                 statusWeight = '700';
                 statusLetterSpacing = '0.5px';
@@ -290,7 +300,6 @@ class Phase2BridgeEngine {
             };
 
             const hpVal = Math.round(officer.hp);
-            const sanVal = Math.round(officer.san);
             const engVal = Math.round(officer.eng);
             const padNum = String(idx + 1).padStart(2, '0');
 
@@ -304,19 +313,14 @@ class Phase2BridgeEngine {
                 <div class="crew-row-vitals">
                     <div class="vital-stat">
                         <span class="vital-lbl">HP</span>
-                        <span class="vital-num" id="vital-hp-val-${idx}">${hpVal}</span>
-                    </div>
-                    <div class="vital-stat">
-                        <span class="vital-lbl">SAN</span>
-                        <span class="vital-num" id="vital-san-val-${idx}">${sanVal}</span>
+                        <span class="vital-num vital-hp ${hpVal < 35 ? 'vital-blinking' : ''}" id="vital-hp-val-${idx}">${hpVal}</span>
                     </div>
                     <div class="vital-stat">
                         <span class="vital-lbl">ENG</span>
-                        <span class="vital-num" id="vital-eng-val-${idx}">${engVal}</span>
+                        <span class="vital-num vital-eng ${engVal < 35 ? 'vital-blinking' : ''}" id="vital-eng-val-${idx}">${engVal}</span>
                     </div>
                     <!-- Hidden DOM compatibility layers for flightEngine HUD update -->
                     <div style="display:none;" id="vital-hp-box-${idx}"><div id="vital-hp-fill-${idx}"></div></div>
-                    <div style="display:none;" id="vital-san-box-${idx}"><div id="vital-san-fill-${idx}"></div></div>
                     <div style="display:none;" id="vital-eng-box-${idx}"><div id="vital-eng-fill-${idx}"></div></div>
                 </div>
                 <div class="crew-row-status">
@@ -326,7 +330,7 @@ class Phase2BridgeEngine {
             `;
 
             // Insert avatar canvas into avatar box
-            const avatarBox = card.querySelector('.crew-row-avatar-box');
+            const avatarBox = (typeof card.querySelector === 'function') ? card.querySelector('.crew-row-avatar-box') : null;
             if (avatarBox) {
                 avatarBox.appendChild(avatarCanvas);
             } else {
@@ -929,7 +933,7 @@ class Phase2BridgeEngine {
         let message = '';
         if (roomId === 'sleepPods') {
             if (occupants.length === 0 && enRoute.length === 0) {
-                message = `Quarters vacant (0/${comp.maxOccupants}). Select an officer from manifest to order rest & stamina recovery (+1.8%/s).`;
+                message = `Quarters vacant (0/${comp.maxOccupants}). Select an officer from manifest to order rest & stamina recovery (+3.5%/s).`;
             } else {
                 const occNames = occupants.map(c => `${c.name} (${Math.round(c.eng)}% Stamina)`).join(', ');
                 const enRouteText = enRoute.length > 0 ? ` [${enRoute.map(c => c.name).join(', ')} en route]` : '';
@@ -938,11 +942,11 @@ class Phase2BridgeEngine {
         } else {
             if (occupants.length === 0 && enRoute.length === 0) {
                 if (roomId === 'reactor') {
-                    message = `UNMANNED (0/${comp.maxOccupants}). Power Grid bleeding at maximum rate (-0.22%/s). Station a reactor specialist to stabilize.`;
+                    message = `UNMANNED (0/${comp.maxOccupants}). Power Grid bleeding at maximum rate (-0.32%/s). Station a reactor specialist to stabilize.`;
                 } else if (roomId === 'o2bay') {
-                    message = `UNMANNED (0/${comp.maxOccupants}). Oxygen Reserves bleeding at maximum rate (-0.22%/s). Station a life support officer to stabilize.`;
+                    message = `UNMANNED (0/${comp.maxOccupants}). Oxygen Reserves bleeding at maximum rate (-0.32%/s). Station a life support officer to stabilize.`;
                 } else if (roomId === 'hydroponics') {
-                    message = `UNMANNED (0/${comp.maxOccupants}). Food Stores bleeding at maximum rate (-0.22%/s). Station a botanist/horticulturist to stabilize.`;
+                    message = `UNMANNED (0/${comp.maxOccupants}). Food Stores bleeding at maximum rate (-0.32%/s). Station a botanist/horticulturist to stabilize.`;
                 } else if (roomId === 'cockpit') {
                     message = `UNMANNED (0/${comp.maxOccupants}). Helm unmonitored. Cruising along baseline trajectory.`;
                 } else if (roomId === 'medbay') {

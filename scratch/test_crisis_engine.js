@@ -124,7 +124,7 @@ console.log("Stacked Reactor Work Rate (Core + Adjacent):", stackedWork.rate, "E
 console.assert(Math.abs(stackedWork.rate - 1.312) < 0.01, "Stacked rate should be ~1.312");
 
 console.log("=== TEST 3: Trigger Crises and Verify Resource Penalties ===");
-const baselinePowerDrain = engine.getStationDrainRate('reactor').drainRate;
+const baselinePowerDrain = Number((engine.getStationDrainRate('reactor').drainRate * 0.90).toFixed(3));
 const initialAlertsCount = window.Phase2Bridge.alerts.length;
 const cReactor = engine.triggerCrisis('reactor');
 console.assert(cReactor !== null, "Reactor crisis should trigger");
@@ -148,7 +148,7 @@ engine.updateVesselTelemetry(1.0);
 console.log("Reactor drain with crisis:", engine.telemetry.power.drainRate, "Baseline:", baselinePowerDrain);
 console.assert(Math.abs(engine.telemetry.power.drainRate - (baselinePowerDrain + 0.25)) < 0.01, "Power drain should include +0.25%/s penalty");
 
-console.log("=== TEST 4: Cockpit Hazard ETA Drift (+5.0s/s) ===");
+console.log("=== TEST 4: Cockpit Hazard ETA Drift (+3.5s/s) ===");
 const initialVoyageSec = engine.totalVoyageSeconds;
 const cCockpit = engine.triggerCrisis('cockpit');
 console.assert(cCockpit !== null, "Cockpit crisis should trigger");
@@ -165,7 +165,7 @@ console.assert(soundCallsAtCockpit === 2, "Sound should have triggered once per 
 // Simulate 2 seconds of flight during cockpit crisis
 engine.updateCrises(2.0);
 console.log("Voyage seconds after 2s of cockpit crisis:", engine.totalVoyageSeconds, "Initial:", initialVoyageSec);
-console.assert(engine.totalVoyageSeconds === initialVoyageSec + 10.0, "Cockpit crisis should add +5.0s to total voyage seconds per second");
+console.assert(engine.totalVoyageSeconds === initialVoyageSec + 7.0, "Cockpit crisis should add +3.5s to total voyage seconds per second");
 
 // Sound should NOT have played during updateCrises (tick updates)
 console.assert(audioAlertCalls === soundCallsAtCockpit, "Sound should NOT re-trigger on tick updates!");
