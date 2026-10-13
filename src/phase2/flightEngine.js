@@ -688,6 +688,17 @@ class FlightEngineCore {
         else if (t.discipline.value >= 50) t.discipline.label = "Tense";
         else t.discipline.label = "MUTINOUS PANIC";
 
+        // Tactical Audio: low-resource sonar warning blip if any critical resource < 25%
+        const minResource = Math.min(t.power.value, t.o2.value, t.food.value, t.hull.value);
+        if (minResource < 25 && this.speedMultiplier > 0) {
+            if (this.lastResourceWarningBeep === undefined || (this.elapsedSeconds - this.lastResourceWarningBeep >= 14.0)) {
+                this.lastResourceWarningBeep = this.elapsedSeconds;
+                if (window.SoundFX && window.SoundFX.playResourceWarningBeep) {
+                    window.SoundFX.playResourceWarningBeep();
+                }
+            }
+        }
+
         // 6. Check unmanned station alert timers
         this.checkUnmannedStationAlerts(dt);
     }
@@ -734,6 +745,10 @@ class FlightEngineCore {
                     officer.transitTarget = null;
                     officer.transitRemaining = 0;
                     officer.previousRoom = null;
+
+                    if (window.SoundFX && window.SoundFX.playStationArrival) {
+                        window.SoundFX.playStationArrival();
+                    }
 
                     const comp = (window.Phase2Bridge && window.Phase2Bridge.compartments) ? window.Phase2Bridge.compartments[officer.currentRoom] : null;
 
@@ -944,6 +959,14 @@ class FlightEngineCore {
             if (percent < 30) barEl.style.background = '#c85a53';
             else if (percent < 60) barEl.style.background = '#cf9f54';
             else barEl.style.background = ''; // Reset to class styling
+
+            if (barEl.parentElement) {
+                if (percent < 25) {
+                    barEl.parentElement.classList.add('critical-pulse');
+                } else {
+                    barEl.parentElement.classList.remove('critical-pulse');
+                }
+            }
         }
     }
 
@@ -1132,9 +1155,10 @@ class FlightEngineCore {
             window.Phase2Bridge.setSpeed('pause');
         }
 
-        // Play critical alarm / failure sound
-        if (window.SoundFX && window.SoundFX.playLaunchAlert) {
-            window.SoundFX.playLaunchAlert();
+        // Play critical alarm / failure sound and ramp down engine
+        if (window.SoundFX) {
+            if (window.SoundFX.playLaunchAlert) window.SoundFX.playLaunchAlert();
+            if (window.SoundFX.updateEngineSpeed) window.SoundFX.updateEngineSpeed('pause', 1.0);
         }
 
         this.logComms("=========================================================", "cmd-echo", "SYS");
@@ -1185,9 +1209,10 @@ class FlightEngineCore {
             window.Phase2Bridge.setSpeed('pause');
         }
 
-        // Play confirmation sound
-        if (window.SoundFX && window.SoundFX.playKeyClick) {
-            window.SoundFX.playKeyClick(null, false);
+        // Play confirmation sound and ramp down engine
+        if (window.SoundFX) {
+            if (window.SoundFX.playKeyClick) window.SoundFX.playKeyClick(null, false);
+            if (window.SoundFX.updateEngineSpeed) window.SoundFX.updateEngineSpeed('pause', 1.0);
         }
 
         this.logComms("=========================================================", "cmd-echo", "HELM");
@@ -1404,6 +1429,9 @@ class FlightEngineCore {
     logComms(msg, type = "normal", sender = "SYS") {
         if (window.Phase2Bridge && window.Phase2Bridge.logEvent) {
             window.Phase2Bridge.logEvent(msg, type, sender);
+        }
+        if (window.SoundFX && window.SoundFX.playCommsTelemetryChirp && sender !== 'SYS' && type !== 'cmd-echo') {
+            window.SoundFX.playCommsTelemetryChirp();
         }
     }
 

@@ -73,10 +73,12 @@ class Phase2BridgeEngine {
             station: "Bridge"
         };
 
-        // 1. Play Launch Audio & Klaxons
+        // 1. Play Launch Audio & Klaxons & Switch Ambient Loops
         if (window.SoundFX) {
             SoundFX.playLaunchAlert();
             if (SoundFX.playTerminalOpen) SoundFX.playTerminalOpen();
+            if (SoundFX.stopAmbient) SoundFX.stopAmbient();
+            if (SoundFX.startSpaceEngine) SoundFX.startSpaceEngine('pause');
         }
 
         // 2. Cinematic Screen Shake & Fade Out
@@ -408,10 +410,16 @@ class Phase2BridgeEngine {
         if (window.FlightEngine && window.FlightEngine.isGameOver && mode !== 'pause') {
             return;
         }
+        const prevSpeed = this.activeSpeed;
         this.activeSpeed = mode;
         if (this.starfield) {
             this.starfield.setSpeedMode(mode);
             this.starfield.setBoostEnabled(mode !== 'pause');
+        }
+
+        if (window.SoundFX) {
+            if (window.SoundFX.updateEngineSpeed) window.SoundFX.updateEngineSpeed(mode);
+            if (prevSpeed !== mode && window.SoundFX.playSpeedRelay) window.SoundFX.playSpeedRelay(mode);
         }
 
         // Forward to FlightEngine simulation tick
@@ -915,7 +923,11 @@ class Phase2BridgeEngine {
             window.FlightEngine.renderHUD();
         }
 
-        if (window.SoundFX && SoundFX.playKeyClick) SoundFX.playKeyClick(null, true);
+        if (window.SoundFX && SoundFX.playPneumaticDoor) {
+            SoundFX.playPneumaticDoor();
+        } else if (window.SoundFX && SoundFX.playKeyClick) {
+            SoundFX.playKeyClick(null, true);
+        }
 
         this.cancelDispatch();
         this.renderRoomOccupants();

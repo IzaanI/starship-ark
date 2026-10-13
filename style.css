@@ -2735,6 +2735,24 @@ html, body {
     overflow: hidden;
     position: relative;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gauge-track.critical-pulse {
+    border-color: #f85149 !important;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 8px rgba(248, 81, 73, 0.7) !important;
+    animation: gaugeCriticalPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes gaugeCriticalPulse {
+    0%, 100% {
+        border-color: #f85149;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 4px rgba(248, 81, 73, 0.4);
+    }
+    50% {
+        border-color: #ff7b72;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 12px rgba(248, 81, 73, 0.95);
+    }
 }
 
 .gauge-bar {
