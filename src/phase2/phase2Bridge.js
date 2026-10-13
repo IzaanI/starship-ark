@@ -40,6 +40,9 @@ class Phase2BridgeEngine {
         // Security Console Airlock Confirmation State
         this.airlockConfirmTarget = null;
         this.airlockConfirmTimeout = null;
+
+        // Mission Debriefing Schedule Timer
+        this.debriefTimer = null;
     }
 
     /**
@@ -187,6 +190,12 @@ class Phase2BridgeEngine {
 
         // Render Bottom Left Security & Brig Console
         this.renderSecurityConsole();
+
+        // Ensure debrief button and modal remain strictly hidden during active flight
+        const debriefBtn = document.getElementById('phase2-btn-debrief');
+        if (debriefBtn) debriefBtn.classList.add('hidden');
+        const debriefModal = document.getElementById('debrief-modal');
+        if (debriefModal) debriefModal.classList.add('hidden');
     }
 
     renderCrewManifest() {
@@ -396,6 +405,9 @@ class Phase2BridgeEngine {
     }
 
     setSpeed(mode) {
+        if (window.FlightEngine && window.FlightEngine.isGameOver && mode !== 'pause') {
+            return;
+        }
         this.activeSpeed = mode;
         if (this.starfield) {
             this.starfield.setSpeedMode(mode);
@@ -709,6 +721,7 @@ class Phase2BridgeEngine {
     }
 
     selectOfficer(index) {
+        if (window.FlightEngine && window.FlightEngine.isGameOver) return;
         if (this.selectedOfficerIndex === index) {
             this.cancelDispatch();
             return;
@@ -716,12 +729,6 @@ class Phase2BridgeEngine {
 
         const officer = this.crew[index];
         if (!officer || officer.isDead || officer.status === 'DECEASED') return;
-
-        // If in transit, clicking their card immediately cancels transit and returns them to previous position!
-        if (officer.transitRemaining > 0) {
-            this.cancelTransit(index);
-            return;
-        }
 
         this.selectedOfficerIndex = index;
         this.airlockConfirmTarget = null;
@@ -740,18 +747,18 @@ class Phase2BridgeEngine {
         const shipContainer = document.getElementById('phase2-ship-container');
         if (shipContainer) shipContainer.classList.add('dispatch-mode-active');
 
-        // Show dispatch banner with unassign option if officer is stationed
+        // Show dispatch banner with unassign option if officer is stationed or in transit
         const banner = document.getElementById('dispatch-banner');
         const bannerText = document.getElementById('dispatch-banner-text');
         const unassignBtn = document.getElementById('dispatch-btn-unassign');
         if (banner && bannerText) {
             banner.classList.remove('hidden');
-            bannerText.textContent = `[ASSIGN: ${officer.name.toUpperCase()}] CLICK ANY COMPARTMENT OR SLEEP PODS`;
+            bannerText.textContent = `CLICK TO ASSIGN ${officer.name.toUpperCase()}`;
         }
         if (unassignBtn) {
             if (officer.currentRoom || officer.transitTarget) {
                 unassignBtn.classList.remove('hidden');
-                unassignBtn.textContent = `UNASSIGN ${officer.name.split(' ')[0].toUpperCase()} TO STANDBY`;
+                unassignBtn.textContent = 'STANDBY';
             } else {
                 unassignBtn.classList.add('hidden');
             }
@@ -863,6 +870,10 @@ class Phase2BridgeEngine {
     }
 
     dispatchOfficer(officerIndex, targetRoomId) {
+        if (window.FlightEngine && window.FlightEngine.isGameOver) {
+            this.cancelDispatch();
+            return;
+        }
         const officer = this.crew[officerIndex];
         const toComp = this.compartments[targetRoomId];
         if (!officer || officer.isDead || officer.status === 'DECEASED' || !toComp) return;
@@ -873,18 +884,24 @@ class Phase2BridgeEngine {
             return;
         }
 
-        // Check station capacity (excluding deceased officers)
-        const currentOccupants = this.crew.filter(c => !c.isDead && c.status !== 'DECEASED' && (c.currentRoom === targetRoomId || c.transitTarget === targetRoomId));
+        // If officer is already in transit heading to this exact room, keep transit and close banner
+        if (officer.transitTarget === targetRoomId && officer.transitRemaining > 0) {
+            this.cancelDispatch();
+            return;
+        }
+
+        // Check station capacity (excluding the officer themselves)
+        const currentOccupants = this.crew.filter(c => c !== officer && !c.isDead && c.status !== 'DECEASED' && (c.currentRoom === targetRoomId || c.transitTarget === targetRoomId));
         if (currentOccupants.length >= toComp.maxOccupants) {
             this.cancelDispatch();
             return;
         }
 
-        const duration = this.getTransitDuration(officer.currentRoom, targetRoomId);
-        const fromRoom = officer.currentRoom;
+        const fromRoom = officer.currentRoom || officer.previousRoom || null;
+        const duration = this.getTransitDuration(fromRoom, targetRoomId);
 
-        // Remember previous position for instant travel cancellation
-        officer.previousRoom = fromRoom || null;
+        // Remember previous position for travel continuity
+        officer.previousRoom = fromRoom;
         delete this.wanderState[officer.name];
         officer.currentRoom = null;
         officer.transitTarget = targetRoomId;
@@ -1099,7 +1116,8 @@ class Phase2BridgeEngine {
                     const token = document.createElement('div');
                     token.className = 'officer-token';
                     token.id = `token-officer-${officer.name.replace(/\s+/g, '-')}`;
-                    token.title = `${officer.name} (${officer.roleTitle}) — Active in ${comp.name}`;
+                    token.style.cursor = 'pointer';
+                    token.title = `${officer.name} (${officer.roleTitle}) — Active in ${comp.name} — Click to reassign`;
 
                     // Mini procedural helmet avatar canvas (retina 36x36, CSS 18x18)
                     const avatarCanvas = document.createElement('canvas');
@@ -1111,6 +1129,12 @@ class Phase2BridgeEngine {
                     const nameSpan = document.createElement('span');
                     nameSpan.className = 'token-name';
                     nameSpan.textContent = officer.name.split(' ')[0];
+
+                    const occOfficerIndex = this.crew.indexOf(officer);
+                    token.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.selectOfficer(occOfficerIndex);
+                    });
 
                     token.appendChild(avatarCanvas);
                     token.appendChild(nameSpan);
@@ -1154,7 +1178,7 @@ class Phase2BridgeEngine {
                     const token = document.createElement('div');
                     token.className = 'officer-token in-transit';
                     token.style.cursor = 'pointer';
-                    token.title = `${officer.name} en route to ${comp.name} (${Math.ceil(officer.transitRemaining)}s) — Click to cancel transit`;
+                    token.title = `${officer.name} en route to ${comp.name} (${Math.ceil(officer.transitRemaining)}s) — Click to reassign`;
 
                     // Mini procedural helmet avatar canvas
                     const avatarCanvas = document.createElement('canvas');
@@ -1174,7 +1198,7 @@ class Phase2BridgeEngine {
                     const officerIndex = this.crew.indexOf(officer);
                     token.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        this.cancelTransit(officerIndex);
+                        this.selectOfficer(officerIndex);
                     });
 
                     token.appendChild(avatarCanvas);
@@ -1707,6 +1731,176 @@ class Phase2BridgeEngine {
 
     airlockTargetOfficer() {
         return this.ejectTargetOfficer();
+    }
+
+    /**
+     * STEP 8: MISSION DEBRIEFING & POST-FLIGHT SCORECARD
+     */
+    scheduleDebriefModal(delayMs = 1200) {
+        if (this.debriefTimer) {
+            clearTimeout(this.debriefTimer);
+        }
+        this.debriefTimer = setTimeout(() => {
+            this.showDebriefModal();
+        }, delayMs);
+    }
+
+    showDebriefModal() {
+        if (!window.FlightEngine || !window.FlightEngine.isGameOver) return;
+        const report = window.FlightEngine.generateDebriefReport();
+        if (!report) return;
+
+        const modalEl = document.getElementById('debrief-modal');
+        const headerEl = document.getElementById('debrief-header');
+        const bodyEl = document.getElementById('debrief-body');
+        const debriefBtn = document.getElementById('phase2-btn-debrief');
+
+        // Reveal header debrief toggle button once game is over so player can inspect bridge and toggle back
+        if (debriefBtn) {
+            debriefBtn.classList.remove('hidden');
+        }
+
+        if (headerEl) {
+            headerEl.className = `debrief-header ${report.isWin ? 'win' : 'defeat'}`;
+            headerEl.innerHTML = `
+                <div class="debrief-title-block">
+                    <span class="debrief-badge ${report.isWin ? 'win' : 'defeat'}">
+                        ${report.isWin ? 'EXPEDITION COMPLETE // DOCKED' : 'EXPEDITION TERMINATED // VESSEL LOST'}
+                    </span>
+                    <h2 class="debrief-title">${report.title}</h2>
+                    <p class="debrief-desc">${report.description}</p>
+                </div>
+                <div class="rank-stamp-box ${report.rankClass}">
+                    <div class="rank-stamp-letter">${report.rank}</div>
+                    <div class="rank-stamp-title">${report.rankTitle}</div>
+                    <div class="rank-stamp-score">SCORE: ${report.score}</div>
+                </div>
+            `;
+        }
+
+        if (bodyEl) {
+            const breakdownItemsHtml = report.breakdown && report.breakdown.length > 0
+                ? report.breakdown.map(item => `
+                    <div class="debrief-breakdown-item">
+                        <span>${item.label}</span>
+                        <span class="${item.points >= 0 ? 'debrief-points-pos' : 'debrief-points-neg'}">
+                            ${item.points >= 0 ? '+' : ''}${item.points} PTS
+                        </span>
+                    </div>
+                `).join('')
+                : `<div class="debrief-breakdown-item"><span>Standard Evaluation</span><span>0 PTS</span></div>`;
+
+            const personnelRowsHtml = report.personnel && report.personnel.length > 0
+                ? report.personnel.map(p => `
+                    <tr>
+                        <td style="font-weight: 700; color: #f0f6fc;">${p.name}</td>
+                        <td style="color: #8b949e;">${p.roleTitle || 'Specialist'}</td>
+                        <td>${p.station || 'Unassigned'}</td>
+                        <td class="${p.statusClass}">${p.statusLabel}</td>
+                        <td style="font-style: italic;">${p.identityNote || 'Record Clear'}</td>
+                    </tr>
+                `).join('')
+                : `<tr><td colspan="5" style="text-align: center; color: #8b949e;">No crew manifest telemetry recorded.</td></tr>`;
+
+            bodyEl.innerHTML = `
+                <div class="debrief-section-title">> FLIGHT TELEMETRY & SURVIVAL RECORD</div>
+                <div class="debrief-telemetry-grid">
+                    <div class="debrief-stat-card">
+                        <div class="debrief-stat-label">TRANSIT PROGRESS</div>
+                        <div class="debrief-stat-val">${report.distancePercent}%</div>
+                    </div>
+                    <div class="debrief-stat-card">
+                        <div class="debrief-stat-label">FLIGHT TIME</div>
+                        <div class="debrief-stat-val">${report.elapsedFormatted} / ${report.totalFormatted}</div>
+                    </div>
+                    <div class="debrief-stat-card">
+                        <div class="debrief-stat-label">HULL INTEGRITY</div>
+                        <div class="debrief-stat-val">${report.telemetry.hull.value}%</div>
+                    </div>
+                    <div class="debrief-stat-card">
+                        <div class="debrief-stat-label">REMAINING RATIONS</div>
+                        <div class="debrief-stat-val">${report.telemetry.food.rations} (${report.telemetry.food.value}%)</div>
+                    </div>
+                    <div class="debrief-stat-card">
+                        <div class="debrief-stat-label">CREW SURVIVED</div>
+                        <div class="debrief-stat-val">${report.livingCount} / ${report.totalCrew}</div>
+                    </div>
+                </div>
+
+                <div class="debrief-section-title">> COMMAND PERFORMANCE BREAKDOWN</div>
+                <div class="debrief-breakdown-list">
+                    ${breakdownItemsHtml}
+                    <div class="debrief-breakdown-item" style="border-top: 1px solid #30363d; margin-top: 4px; padding-top: 6px; font-weight: 700;">
+                        <span>TOTAL EVALUATION SCORE</span>
+                        <span style="color: #79c0ff;">${report.score} PTS</span>
+                    </div>
+                </div>
+
+                <div class="debrief-section-title">> PERSONNEL SERVICE RECORD & SECURITY DOSSIER</div>
+                <table class="debrief-crew-table">
+                    <thead>
+                        <tr>
+                            <th>OFFICER</th>
+                            <th>SPECIALTY / ROLE</th>
+                            <th>STATION</th>
+                            <th>STATUS</th>
+                            <th>CONFIDENTIAL DOSSIER / DECORATIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${personnelRowsHtml}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        if (modalEl) {
+            modalEl.classList.remove('hidden');
+        }
+
+        if (window.SoundFX) {
+            if (report.isWin && window.SoundFX.sounds && window.SoundFX.sounds.accessGranted) {
+                window.SoundFX.sounds.accessGranted.currentTime = 0;
+                window.SoundFX.sounds.accessGranted.play().catch(() => {});
+            } else if (!report.isWin && window.SoundFX.sounds && window.SoundFX.sounds.accessDenied) {
+                window.SoundFX.sounds.accessDenied.currentTime = 0;
+                window.SoundFX.sounds.accessDenied.play().catch(() => {});
+            }
+        }
+    }
+
+    closeDebriefModal() {
+        const modalEl = document.getElementById('debrief-modal');
+        if (modalEl) {
+            modalEl.classList.add('hidden');
+        }
+        const debriefBtn = document.getElementById('phase2-btn-debrief');
+        if (debriefBtn && window.FlightEngine && window.FlightEngine.isGameOver) {
+            debriefBtn.classList.remove('hidden');
+        }
+        if (window.SoundFX && window.SoundFX.playKeyClick) {
+            window.SoundFX.playKeyClick(null, false);
+        }
+    }
+
+    restartExpedition() {
+        window.location.reload();
+    }
+
+    static scheduleDebriefModal(delayMs) {
+        if (window.Phase2Bridge) window.Phase2Bridge.scheduleDebriefModal(delayMs);
+    }
+
+    static showDebriefModal() {
+        if (window.Phase2Bridge) window.Phase2Bridge.showDebriefModal();
+    }
+
+    static closeDebriefModal() {
+        if (window.Phase2Bridge) window.Phase2Bridge.closeDebriefModal();
+    }
+
+    static restartExpedition() {
+        if (window.Phase2Bridge) window.Phase2Bridge.restartExpedition();
     }
 
     static restTargetOfficer() {

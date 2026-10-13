@@ -312,12 +312,12 @@ for (let i = 0; i < 5; i++) {
 console.log(`  Elena HP after 5s brawl: ${engine.crew[0].hp.toFixed(1)} (Expected: 89.0)`);
 assert.strictEqual(engine.crew[0].hp.toFixed(1), "89.0", "Combatants must lose -0.2 HP/s while brawling");
 
-// Resolution by Security Guard: Jax (Core security officer) enters the Reactor
-engine.crew[2].currentRoom = 'reactor'; // Jax enters room
+// Resolution: Combatants are separated
+engine.crew[0].currentRoom = 'hydroponics'; // Elena reassigned/separated
 engine.updateActiveCrewFriction(0.2);
 
-assert.strictEqual(engine.activeCrewFriction, null, "Brawl must resolve when security guard intervenes");
-console.log("  ✅ TEST 5 PASSED: Physical Brawl causes immediate & continuous damage, quelled by security.");
+assert.strictEqual(engine.activeCrewFriction, null, "Brawl must resolve when combatants are separated");
+console.log("  ✅ TEST 5 PASSED: Physical Brawl causes immediate & continuous damage, quelled by separation.");
 
 // -------------------------------------------------------------
 // TEST 6: Paranoid Accusation Incident
@@ -326,8 +326,16 @@ console.log("\nTest 6: Paranoid Accusation Incident");
 resetCrew();
 engine.telemetry.discipline.value = 40;
 
+// Accusation CANNOT occur if officers are in different stations
+engine.crew[0].currentRoom = 'reactor';
+engine.crew[1].currentRoom = 'cockpit';
+const crossRoomAttempt = engine.triggerCrewFrictionEvent('PARANOID_ACCUSATION', engine.crew[0], engine.crew[1]);
+assert.strictEqual(crossRoomAttempt, null, "Accusations cannot occur between officers in different stations");
+
+// Co-located officers at same station
+engine.crew[1].currentRoom = 'reactor';
 const accIncident = engine.triggerCrewFrictionEvent('PARANOID_ACCUSATION', engine.crew[0], engine.crew[1]);
-assert.ok(accIncident, "Accusation incident created");
+assert.ok(accIncident, "Accusation incident created when co-located at same station");
 assert.strictEqual(accIncident.type, 'PARANOID_ACCUSATION');
 assert.ok(accIncident.claim, `Claim generated: ${accIncident.claim}`);
 
@@ -340,12 +348,12 @@ assert.strictEqual(accuserEff.toFixed(2), "0.20", "Accuser efficiency must drop 
 const accusedEff = engine.getOfficerStationEfficiency(engine.crew[1], 'reactor');
 assert.strictEqual(accusedEff, 1.0, "Accused officer efficiency must remain unaffected");
 
-// Resolution: Accuser is sent to The Brig
-engine.crew[0].currentRoom = 'brig';
+// Resolution: Separating the crew members (reassigning either officer)
+engine.crew[0].currentRoom = 'hydroponics';
 engine.updateActiveCrewFriction(0.2);
 
-assert.strictEqual(engine.activeCrewFriction, null, "Accusation must resolve when accuser is sent to Brig");
-console.log("  ✅ TEST 6 PASSED: Paranoid Accusation applies 80% insubordination penalty and resolves via Brig.");
+assert.strictEqual(engine.activeCrewFriction, null, "Accusation must resolve when officers are separated");
+console.log("  ✅ TEST 6 PASSED: Paranoid Accusation requires same-station co-location and resolves via separation.");
 
 // -------------------------------------------------------------
 // TEST 7: Anti-Stacking Rules

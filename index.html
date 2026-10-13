@@ -229,6 +229,7 @@
                         <button class="time-btn active" id="phase2-btn-pause">|| PAUSE</button>
                         <button class="time-btn" id="phase2-btn-cruise">> 1x CRUISE</button>
                         <button class="time-btn" id="phase2-btn-warp">>> 2x CRUISE</button>
+                        <button class="time-btn debrief-btn hidden" id="phase2-btn-debrief" onclick="Phase2Bridge.showDebriefModal()">[DEBRIEFING]</button>
                     </div>
                 </header>
 
@@ -263,9 +264,9 @@
 
                             <!-- Tactical Dispatch Mode Banner -->
                             <div id="dispatch-banner" class="dispatch-banner hidden">
-                                <span id="dispatch-banner-text">SELECT COMPARTMENT TO DISPATCH</span>
+                                <span id="dispatch-banner-text">CLICK TO ASSIGN OFFICER</span>
                                 <div style="display: flex; gap: 8px; align-items: center;">
-                                    <button class="dispatch-unassign-btn hidden" id="dispatch-btn-unassign" onclick="Phase2Bridge.unassignSelectedOfficer()">UNASSIGN TO STANDBY</button>
+                                    <button class="dispatch-unassign-btn hidden" id="dispatch-btn-unassign" onclick="Phase2Bridge.unassignSelectedOfficer()">STANDBY</button>
                                     <button class="dispatch-cancel-btn" onclick="Phase2Bridge.cancelDispatch()">CANCEL</button>
                                 </div>
                             </div>
@@ -391,6 +392,18 @@
                         </div>
                     </section>
                 </main>
+
+                <!-- 6. MISSION DEBRIEFING & POST-FLIGHT SCORECARD MODAL -->
+                <div id="debrief-modal" class="debrief-modal hidden">
+                    <div class="debrief-card">
+                        <div class="debrief-header" id="debrief-header"></div>
+                        <div class="debrief-body" id="debrief-body"></div>
+                        <div class="debrief-actions">
+                            <button class="debrief-btn-inspect" onclick="Phase2Bridge.closeDebriefModal()">INSPECT SHIP</button>
+                            <button class="debrief-btn-restart" onclick="window.location.reload()">PLAY AGAIN</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

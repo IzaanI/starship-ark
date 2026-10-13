@@ -2459,6 +2459,7 @@ html, body {
     backdrop-filter: blur(2px);
     white-space: nowrap;
     user-select: none;
+    cursor: pointer;
 }
 
 .officer-token:hover {
@@ -2741,11 +2742,11 @@ html, body {
     transition: width 0.35s ease;
 }
 
-.bar-power { width: 88%; background: #4d88b0; }
-.bar-o2 { width: 94%; background: #5ea474; }
-.bar-food { width: 76%; background: #cf9f54; }
+.bar-power { width: 100%; background: #4d88b0; }
+.bar-o2 { width: 100%; background: #5ea474; }
+.bar-food { width: 100%; background: #cf9f54; }
 .bar-hull { width: 100%; background: #4e9a58; }
-.bar-discipline, .bar-san { width: 82%; background: #8e76b2; }
+.bar-discipline, .bar-san { width: 100%; background: #8e76b2; }
 
 /* Tactical Incident & Alert Dashboard */
 .alert-header-bar {
@@ -3114,6 +3115,310 @@ html, body {
 
 .crisis-progress-percent.unmanned {
     color: #f85149;
+}
+
+/* =========================================================================
+   STEP 8: MISSION DEBRIEFING & POST-FLIGHT SCORECARD MODAL
+   ========================================================================= */
+.debrief-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 8, 12, 0.88);
+    backdrop-filter: blur(6px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: 'Share Tech Mono', monospace, sans-serif;
+}
+
+.debrief-modal.hidden {
+    display: none !important;
+}
+
+.debrief-card {
+    width: min(880px, 94vw);
+    max-height: 90vh;
+    background: #0d1117;
+    border: 2px solid #30363d;
+    border-radius: 4px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 240, 255, 0.12);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: debriefFadeIn 0.35s ease-out;
+}
+
+@keyframes debriefFadeIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.debrief-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #30363d;
+    background: #161b22;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.debrief-header.win {
+    border-bottom: 2px solid #238636;
+    background: linear-gradient(90deg, rgba(35, 134, 54, 0.25) 0%, rgba(22, 27, 34, 0.95) 100%);
+}
+
+.debrief-header.defeat {
+    border-bottom: 2px solid #da3633;
+    background: linear-gradient(90deg, rgba(218, 54, 51, 0.25) 0%, rgba(22, 27, 34, 0.95) 100%);
+}
+
+.debrief-title-block {
+    flex: 1;
+}
+
+.debrief-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-bottom: 6px;
+}
+
+.debrief-badge.win {
+    background: rgba(46, 160, 67, 0.2);
+    color: #3fb950;
+    border: 1px solid #2ea043;
+}
+
+.debrief-badge.defeat {
+    background: rgba(248, 81, 73, 0.2);
+    color: #ff7b72;
+    border: 1px solid #da3633;
+}
+
+.debrief-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #f0f6fc;
+    margin: 0 0 4px 0;
+}
+
+.debrief-desc {
+    font-size: 12px;
+    color: #8b949e;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.rank-stamp-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border: 2px solid #30363d;
+    border-radius: 4px;
+    background: #090d13;
+    min-width: 110px;
+    text-align: center;
+}
+
+.rank-stamp-letter {
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 1px;
+}
+
+.rank-stamp-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.rank-stamp-score {
+    font-size: 11px;
+    font-weight: 700;
+    color: #79c0ff;
+    margin-top: 2px;
+}
+
+.rank-s { border-color: #58a6ff; color: #58a6ff; text-shadow: 0 0 10px rgba(88, 166, 255, 0.5); }
+.rank-a { border-color: #3fb950; color: #3fb950; text-shadow: 0 0 10px rgba(63, 185, 80, 0.5); }
+.rank-b { border-color: #d29922; color: #d29922; text-shadow: 0 0 10px rgba(210, 153, 34, 0.5); }
+.rank-c { border-color: #db6d28; color: #db6d28; }
+.rank-d { border-color: #f85149; color: #f85149; }
+.rank-f { border-color: #da3633; color: #ff7b72; text-shadow: 0 0 10px rgba(218, 54, 51, 0.5); }
+
+.debrief-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.debrief-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: #79c0ff;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #21262d;
+    padding-bottom: 4px;
+}
+
+.debrief-telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.debrief-stat-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 3px;
+    padding: 8px;
+    text-align: center;
+}
+
+.debrief-stat-label {
+    font-size: 9.5px;
+    color: #8b949e;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.debrief-stat-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f0f6fc;
+    margin-top: 3px;
+}
+
+.debrief-crew-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+}
+
+.debrief-crew-table th {
+    text-align: left;
+    font-size: 10px;
+    color: #8b949e;
+    letter-spacing: 0.8px;
+    padding: 6px 8px;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+}
+
+.debrief-crew-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #21262d;
+    color: #c9d1d9;
+}
+
+.status-optimal { color: #3fb950; font-weight: 700; }
+.status-survived { color: #7ee787; font-weight: 600; }
+.status-injured { color: #d29922; font-weight: 600; }
+.status-kia { color: #ff7b72; font-weight: 700; }
+
+.debrief-breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11.5px;
+}
+
+.debrief-breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 6px;
+    background: #161b22;
+    border-radius: 2px;
+}
+
+.debrief-points-pos {
+    color: #3fb950;
+    font-weight: 700;
+}
+
+.debrief-points-neg {
+    color: #ff7b72;
+    font-weight: 700;
+}
+
+.debrief-actions {
+    padding: 12px 20px;
+    border-top: 1px solid #30363d;
+    background: #161b22;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.debrief-btn-inspect {
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #c9d1d9;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 8px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.debrief-btn-inspect:hover {
+    background: #30363d;
+    color: #f0f6fc;
+}
+
+.debrief-btn-restart {
+    background: #238636;
+    border: 1px solid #2ea043;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 8px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(46, 160, 67, 0.4);
+    transition: all 0.15s ease;
+}
+
+.debrief-btn-restart:hover {
+    background: #2ea043;
+    box-shadow: 0 0 18px rgba(46, 160, 67, 0.7);
+}
+
+.time-btn.debrief-btn {
+    border-color: #58a6ff;
+    color: #58a6ff;
+}
+
+.time-btn.debrief-btn:hover {
+    background: rgba(88, 166, 255, 0.2);
+}
+
+.hidden,
+#phase2-btn-debrief.hidden {
+    display: none !important;
 }
 
 

@@ -107,12 +107,22 @@ const PERSONNEL_CONDITIONS = {
 const INJURY_BODY_PARTS = ['wrist', 'ankle', 'shoulder', 'knee', 'arm', 'back'];
 
 const RIDICULOUS_ACCUSATIONS = [
-    "tampering with oxygen valves to siphon private air",
-    "hoarding emergency chocolate rations in the conduit ducts",
-    "secretly broadcasting telemetry to Titan syndicate pirates",
-    "wearing boots backwards to erase magnetic footsteps",
-    "deliberately over-clocking reactor coils to cook rations",
-    "re-routing environmental coolant to chill personal energy drinks"
+    "hitting the griddy instead of working",
+    "breathing too loudly on purpose",
+    "walking around like they own the ship",
+    "saying 'interesting' after every sentence",
+    "clapping when the reactor successfully starts",
+    "saying 'we've got a situation' over minor inconveniences",
+    "making unnecessary sound effects while working",
+    "pretending not to hear people when spoken to",
+    "using the phrase 'let him cook' during emergencies",
+    "laughing at their own jokes before finishing them",
+    "standing suspiciously still in doorways",
+    "walking too confidently for someone with their qualifications",
+    "saying 'chat, are we cooked?' to nobody in particular",
+    "performing imaginary microphone drops after completing tasks",
+    "making eye contact for slightly too long",
+    "doing the moonwalk in designated work areas"
 ];
 
 class FlightEngineCore {
@@ -171,6 +181,13 @@ class FlightEngineCore {
         // Track D Low Discipline Consequence: Crew Friction & Interpersonal Incidents
         this.activeCrewFriction = null;
         this.frictionDirectorTimer = 45.0 + Math.random() * 25.0;
+
+        // Game Over & Mission Endings (Step 8)
+        this.isGameOver = false;
+        this.gameOutcome = null; // 'VICTORY' or 'DEFEAT'
+        this.failureReason = null; // 'HULL_BREACH', 'COLD_GRID_COLLAPSE', 'ASPHYXIATION', 'TOTAL_CASUALTIES', 'CATASTROPHIC_SABOTAGE', 'MUTINOUS_COLLAPSE'
+        this.failureDetails = null;
+        this.victoryDetails = null;
     }
 
     /**
@@ -189,6 +206,17 @@ class FlightEngineCore {
         this.crisisDirectorTimer = 75.0;
         this.randomEventDirectorTimer = 70.0 + Math.random() * 30.0;
         this.frictionDirectorTimer = 45.0 + Math.random() * 25.0;
+        this.isGameOver = false;
+        this.gameOutcome = null;
+        this.failureReason = null;
+        this.failureDetails = null;
+        this.victoryDetails = null;
+        this.milestones = {
+            quarter: false,
+            halfway: false,
+            threeQuarters: false,
+            arrival: false
+        };
         this.lastTime = performance.now();
 
         // Pre-calculate initial station telemetry and render HUD gauges at 100%
@@ -216,6 +244,9 @@ class FlightEngineCore {
      * @param {String} mode - 'pause', 'cruise', or 'warp'
      */
     setSpeed(mode) {
+        if (this.isGameOver && mode !== 'pause') {
+            return;
+        }
         this.lastTime = performance.now();
         if (mode === 'pause') {
             this.speedMultiplier = 0;
@@ -235,8 +266,8 @@ class FlightEngineCore {
         const dt = Math.min((now - this.lastTime) / 1000, 0.5); // Cap delta time at 500ms
         this.lastTime = now;
 
-        if (!this.isRunning || this.speedMultiplier === 0) {
-            return; // Paused or stopped
+        if (!this.isRunning || this.speedMultiplier === 0 || this.isGameOver) {
+            return; // Paused, stopped, or voyage finished
         }
 
         const effectiveDt = dt * this.speedMultiplier;
@@ -269,7 +300,12 @@ class FlightEngineCore {
         // 6. Simulate Active Security Searches (Step 6.3)
         this.updateSecuritySearches(effectiveDt);
 
-        // 7. Update Tactical HUD & Gauges
+        // 7. Check Game Over / Victory Conditions (Step 8)
+        if (this.checkGameEndConditions()) {
+            return;
+        }
+
+        // 8. Update Tactical HUD & Gauges
         this.renderHUD();
     }
 
@@ -603,8 +639,26 @@ class FlightEngineCore {
         // 4. Flight Deck / Cockpit Navigation & Hull Integrity
         const cockpitMetrics = this.getStationDrainRate('cockpit');
         t.cockpitMetrics = cockpitMetrics;
-        t.hull.drainRate = 0.00;
+        let hullDrain = 0.00;
+
+        // Space debris impacts outer hull plating (-0.35%/s)
+        if (this.activeCrises && this.activeCrises['cockpit']) {
+            hullDrain += 0.35;
+        }
+
+        // Active planted explosive charge stresses hull integrity (-0.25%/s while armed)
+        if (this.activeSabotage && !this.activeSabotage.isDefused && !this.activeSabotage.isDetonated) {
+            hullDrain += 0.25;
+        }
+
+        // Staffed workshop engineers actively repair hull (+0.18%/s) when damaged
+        const workshopMetrics = this.getStationDrainRate('workshop');
+        if (workshopMetrics.occupantCount > 0 && t.hull.value < 100) {
+            hullDrain -= 0.18 * Math.min(1.0, workshopMetrics.combinedEff);
+        }
+        t.hull.drainRate = Number(hullDrain.toFixed(3));
         if (t.hull.value === undefined) t.hull.value = 100;
+        t.hull.value = Math.max(0, Math.min(100, t.hull.value - (hullDrain * dt)));
         if (t.hull.value >= 85) t.hull.label = "Pressurized";
         else if (t.hull.value >= 50) t.hull.label = "COMPROMISED";
         else t.hull.label = "BREACHED";
@@ -656,6 +710,15 @@ class FlightEngineCore {
             }
             if (officer.frictionCooldown > 0) {
                 officer.frictionCooldown = Math.max(0, officer.frictionCooldown - dt);
+            }
+
+            // Acute starvation damage if Food reserves are depleted (0%)
+            if (this.telemetry && this.telemetry.food && this.telemetry.food.value <= 0) {
+                officer.hp = Math.max(0, officer.hp - (0.35 * dt));
+                if (officer.hp <= 0) {
+                    this.killOfficer(officer, idx, 'Acute starvation');
+                    return;
+                }
             }
 
             // 1. Process En Route Transit Timer
@@ -800,7 +863,10 @@ class FlightEngineCore {
         this.updateGaugeDOM('power', `${Math.round(this.telemetry.power.value)}% (${this.telemetry.power.kw} kW) ${pwrRate}`, this.telemetry.power.value);
         this.updateGaugeDOM('o2', `${Math.round(this.telemetry.o2.value)}% (${this.telemetry.o2.label}) ${o2Rate}`, this.telemetry.o2.value);
         this.updateGaugeDOM('food', `${Math.round(this.telemetry.food.value)}% (${this.telemetry.food.rations} Rations) ${foodRate}`, this.telemetry.food.value);
-        this.updateGaugeDOM('hull', `${Math.round(this.telemetry.hull.value)}% (${this.telemetry.hull.label})`, this.telemetry.hull.value);
+        const hullRateStr = this.telemetry.hull.drainRate !== undefined && Math.abs(this.telemetry.hull.drainRate) > 0.001
+            ? `[${this.telemetry.hull.drainRate < 0 ? '+' : '-'}${Math.abs(this.telemetry.hull.drainRate).toFixed(2)}%/s]`
+            : '';
+        this.updateGaugeDOM('hull', `${Math.round(this.telemetry.hull.value)}% (${this.telemetry.hull.label}) ${hullRateStr}`.trim(), this.telemetry.hull.value);
         const discRateStr = this.telemetry.discipline.rate !== undefined 
             ? `[${this.telemetry.discipline.rate > 0 ? '+' : ''}${this.telemetry.discipline.rate.toFixed(1)}%/s]` 
             : '';
@@ -989,15 +1055,350 @@ class FlightEngineCore {
         }
     }
 
-    onArrival() {
+    checkGameEndConditions() {
+        if (this.isGameOver) return true;
+
+        // 1. Catastrophic Sabotage: Saboteur bomb timer expires and detonates
+        if (this.activeSabotage && !this.activeSabotage.isDefused && this.activeSabotage.timeRemaining <= 0) {
+            if (this.telemetry && this.telemetry.hull) {
+                this.telemetry.hull.value = 0;
+            }
+            this.triggerGameOver('CATASTROPHIC_SABOTAGE',
+                '[MISSION FAILED] CATASTROPHIC SABOTAGE',
+                `The hidden explosive armed in ${this.activeSabotage.stationName} detonated, destroying the Ark-04.`);
+            return true;
+        }
+
+        // 2. Hull Breach: Hull Integrity reaches 0% (structural collapse from space debris or planted explosives)
+        if (this.telemetry && this.telemetry.hull && this.telemetry.hull.value <= 0) {
+            this.triggerGameOver('HULL_BREACH',
+                '[MISSION FAILED] CATASTROPHIC HULL BREACH',
+                'Hull integrity reached 0%. Structural collapse and decompression destroyed the Ark-04.');
+            return true;
+        }
+
+        // 3. Cold Grid Collapse: Power reaches 0 kW (total reactor failure / auxiliary grid death)
+        if (this.telemetry && this.telemetry.power && (this.telemetry.power.value <= 0 || (this.telemetry.power.kw !== undefined && this.telemetry.power.kw <= 0))) {
+            this.triggerGameOver('COLD_GRID_COLLAPSE',
+                '[MISSION FAILED] COLD GRID COLLAPSE',
+                'Reactor output reached 0 kW. Total grid blackout left the Ark-04 dead in space.');
+            return true;
+        }
+
+        // 4. Asphyxiation: O2 reaches 0% (life support failure; asphyxiation of all crew)
+        if (this.telemetry && this.telemetry.o2 && this.telemetry.o2.value <= 0) {
+            this.triggerGameOver('ASPHYXIATION',
+                '[MISSION FAILED] LIFE SUPPORT COLLAPSE',
+                'Oxygen saturation reached 0%. Severe hypoxia asphyxiated all personnel aboard.');
+            return true;
+        }
+
+        // 5. Mutinous Collapse: Discipline reaches 0% (crew mutiny and command override)
+        if (this.telemetry && this.telemetry.discipline && this.telemetry.discipline.value <= 0) {
+            this.triggerGameOver('MUTINOUS_COLLAPSE',
+                '[MISSION FAILED] MUTINOUS COLLAPSE',
+                'Crew discipline collapsed to 0%. Mutinous crew seized ship controls and abandoned mission protocols.');
+            return true;
+        }
+
+        // 6. Starvation / Total Casualties: All crew members succumb to injury, sickness, or starvation
+        if (this.crew && this.crew.length > 0 && this.crew.every(c => c.isDead || c.status === 'DECEASED')) {
+            this.triggerGameOver('TOTAL_CASUALTIES',
+                '[MISSION FAILED] TOTAL CREW CASUALTIES',
+                'All officers aboard succumbed to injury, sickness, or starvation. The Ark-04 drifts unmanned.');
+            return true;
+        }
+
+        // 7. Victory Trigger & Orbital Insertion: Voyage progress reaches 100% (ETA reaches 00:00 without critical ship failure)
+        if (this.distancePercent >= 100 || (this.elapsedSeconds >= this.totalVoyageSeconds && this.totalVoyageSeconds > 0)) {
+            this.triggerVictory();
+            return true;
+        }
+
+        return false;
+    }
+
+    triggerGameOver(reason, title, description) {
+        if (this.isGameOver) return;
+        this.isGameOver = true;
+        this.gameOutcome = 'DEFEAT';
+        this.failureReason = reason;
+        this.failureDetails = { title, description };
+
+        // Halt simulation and speed controls
+        this.isRunning = false;
+        this.speedMultiplier = 0;
+        if (window.Phase2Bridge && window.Phase2Bridge.setSpeed) {
+            window.Phase2Bridge.setSpeed('pause');
+        }
+
+        // Play critical alarm / failure sound
+        if (window.SoundFX && window.SoundFX.playLaunchAlert) {
+            window.SoundFX.playLaunchAlert();
+        }
+
+        this.logComms("=========================================================", "cmd-echo", "SYS");
+        this.logComms(`VOYAGE TERMINATED: ${title}`, "normal", "SYS");
+        this.logComms(description, "normal", "SYS");
+        this.logComms("=========================================================", "cmd-echo", "SYS");
+
+        // Push persistent critical alert card
+        if (window.Phase2Bridge && window.Phase2Bridge.pushAlert) {
+            window.Phase2Bridge.pushAlert({
+                id: 'game-over-defeat-alert',
+                type: 'critical',
+                tag: 'FATAL',
+                title: title,
+                message: `<div style="font-weight: 700; color: #ff7b72; margin-bottom: 3px;">EXPEDITION FAILED</div><div>${description}</div>`,
+                actionLabel: null,
+                noActionBtn: true,
+                isCrisis: true
+            });
+        }
+
+        this.renderHUD();
+        if (window.Phase2Bridge) {
+            window.Phase2Bridge.renderCrewManifest();
+            window.Phase2Bridge.renderRoomOccupants();
+        }
+        console.log(`[FLIGHT ENGINE] GAME OVER: ${reason} - ${title}`);
+
+        if (window.Phase2Bridge && window.Phase2Bridge.scheduleDebriefModal) {
+            window.Phase2Bridge.scheduleDebriefModal(1200);
+        }
+    }
+
+    triggerVictory() {
+        if (this.isGameOver) return;
+        this.isGameOver = true;
+        this.gameOutcome = 'VICTORY';
+        this.failureReason = null;
+        this.victoryDetails = {
+            title: "ORBITAL INSERTION CONFIRMED: ARRIVED AT TITAN HAVEN 4",
+            description: "Atmospheric docking corridor open. All survival quotas satisfied."
+        };
+
+        // Halt simulation and speed controls
+        this.isRunning = false;
+        this.speedMultiplier = 0;
+        if (window.Phase2Bridge && window.Phase2Bridge.setSpeed) {
+            window.Phase2Bridge.setSpeed('pause');
+        }
+
+        // Play confirmation sound
+        if (window.SoundFX && window.SoundFX.playKeyClick) {
+            window.SoundFX.playKeyClick(null, false);
+        }
+
         this.logComms("=========================================================", "cmd-echo", "HELM");
         this.logComms("ORBITAL INSERTION CONFIRMED: ARRIVED AT TITAN HAVEN 4!", "normal", "HELM");
         this.logComms("Atmospheric docking corridor open. All survival quotas satisfied.", "normal", "SYS");
         this.logComms("=========================================================", "cmd-echo", "HELM");
 
-        if (window.Phase2Bridge && window.Phase2Bridge.setSpeed) {
-            window.Phase2Bridge.setSpeed('pause');
+        if (window.Phase2Bridge && window.Phase2Bridge.pushAlert) {
+            window.Phase2Bridge.pushAlert({
+                id: 'game-over-victory-alert',
+                type: 'nominal',
+                tag: 'HAVEN',
+                title: '[MISSION ACCOMPLISHED] TITAN HAVEN 4',
+                message: `<div style="font-weight: 700; color: #3fb950; margin-bottom: 3px;">ORBITAL INSERTION CONFIRMED</div><div>Atmospheric docking corridor locked. All survival quotas satisfied.</div>`,
+                actionLabel: null,
+                noActionBtn: true,
+                isCrisis: false
+            });
         }
+
+        this.renderHUD();
+        if (window.Phase2Bridge) {
+            window.Phase2Bridge.renderCrewManifest();
+            window.Phase2Bridge.renderRoomOccupants();
+        }
+        console.log(`[FLIGHT ENGINE] VICTORY: Orbital insertion confirmed at Titan Haven 4`);
+
+        if (window.Phase2Bridge && window.Phase2Bridge.scheduleDebriefModal) {
+            window.Phase2Bridge.scheduleDebriefModal(1200);
+        }
+    }
+
+    onArrival() {
+        this.triggerVictory();
+    }
+
+    generateDebriefReport() {
+        const isWin = (this.gameOutcome === 'VICTORY');
+        const elapsed = this.elapsedSeconds;
+        const total = this.totalVoyageSeconds;
+        const distance = this.distancePercent;
+        const crewList = this.crew || [];
+
+        const livingCount = crewList.filter(c => !c.isDead && c.status !== 'DECEASED').length;
+        const casualtyCount = crewList.filter(c => c.isDead || c.status === 'DECEASED').length;
+
+        // Resource stats
+        const pwrVal = Math.round(this.telemetry.power?.value ?? 0);
+        const pwrKw = Math.round(this.telemetry.power?.kw ?? 0);
+        const o2Val = Math.round(this.telemetry.o2?.value ?? 0);
+        const foodVal = Math.round(this.telemetry.food?.value ?? 0);
+        const foodRations = Math.round(this.telemetry.food?.rations ?? 0);
+        const hullVal = Math.round(this.telemetry.hull?.value ?? 0);
+        const discVal = Math.round(this.telemetry.discipline?.value ?? 0);
+
+        // Score calculation
+        let score = 0;
+        const breakdown = [];
+
+        if (isWin) {
+            score += 500;
+            breakdown.push({ label: "Voyage Completion (Docked Haven 4)", points: +500 });
+        } else {
+            const distancePoints = Math.round(distance * 3);
+            score += distancePoints;
+            breakdown.push({ label: `Voyage Distance Reached (${distance.toFixed(1)}%)`, points: distancePoints });
+        }
+
+        // Living crew bonus: 75 pts each
+        const crewPoints = livingCount * 75;
+        score += crewPoints;
+        breakdown.push({ label: `Crew Preservation (${livingCount}/${crewList.length} Officers Alive)`, points: crewPoints });
+
+        if (livingCount === crewList.length && crewList.length > 0) {
+            score += 100;
+            breakdown.push({ label: "Zero Casualties Commendation", points: +100 });
+        }
+
+        // Telemetry points
+        const hullPoints = Math.round(hullVal * 1.2);
+        score += hullPoints;
+        breakdown.push({ label: `Hull Integrity Preserved (${hullVal}%)`, points: hullPoints });
+
+        const resourceReservePoints = Math.round((pwrVal + o2Val + foodVal) * 0.4);
+        score += resourceReservePoints;
+        breakdown.push({ label: `Life Support & Power Reserves (Avg ${Math.round((pwrVal + o2Val + foodVal) / 3)}%)`, points: resourceReservePoints });
+
+        const disciplinePoints = Math.round(discVal * 0.8);
+        score += disciplinePoints;
+        breakdown.push({ label: `Crew Discipline Maintained (${discVal}%)`, points: disciplinePoints });
+
+        // Saboteur neutralized bonus
+        const saboteursCaught = crewList.filter(c => c.saboteurNeutralized || (c.isDisarmed && c.trueIdentity === 'DOOMSDAY_SABOTEUR')).length;
+        if (saboteursCaught > 0) {
+            score += saboteursCaught * 150;
+            breakdown.push({ label: `Doomsday Saboteurs Neutralized (${saboteursCaught})`, points: saboteursCaught * 150 });
+        }
+
+        // Contraband recovered bonus
+        const hoardersCaught = crewList.filter(c => c.hoardRecovered).length;
+        if (hoardersCaught > 0) {
+            score += hoardersCaught * 60;
+            breakdown.push({ label: `Contraband Stores Seized (${hoardersCaught})`, points: hoardersCaught * 60 });
+        }
+
+        // Determine Rank & Evaluation
+        let rank = 'F';
+        let rankTitle = 'EXPEDITION LOST';
+        let rankClass = 'rank-f';
+
+        if (isWin) {
+            if (score >= 900) {
+                rank = 'S';
+                rankTitle = 'EXEMPLARY COMMANDER';
+                rankClass = 'rank-s';
+            } else if (score >= 750) {
+                rank = 'A';
+                rankTitle = 'MERITORIOUS COMMANDER';
+                rankClass = 'rank-a';
+            } else if (score >= 600) {
+                rank = 'B';
+                rankTitle = 'SURVIVAL ATTRITION';
+                rankClass = 'rank-b';
+            } else {
+                rank = 'C';
+                rankTitle = 'DERELICT ARRIVAL';
+                rankClass = 'rank-c';
+            }
+        } else {
+            if (score >= 450) {
+                rank = 'D';
+                rankTitle = 'VALIANT RECOVERY EFFORT';
+                rankClass = 'rank-d';
+            } else {
+                rank = 'F';
+                rankTitle = 'CATASTROPHIC FAILURE';
+                rankClass = 'rank-f';
+            }
+        }
+
+        // Detailed Personnel Assessment
+        const personnelRecords = crewList.map(c => {
+            let statusLabel = 'SURVIVED';
+            let statusClass = 'status-survived';
+            if (c.isDead || c.status === 'DECEASED') {
+                statusLabel = 'K.I.A.';
+                statusClass = 'status-kia';
+            } else if (c.hp < 50) {
+                statusLabel = `CRITICAL (${Math.round(c.hp)}% HP)`;
+                statusClass = 'status-injured';
+            } else if (c.hp < 100) {
+                statusLabel = `WOUNDED (${Math.round(c.hp)}% HP)`;
+                statusClass = 'status-injured';
+            } else {
+                statusLabel = `OPTIMAL (100% HP)`;
+                statusClass = 'status-optimal';
+            }
+
+            let identityNote = 'Exemplary Record';
+            if (c.trueIdentity === 'DOOMSDAY_SABOTEUR') {
+                identityNote = c.saboteurNeutralized ? 'Saboteur Neutralized' : 'Hostile Saboteur';
+            } else if (c.trueIdentity === 'RESOURCE_HOARDER') {
+                identityNote = c.hoardRecovered ? 'Contraband Confiscated' : 'Hoarder Suspect';
+            } else if (c.trueIdentity === 'CONTAGIOUS_CARRIER') {
+                identityNote = 'Bio-Hazard Contagion';
+            } else if (c.trueIdentity === 'DESPERATE_FRAUD') {
+                identityNote = 'Credentials Forged';
+            } else if (c.trueIdentity === 'LEGITIMATE_EXPERT') {
+                identityNote = 'Accredited Specialist';
+            }
+
+            return {
+                name: c.name,
+                roleTitle: c.roleTitle,
+                station: c.station,
+                hp: Math.round(c.hp),
+                isDead: !!(c.isDead || c.status === 'DECEASED'),
+                statusLabel: statusLabel,
+                statusClass: statusClass,
+                identityNote: identityNote
+            };
+        });
+
+        return {
+            isWin: isWin,
+            outcome: this.gameOutcome,
+            failureReason: this.failureReason,
+            title: isWin ? "ORBITAL INSERTION CONFIRMED" : (this.failureDetails?.title || "EXPEDITION TERMINATED"),
+            description: isWin 
+                ? "The Ark-04 successfully entered planetary parking orbit at Titan Haven 4. Atmospheric docking corridor secured. Planetary evacuation directives fulfilled."
+                : (this.failureDetails?.description || "Telemetry severed. The expedition was lost in orbital transit."),
+            elapsedFormatted: this.formatTime(Math.round(elapsed)),
+            totalFormatted: this.formatTime(Math.round(total)),
+            distancePercent: distance.toFixed(1),
+            telemetry: {
+                power: { value: pwrVal, kw: pwrKw },
+                o2: { value: o2Val },
+                food: { value: foodVal, rations: foodRations },
+                hull: { value: hullVal },
+                discipline: { value: discVal }
+            },
+            livingCount: livingCount,
+            casualtyCount: casualtyCount,
+            totalCrew: crewList.length,
+            score: score,
+            rank: rank,
+            rankTitle: rankTitle,
+            rankClass: rankClass,
+            breakdown: breakdown,
+            personnel: personnelRecords
+        };
     }
 
     logComms(msg, type = "normal", sender = "SYS") {
@@ -1007,8 +1408,9 @@ class FlightEngineCore {
     }
 
     formatTime(totalSec) {
-        const m = Math.floor(totalSec / 60);
-        const s = totalSec % 60;
+        const sec = Math.max(0, Math.round(totalSec));
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
         return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
@@ -1491,8 +1893,9 @@ class FlightEngineCore {
             officerA = typeof targetOfficerA === 'string' ? this.crew.find(c => c.name.toLowerCase().includes(targetOfficerA.toLowerCase())) : targetOfficerA;
             officerB = typeof targetOfficerB === 'string' ? this.crew.find(c => c.name.toLowerCase().includes(targetOfficerB.toLowerCase())) : targetOfficerB;
             if (!officerA || !officerB || officerA === officerB) return null;
-            wasCoLocated = (officerA.currentRoom === officerB.currentRoom);
-            if (!chosenType) chosenType = wasCoLocated ? 'HEATED_ARGUMENT' : 'PARANOID_ACCUSATION';
+            if (!officerA.currentRoom || officerA.currentRoom !== officerB.currentRoom) return null;
+            wasCoLocated = true;
+            if (!chosenType) chosenType = 'HEATED_ARGUMENT';
         } else {
             const eligible = this.getFrictionEligibleOfficers();
             if (eligible.length < 2) return null;
@@ -1500,29 +1903,26 @@ class FlightEngineCore {
             // Group by room to check for co-located crew
             const roomMap = {};
             eligible.forEach(c => {
-                roomMap[c.currentRoom] = roomMap[c.currentRoom] || [];
-                roomMap[c.currentRoom].push(c);
+                if (c.currentRoom) {
+                    roomMap[c.currentRoom] = roomMap[c.currentRoom] || [];
+                    roomMap[c.currentRoom].push(c);
+                }
             });
 
             const coLocatedRooms = Object.keys(roomMap).filter(r => roomMap[r].length >= 2);
 
-            if (coLocatedRooms.length > 0) {
-                const room = coLocatedRooms[Math.floor(Math.random() * coLocatedRooms.length)];
-                const pair = roomMap[room];
-                officerA = pair[0];
-                officerB = pair[1];
-                wasCoLocated = true;
+            // Friction (arguments, brawls, accusations) strictly requires 2 officers stationed together
+            if (coLocatedRooms.length === 0) return null;
 
-                if (!chosenType) {
-                    const eventTypes = ['HEATED_ARGUMENT', 'PHYSICAL_BRAWL', 'PARANOID_ACCUSATION'];
-                    chosenType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-                }
-            } else {
-                // No co-located crew, but 2+ officers on duty across ship: PARANOID_ACCUSATION
-                officerA = eligible[0];
-                officerB = eligible[1];
-                wasCoLocated = false;
-                chosenType = 'PARANOID_ACCUSATION';
+            const room = coLocatedRooms[Math.floor(Math.random() * coLocatedRooms.length)];
+            const pair = roomMap[room];
+            officerA = pair[0];
+            officerB = pair[1];
+            wasCoLocated = true;
+
+            if (!chosenType) {
+                const eventTypes = ['HEATED_ARGUMENT', 'PHYSICAL_BRAWL', 'PARANOID_ACCUSATION'];
+                chosenType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
             }
         }
 
@@ -1538,7 +1938,7 @@ class FlightEngineCore {
             officerB: officerB.name,
             room: room,
             stationName: stationName,
-            wasCoLocated: wasCoLocated,
+            wasCoLocated: true,
             startTime: performance.now(),
             alertId: alertId,
             elapsed: 0
@@ -1566,7 +1966,7 @@ class FlightEngineCore {
             officerA.hp = Math.max(1, officerA.hp - 10);
             officerB.hp = Math.max(1, officerB.hp - 10);
 
-            this.logComms(`[VIOLENCE IN COMPARTMENT] Physical brawl broken out in ${stationName}! ${officerA.name} and ${officerB.name} are fighting! Intervene or separate immediately.`, "normal", "DISC");
+            this.logComms(`[VIOLENCE IN COMPARTMENT] Physical brawl broken out in ${stationName}! ${officerA.name} and ${officerB.name} are fighting! Separate them immediately.`, "normal", "DISC");
 
             if (window.Phase2Bridge && window.Phase2Bridge.pushAlert) {
                 window.Phase2Bridge.pushAlert({
@@ -1574,7 +1974,7 @@ class FlightEngineCore {
                     type: 'critical',
                     tag: 'DISC',
                     title: incident.title,
-                    message: `<div style="margin-bottom: 2px;"><b>${officerA.name}</b> and <b>${officerB.name}</b> have come to blows in ${stationName}!</div><div style="font-size: 10px; color: #ff7b72; font-weight: 700;">IMPACT: Both taking -0.2 HP/s damage · Station halted · Separate or dispatch security</div>`,
+                    message: `<div style="margin-bottom: 2px;"><b>${officerA.name}</b> and <b>${officerB.name}</b> have come to blows in ${stationName}!</div><div style="font-size: 10px; color: #ff7b72; font-weight: 700;">IMPACT: Both taking -0.2 HP/s damage · Station halted · Separate them immediately</div>`,
                     targetRoom: room,
                     actionLabel: `TARGET ${stationName.toUpperCase()}`,
                     isCrisis: true
@@ -1583,9 +1983,9 @@ class FlightEngineCore {
         } else if (chosenType === 'PARANOID_ACCUSATION') {
             const claim = RIDICULOUS_ACCUSATIONS[Math.floor(Math.random() * RIDICULOUS_ACCUSATIONS.length)];
             incident.claim = claim;
-            incident.title = `[DISCIPLINE] ACCUSATION: ${officerA.name.toUpperCase()}`;
+            incident.title = `[DISCIPLINE] ACCUSATION: ${stationName.toUpperCase()}`;
 
-            this.logComms(`[PARANOID ACCUSATION] ${officerA.name} loudly accuses ${officerB.name} of ${claim}! Insubordination reported.`, "normal", "DISC");
+            this.logComms(`[PARANOID ACCUSATION] Accusation in ${stationName}! ${officerA.name} loudly accuses ${officerB.name} of ${claim}! Separate them to restore order.`, "normal", "DISC");
 
             if (window.Phase2Bridge && window.Phase2Bridge.pushAlert) {
                 window.Phase2Bridge.pushAlert({
@@ -1593,7 +1993,7 @@ class FlightEngineCore {
                     type: 'warning',
                     tag: 'DISC',
                     title: incident.title,
-                    message: `<div style="margin-bottom: 2px;"><b>${officerA.name}</b> loudly accuses <b>${officerB.name}</b> of <i>"${claim}"</i>!</div><div style="font-size: 10px; color: #ff7b72; font-weight: 700;">IMPACT: ${officerA.name} efficiency reduced to 20% · Reassign or move to The Brig to audit</div>`,
+                    message: `<div style="margin-bottom: 2px;">In <b>${stationName}</b>, <b>${officerA.name}</b> loudly accuses <b>${officerB.name}</b> of <i>"${claim}"</i>!</div><div style="font-size: 10px; color: #ff7b72; font-weight: 700;">IMPACT: ${officerA.name} efficiency reduced to 20% · Separate them to restore order</div>`,
                     targetRoom: room,
                     actionLabel: `TARGET ${stationName.toUpperCase()}`,
                     isCrisis: false
@@ -1630,6 +2030,9 @@ class FlightEngineCore {
             return;
         }
 
+        // Common separation check for co-located friction events
+        const separated = (officerA.currentRoom !== officerB.currentRoom) || (officerA.transitRemaining > 0) || (officerB.transitRemaining > 0);
+
         // 1. PHYSICAL_BRAWL logic
         if (f.type === 'PHYSICAL_BRAWL') {
             // Both take continuous health damage: -0.2 HP/s
@@ -1647,64 +2050,24 @@ class FlightEngineCore {
                 return;
             }
 
-            // Check if separated
-            const separated = (officerA.currentRoom !== officerB.currentRoom) || (officerA.transitRemaining > 0) || (officerB.transitRemaining > 0);
             if (separated) {
                 this.resolveCrewFriction('Crew members separated');
-                return;
-            }
-
-            // Check if active security guard intervened
-            const guardPresent = this.crew.some(c =>
-                !c.isDead && c !== officerA && c !== officerB &&
-                c.currentRoom === f.room && c.transitRemaining <= 0 &&
-                !c.isDetained && !this.hasCondition(c, 'PANIC_ATTACK') &&
-                (this.getOfficerStationTier(c, 'brig') === 'Core' || c.station === 'Brig')
-            );
-            if (guardPresent) {
-                this.resolveCrewFriction('Security officer intervened and quelled brawl');
                 return;
             }
         }
 
         // 2. HEATED_ARGUMENT logic
         if (f.type === 'HEATED_ARGUMENT') {
-            const separated = (officerA.currentRoom !== officerB.currentRoom) || (officerA.transitRemaining > 0) || (officerB.transitRemaining > 0);
             if (separated) {
                 this.resolveCrewFriction('Crew members separated');
-                return;
-            }
-
-            const guardPresent = this.crew.some(c =>
-                !c.isDead && c !== officerA && c !== officerB &&
-                c.currentRoom === f.room && c.transitRemaining <= 0 &&
-                !c.isDetained && !this.hasCondition(c, 'PANIC_ATTACK') &&
-                (this.getOfficerStationTier(c, 'brig') === 'Core' || c.station === 'Brig')
-            );
-            if (guardPresent) {
-                this.resolveCrewFriction('Security officer restored order');
                 return;
             }
         }
 
         // 3. PARANOID_ACCUSATION logic
         if (f.type === 'PARANOID_ACCUSATION') {
-            f.elapsed = (f.elapsed || 0) + dt;
-
-            const accuserInBrigOrPods = officerA.currentRoom === 'brig' || officerA.currentRoom === 'sleepPods' || officerA.transitTarget === 'brig' || officerA.transitTarget === 'sleepPods';
-            const searchStarted = this.activeSearches && !!this.activeSearches[officerA.name];
-            const separated = f.wasCoLocated && (officerA.currentRoom !== officerB.currentRoom || officerA.transitRemaining > 0);
-
-            if (accuserInBrigOrPods || searchStarted) {
-                this.resolveCrewFriction('Accuser detained or relieved for psychological audit');
-                return;
-            }
             if (separated) {
-                this.resolveCrewFriction('Parties separated');
-                return;
-            }
-            if (f.elapsed >= 45.0) {
-                this.resolveCrewFriction('Tensions de-escalated over time');
+                this.resolveCrewFriction('Crew members separated');
                 return;
             }
         }
@@ -2169,6 +2532,9 @@ class FlightEngineCore {
             window.Phase2Bridge.renderRoomOccupants();
             window.Phase2Bridge.renderCrewManifest();
         }
+
+        // Check if all crew members have perished (Step 8: TOTAL_CASUALTIES)
+        this.checkGameEndConditions();
     }
 
     /**
@@ -2919,58 +3285,14 @@ class FlightEngineCore {
             }
         } else {
             sab.isDetonated = true;
-
-            // Apply Detonation Penalties:
-            // 1. -35% Hull Integrity
+            this.activeSabotage = null;
             if (this.telemetry && this.telemetry.hull) {
-                this.telemetry.hull.value = Math.max(0, this.telemetry.hull.value - 35);
-                if (this.telemetry.hull.value < 25) this.telemetry.hull.label = "BREACHED";
-                else if (this.telemetry.hull.value < 60) this.telemetry.hull.label = "DAMAGED";
+                this.telemetry.hull.value = 0;
             }
-
-            // 2. -30% Primary Station Resource
-            if (this.telemetry) {
-                if (sab.targetStation === 'reactor' && this.telemetry.power) {
-                    this.telemetry.power.value = Math.max(0, this.telemetry.power.value - 30);
-                    this.telemetry.power.kw = Math.max(0, Math.round(500 * (this.telemetry.power.value / 100)));
-                } else if (sab.targetStation === 'o2bay' && this.telemetry.o2) {
-                    this.telemetry.o2.value = Math.max(0, this.telemetry.o2.value - 30);
-                } else if (sab.targetStation === 'hydroponics' && this.telemetry.food) {
-                    this.telemetry.food.value = Math.max(0, this.telemetry.food.value - 30);
-                    this.telemetry.food.rations = Math.max(0, Math.round(60 * (this.telemetry.food.value / 100)));
-                } else if (sab.targetStation === 'cockpit' && this.telemetry.discipline) {
-                    this.telemetry.discipline.value = Math.max(0, this.telemetry.discipline.value - 25);
-                }
-            }
-
-            // 3. Crew blast damage (-40 HP for occupants in the compartment)
-            const occupants = this.crew.filter(c => !c.isDead && c.currentRoom === sab.targetStation && c.transitRemaining <= 0);
-            occupants.forEach((occ, idx) => {
-                occ.hp = Math.max(0, occ.hp - 40);
-                if (occ.hp <= 0) {
-                    this.killOfficer(occ, idx, `Explosive blast in ${sab.stationName}`);
-                }
-            });
-
-            this.logComms(`[DETONATION] Bomb in ${sab.stationName} exploded! -35% Hull damage sustained.`, "normal", "HULL");
-
-            if (window.SoundFX && window.SoundFX.playLaunchAlert) {
-                window.SoundFX.playLaunchAlert();
-            }
-
-            if (window.Phase2Bridge && window.Phase2Bridge.pushAlert) {
-                window.Phase2Bridge.pushAlert({
-                    id: 'sabotage-detonated-alert',
-                    type: 'critical',
-                    tag: 'HULL',
-                    title: `[DETONATION] BOMB EXPLODED: ${sab.stationName.toUpperCase()}`,
-                    message: `The explosive in ${sab.stationName} detonated! -35% Hull damage and severe room damage sustained.`,
-                    autoExpireSec: 25
-                });
-            }
-
-            this.updateVesselTelemetry(0);
-            this.renderHUD();
+            this.triggerGameOver('CATASTROPHIC_SABOTAGE',
+                '[MISSION FAILED] CATASTROPHIC SABOTAGE',
+                `The hidden explosive armed in ${sab.stationName} detonated, destroying the Ark-04.`);
+            return;
         }
 
         this.activeSabotage = null;

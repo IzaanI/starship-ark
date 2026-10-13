@@ -9,17 +9,17 @@ class SoundEngine {
         
         // Individual volume levels for each sound effect (0.0 to 1.0)
         this.volumes = {
-            ambient: 0.25,    // Background rain & thunderstorm loop
+            ambient: 0.3,    // Background rain & thunderstorm loop
             lampHum: 0.06,    // Faint electrical booth mains hum
             lamp: 0.15,       // Desk lamp switch toggle
-            accept: 0.5,      // Wall accept button & authorization chime
-            reject: 0.5,      // Wall reject button & denial buzzer
+            accept: 0.3,      // Wall accept button & authorization chime
+            reject: 0.3,      // Wall reject button & denial buzzer
             book: 0.3,       // Ship manual page turns
             ledger: 0.25,      // Crew ledger manifest flip
             crt: 0.4,         // Terminal open/close CRT whine & pop
             keystroke: 0.8,   // Terminal mechanical keyboard typing
             dataFetch: 0.5,   // Document retrieval data stream chirps
-            launchAlert: 0.6  // Liftoff alarm siren
+            launchAlert: 0.5  // Liftoff alarm siren
         };
 
         this.ctx = null;
