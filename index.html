@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Starship Ark — Interactive Security Booth</title>
-    <link rel="stylesheet" href="style.css?v=1.1">
+    <link rel="stylesheet" href="style.css?v=1.2">
 </head>
 <body>
     <div id="game-container">
@@ -63,6 +63,13 @@
             </div>
             <div id="wall-button-reject" class="wall-btn-hotspot" onclick="rejectEntry()">
                 <div class="wall-btn-tooltip tooltip-reject">REJECT ENTRY</div>
+            </div>
+        </div>
+
+        <!-- CHARACTER DIALOGUE BOX (PLAYER SELF-TALK / INNER MONOLOGUE) -->
+        <div id="character-dialogue-box" class="character-dialogue-box hidden" onclick="dismissCharacterDialogue()" title="Click to dismiss">
+            <div class="dialogue-content">
+                <p class="dialogue-text">"Long day ahead... six seats to fill before liftoff. I better start by reading through the operations manual to figure out who I need."</p>
             </div>
         </div>
 

@@ -34,6 +34,7 @@ const CrewLedger = {
 
     openLedger() {
         this.isOpen = true;
+        dismissCharacterDialogue();
         if (this.isDirty) {
             this.render();
             this.isDirty = false;
@@ -217,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.ShipManual && window.ShipManual.init) window.ShipManual.init();
     if (window.CrewLedger && window.CrewLedger.init) window.CrewLedger.init();
     nextCandidate();
+    initCharacterDialogue();
 
     // Immediate attempt on load + capture-phase listeners for first click/gesture anywhere
     const triggerAudio = () => {
@@ -682,6 +684,7 @@ function submitCLI() {
 
 // 4. Terminal View Zooming & Shortcuts
 function openTerminal() {
+    dismissCharacterDialogue();
     const termView = document.getElementById('terminal-screen-view');
     if (termView) {
         termView.classList.remove('hidden');
@@ -702,10 +705,46 @@ function closeTerminal() {
     }
 }
 
+let characterDialogueTimer = null;
+
+function initCharacterDialogue() {
+    const box = document.getElementById('character-dialogue-box');
+    if (!box) return;
+
+    // Reveal self-talk monologue shortly after booth load
+    setTimeout(() => {
+        if (!isTerminalOpen && (!window.ShipManual || !window.ShipManual.isOpen)) {
+            box.classList.remove('hidden');
+            characterDialogueTimer = setTimeout(() => {
+                dismissCharacterDialogue();
+            }, 8500);
+        }
+    }, 700);
+}
+
+function dismissCharacterDialogue() {
+    const box = document.getElementById('character-dialogue-box');
+    if (box && !box.classList.contains('hidden')) {
+        box.classList.add('hidden');
+    }
+    if (characterDialogueTimer) {
+        clearTimeout(characterDialogueTimer);
+        characterDialogueTimer = null;
+    }
+}
+
 window.openTerminal = openTerminal;
 window.closeTerminal = closeTerminal;
+window.dismissCharacterDialogue = dismissCharacterDialogue;
+window.initCharacterDialogue = initCharacterDialogue;
 
 function initKeyboardShortcuts() {
+    const gameContainer = document.getElementById('game-container');
+    if (gameContainer) {
+        gameContainer.addEventListener('click', () => {
+            dismissCharacterDialogue();
+        });
+    }
     const laptopHotspot = document.getElementById('laptop-hotspot');
     if (laptopHotspot) {
         laptopHotspot.addEventListener('click', openTerminal);

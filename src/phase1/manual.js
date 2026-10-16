@@ -373,6 +373,9 @@ const ShipManual = {
 
     openManual() {
         this.isOpen = true;
+        if (window.dismissCharacterDialogue) {
+            window.dismissCharacterDialogue();
+        }
         const modal = document.getElementById('manual-modal');
         if (modal) {
             const contentArea = document.getElementById('manual-page-content-area');
