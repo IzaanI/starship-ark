@@ -440,20 +440,20 @@ class FlightEngineCore {
 
     /**
      * Calculate station net consumption drain rate (%/sec)
-     * Calibrated middle ground for a 400s (06:40) voyage:
-     * - Unmanned: 0.32%/sec (drains 32% in 100s, total failure in ~312s)
-     * - Single Mismatched (40% eff): ~0.250%/sec (buffer ~70s relief margin)
-     * - Single Stretch (70% eff): ~0.198%/sec (buffer ~11% over flight)
-     * - Single Adjacent (85% eff): ~0.171%/sec (buffer ~23% over flight)
-     * - Single Core (100% eff): ~0.145%/sec (optimal single officer, ~35% buffer)
-     * - Flextime Stacking (2 crew, 1.6 eff): ~0.105%/sec (stacking advantage, ~53% buffer)
+     * Calibrated middle ground for a 400s (06:40) voyage (+20% depletion rebalance):
+     * - Unmanned: 0.384%/sec (drains 38.4% in 100s, total failure in ~260s)
+     * - Single Mismatched (40% eff): ~0.300%/sec (net ~0.255%/s with metabolism; empties around 370-392s)
+     * - Single Stretch (70% eff): ~0.237%/sec (buffer ~20% over flight)
+     * - Single Adjacent (85% eff): ~0.206%/sec (buffer ~30% over flight)
+     * - Single Core (100% eff): ~0.174%/sec (optimal single officer, ~41% buffer)
+     * - Flextime Stacking (2 crew, 1.6 eff): ~0.126%/sec (stacking advantage, ~57% buffer)
      */
     getStationDrainRate(roomId) {
         const occupants = this.crew.filter(c => c.currentRoom === roomId && c.transitRemaining <= 0);
 
         if (occupants.length === 0) {
             return {
-                drainRate: 0.32, // -0.32% / sec unmanned
+                drainRate: 0.384, // -0.384% / sec unmanned (+20% scaled)
                 status: "UNMANNED",
                 combinedEff: 0,
                 occupantCount: 0
@@ -468,8 +468,8 @@ class FlightEngineCore {
         const combinedEff = eff1 + (eff2 * 0.6);
 
         // Continuous drain curve ensuring more/better crew always strictly reduces drain:
-        let drainRate = 0.32 - 0.175 * Math.min(1.0, combinedEff) - 0.040 * (Math.max(0, Math.min(0.6, combinedEff - 1.0)) / 0.6);
-        drainRate = Math.max(0.105, Math.min(0.32, drainRate));
+        let drainRate = 0.384 - 0.210 * Math.min(1.0, combinedEff) - 0.048 * (Math.max(0, Math.min(0.6, combinedEff - 1.0)) / 0.6);
+        drainRate = Math.max(0.126, Math.min(0.384, drainRate));
 
         let status = "OPTIMAL";
         if (occupants.length >= 2) {

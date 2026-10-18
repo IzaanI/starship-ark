@@ -79,7 +79,7 @@ console.log("  ✅ TEST 1 PASSED: Voyage ETA correctly set to original 6.67 minu
 // 2. Station Drain Curve Calibration
 console.log("\nTest 2: Calibrated Station Drain Curve");
 const unmannedRate = engine.getStationDrainRate('reactor').drainRate;
-console.log(`  Unmanned Drain Rate: ${unmannedRate}%/s (Expected: 0.32)`);
+console.log(`  Unmanned Drain Rate: ${unmannedRate}%/s (Expected: 0.384)`);
 
 // Single Core officer (Elena Rostova at Reactor)
 const elena = {
@@ -94,7 +94,7 @@ const elena = {
 };
 engine.crew = [elena];
 const coreRate = engine.getStationDrainRate('reactor').drainRate;
-console.log(`  Core Officer Drain Rate: ${coreRate}%/s (Expected: 0.145)`);
+console.log(`  Core Officer Drain Rate: ${coreRate}%/s (Expected: 0.174)`);
 
 // Stacked officers (Two Core officers at Reactor: 1.0 + 0.6 = 1.6 eff)
 const marcus = {
@@ -109,9 +109,9 @@ const marcus = {
 };
 engine.crew = [elena, marcus];
 const stackedRate = engine.getStationDrainRate('reactor').drainRate;
-console.log(`  Stacked Officers Drain Rate (Max Stacking): ${stackedRate}%/s (Expected: 0.105)`);
+console.log(`  Stacked Officers Drain Rate (Max Stacking): ${stackedRate}%/s (Expected: 0.126)`);
 
-if (unmannedRate !== 0.32 || Math.abs(coreRate - 0.145) > 0.005 || Math.abs(stackedRate - 0.105) > 0.005) {
+if (unmannedRate !== 0.384 || Math.abs(coreRate - 0.174) > 0.005 || Math.abs(stackedRate - 0.126) > 0.005) {
     throw new Error(`Test 2 Failed: Station drain rates mismatch calibration (unmanned: ${unmannedRate}, core: ${coreRate}, stacked: ${stackedRate})`);
 }
 console.log("  ✅ TEST 2 PASSED: Calibrated station drain curve verified.");
