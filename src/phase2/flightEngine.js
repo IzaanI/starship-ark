@@ -165,7 +165,8 @@ class FlightEngineCore {
 
         // Personnel Conditions & Incident State (Step 6 Track B)
         this.personnelDirectorTimer = 30.0;
-        this.carrierFlareUpTriggered = false;
+        this.carrierFirstFlareTriggered = false;
+        this.carrierRelapseTimer = null;
 
         // Active Security Searches (Step 6.3)
         this.activeSearches = {};
@@ -173,6 +174,8 @@ class FlightEngineCore {
         // Doomsday Saboteur State (Step 6.2 Track B)
         this.activeSabotage = null;
         this.sabotageTriggered = false;
+        this.saboteurFirstStrikeTriggered = false;
+        this.saboteurStrikeTimer = null;
 
         // Track C Random Day-to-Day Incidents (Workplace injury, etc.)
         this.activeTrackCIncident = null;
@@ -201,6 +204,10 @@ class FlightEngineCore {
         this.activeSearches = {};
         this.activeSabotage = null;
         this.sabotageTriggered = false;
+        this.saboteurFirstStrikeTriggered = false;
+        this.saboteurStrikeTimer = null;
+        this.carrierFirstFlareTriggered = false;
+        this.carrierRelapseTimer = null;
         this.activeTrackCIncident = null;
         this.activeCrewFriction = null;
         this.crisisDirectorTimer = 75.0;
@@ -619,9 +626,9 @@ class FlightEngineCore {
             });
         }
 
-        // 3. Hydroponics Bay -> Food Reserves (Weighted by Crew Mass, Hydroponics Staffing, & Living Crew Count)
+        // 3. Hydroponics Bay -> Food Reserves (Weighted by Crew Mass, Hydroponics Staffing, & Living Crew Count, lightened by ~8%)
         const hydroMetrics = this.getStationDrainRate('hydroponics');
-        let effectiveFoodDrain = Number((hydroMetrics.drainRate * weightFactor * crewRationRatio).toFixed(3));
+        let effectiveFoodDrain = Number((hydroMetrics.drainRate * weightFactor * crewRationRatio * 0.92).toFixed(3));
         if (this.activeCrises['hydroponics']) {
             effectiveFoodDrain = Number((effectiveFoodDrain + this.activeCrises['hydroponics'].penaltyPerSec).toFixed(3));
         }
@@ -774,6 +781,28 @@ class FlightEngineCore {
                     if (this.activeCrises && this.activeCrises[officer.currentRoom]) {
                         this.syncCrisisCard(this.activeCrises[officer.currentRoom]);
                     }
+                }
+            } else if (officer.transitTarget && officer.transitRemaining <= 0) {
+                // Safety catch for zero-duration or stuck transit: immediately finalize arrival
+                officer.currentRoom = officer.transitTarget;
+                officer.transitTarget = null;
+                officer.transitRemaining = 0;
+                officer.previousRoom = null;
+
+                const comp = (window.Phase2Bridge && window.Phase2Bridge.compartments) ? window.Phase2Bridge.compartments[officer.currentRoom] : null;
+
+                if (officer.currentRoom === 'sleepPods') {
+                    officer.status = 'RESTING IN QUARTERS';
+                } else if (officer.currentRoom === 'brig' && this.activeSearches && this.activeSearches[officer.name]) {
+                    officer.status = 'SECURITY AUDIT';
+                } else {
+                    const metrics = this.getStationDrainRate(officer.currentRoom);
+                    officer.status = `ASSIGNED: ${comp ? comp.name.toUpperCase() : 'DUTY'}`;
+                }
+
+                this.updateOfficerCard(idx, officer);
+                if (window.Phase2Bridge) {
+                    window.Phase2Bridge.renderRoomOccupants();
                 }
             }
 
@@ -1281,24 +1310,47 @@ class FlightEngineCore {
             breakdown.push({ label: `Voyage Distance Reached (${distance.toFixed(1)}%)`, points: distancePoints });
         }
 
-        // Living crew bonus: 75 pts each
+        // Living crew points & casualty penalties
         const crewPoints = livingCount * 75;
         score += crewPoints;
         breakdown.push({ label: `Crew Preservation (${livingCount}/${crewList.length} Officers Alive)`, points: crewPoints });
 
         if (livingCount === crewList.length && crewList.length > 0) {
-            score += 100;
-            breakdown.push({ label: "Zero Casualties Commendation", points: +100 });
+            score += 150;
+            breakdown.push({ label: "Zero Casualties Commendation (All Crew Survived)", points: +150 });
+        } else if (casualtyCount > 0) {
+            const casualtyPenalty = casualtyCount * 125;
+            score -= casualtyPenalty;
+            breakdown.push({ label: `Crew Casualties Incurred (${casualtyCount} Officer${casualtyCount > 1 ? 's' : ''} Lost)`, points: -casualtyPenalty });
         }
 
-        // Telemetry points
+        // Telemetry points & structural penalties
         const hullPoints = Math.round(hullVal * 1.2);
         score += hullPoints;
         breakdown.push({ label: `Hull Integrity Preserved (${hullVal}%)`, points: hullPoints });
 
+        if (hullVal < 50) {
+            const hullPenalty = Math.round((50 - hullVal) * 1.5);
+            score -= hullPenalty;
+            breakdown.push({ label: `Severe Hull Structural Breach (${hullVal}%)`, points: -hullPenalty });
+        }
+
         const resourceReservePoints = Math.round((pwrVal + o2Val + foodVal) * 0.4);
         score += resourceReservePoints;
         breakdown.push({ label: `Life Support & Power Reserves (Avg ${Math.round((pwrVal + o2Val + foodVal) / 3)}%)`, points: resourceReservePoints });
+
+        if (foodVal <= 0) {
+            score -= 100;
+            breakdown.push({ label: "Critical Food Depletion & Starvation", points: -100 });
+        }
+        if (o2Val <= 0) {
+            score -= 100;
+            breakdown.push({ label: "Critical Atmospheric Hypoxia", points: -100 });
+        }
+        if (pwrVal <= 0) {
+            score -= 100;
+            breakdown.push({ label: "Critical Electrical Brownout Collapse", points: -100 });
+        }
 
         const disciplinePoints = Math.round(discVal * 0.8);
         score += disciplinePoints;
@@ -1318,21 +1370,34 @@ class FlightEngineCore {
             breakdown.push({ label: `Contraband Stores Seized (${hoardersCaught})`, points: hoardersCaught * 60 });
         }
 
+        score = Math.max(0, score);
+
         // Determine Rank & Evaluation
         let rank = 'F';
         let rankTitle = 'EXPEDITION LOST';
         let rankClass = 'rank-f';
 
         if (isWin) {
-            if (score >= 900) {
+            // Strict Mathematical S-Rank Prerequisites:
+            // 1. Zero crew casualties: Every crewmate recruited must stay alive (casualtyCount === 0)
+            // 2. Structural soundness: Hull >= 75%
+            // 3. Stable life support reserves: Power >= 30%, O2 >= 30%, Food >= 25%
+            // 4. Orderly vessel discipline: Discipline >= 50%
+            // 5. High overall score: >= 1200
+            const isZeroCasualties = (casualtyCount === 0 && livingCount === crewList.length && crewList.length > 0);
+            const isHullIntact = (hullVal >= 75);
+            const areReservesStable = (pwrVal >= 30 && o2Val >= 30 && foodVal >= 25);
+            const isDisciplineMaintained = (discVal >= 50);
+
+            if (score >= 1200 && isZeroCasualties && isHullIntact && areReservesStable && isDisciplineMaintained) {
                 rank = 'S';
                 rankTitle = 'EXEMPLARY COMMANDER';
                 rankClass = 'rank-s';
-            } else if (score >= 750) {
+            } else if (score >= 1000 && casualtyCount <= 1 && hullVal >= 50) {
                 rank = 'A';
                 rankTitle = 'MERITORIOUS COMMANDER';
                 rankClass = 'rank-a';
-            } else if (score >= 600) {
+            } else if (score >= 750) {
                 rank = 'B';
                 rankTitle = 'SURVIVAL ATTRITION';
                 rankClass = 'rank-b';
@@ -1342,7 +1407,7 @@ class FlightEngineCore {
                 rankClass = 'rank-c';
             }
         } else {
-            if (score >= 450) {
+            if (score >= 500) {
                 rank = 'D';
                 rankTitle = 'VALIANT RECOVERY EFFORT';
                 rankClass = 'rank-d';
@@ -2200,7 +2265,11 @@ class FlightEngineCore {
         } else if (conditionId === 'CONTAGIOUS_INFECTION') {
             this.logComms(`[MEDICAL EMERGENCY] ${officer.name} is symptomatic with airborne pathogen! Quarantine in Medbay immediately.`, "normal", "MED");
         } else if (conditionId === 'PHYSICAL_INJURY') {
-            this.logComms(`[WORKPLACE ACCIDENT] ${reason || (officer.name + ' suffered a workplace injury.')}`, "normal", "MED");
+            if (reason && reason.includes('assault')) {
+                this.logComms(`[SECURITY ALERT] ${reason}`, "normal", "SEC");
+            } else {
+                this.logComms(`[WORKPLACE ACCIDENT] ${reason || (officer.name + ' suffered a workplace injury.')}`, "normal", "MED");
+            }
         }
 
         // Immediately render live condition card with progress bar & timer (no cyan quick actions)
@@ -2394,13 +2463,18 @@ class FlightEngineCore {
                 `;
             }
 
-            const alertTitle = isInjury
-                ? `[MED] INJURY: ${officer.name.toUpperCase()} (${bodyPart.toUpperCase()})`
-                : `[MED] CONTAGION: ${officer.name.toUpperCase()}`;
+            const isAssault = condState && (condState.isAssault || (condState.reason && condState.reason.includes('assault')));
+            const alertTitle = isAssault
+                ? `[SECURITY] VIOLENT ASSAULT: ${officer.name.toUpperCase()}`
+                : (isInjury
+                    ? `[MED] INJURY: ${officer.name.toUpperCase()} (${bodyPart.toUpperCase()})`
+                    : `[MED] CONTAGION: ${officer.name.toUpperCase()}`);
 
-            const descText = isInjury
-                ? `While working in the ${stationName}, <b>${officer.name}</b> tripped and injured their ${bodyPart}.`
-                : `<b>${officer.name}</b> is sick and contagious!`;
+            const descText = isAssault
+                ? (condState.customDesc || `<b>${officer.name}</b> suffered a brutal assault from behind. They were unable to see the attacker.`)
+                : (isInjury
+                    ? `While working in the ${stationName}, <b>${officer.name}</b> tripped and injured their ${bodyPart}.`
+                    : `<b>${officer.name}</b> is sick and contagious!`);
 
             const impactText = isInjury
                 ? 'IMPACT: Draining -0.35 HP/s · Efficiency -50% · Needs Medbay treatment with attendant'
@@ -2415,7 +2489,7 @@ class FlightEngineCore {
             window.Phase2Bridge.pushAlert({
                 id: alertId,
                 type: 'critical',
-                tag: condDef.tag || 'MED',
+                tag: isAssault ? 'SEC' : (condDef.tag || 'MED'),
                 title: alertTitle,
                 message: messageHtml,
                 targetRoom: null,
@@ -2443,6 +2517,11 @@ class FlightEngineCore {
         } else if (conditionId === 'PHYSICAL_INJURY') {
             if (this.activeTrackCIncident && this.activeTrackCIncident.officerName === officer.name) {
                 this.activeTrackCIncident = null;
+            }
+        } else if (conditionId === 'CONTAGIOUS_INFECTION') {
+            if (officer.trueIdentity === 'CONTAGIOUS_CARRIER') {
+                this.carrierRelapseTimer = 80.0 + Math.random() * 20.0; // 80-100s relapse window
+                this.logComms(`[MEDICAL CAUTION] ${officer.name} acute symptoms suppressed, but dormant viral load persists in carrier tissue.`, "normal", "MED");
             }
         }
 
@@ -2707,21 +2786,89 @@ class FlightEngineCore {
             }
         });
 
-        // 2. Contagious Carrier: Dormant pathogen flare-up milestone (e.g. voyage distance >= 20%)
-        if (this.distancePercent >= 20 && !this.carrierFlareUpTriggered) {
-            const carrier = this.crew.find(c => c.trueIdentity === 'CONTAGIOUS_CARRIER');
-            if (carrier) {
-                this.carrierFlareUpTriggered = true;
-                this.addCondition(carrier, 'CONTAGIOUS_INFECTION', 'Dormant pathogen incubation ended');
+        // 2. Contagious Carrier: Dormant pathogen flare-up milestone (voyage distance >= 20%) & recurring relapse cycle (every 80-100s)
+        const carrier = this.crew.find(c => c.trueIdentity === 'CONTAGIOUS_CARRIER' && !c.isDead && c.status !== 'DECEASED');
+        if (carrier) {
+            if (!this.carrierFirstFlareTriggered) {
+                if (this.distancePercent >= 20) {
+                    this.carrierFirstFlareTriggered = true;
+                    this.addCondition(carrier, 'CONTAGIOUS_INFECTION', 'Dormant pathogen incubation ended');
+                    this.carrierRelapseTimer = null;
+                }
+            } else {
+                // Recurring relapse: if carrier is alive and currently not symptomatic, count down 80-100s relapse window
+                if (!this.hasCondition(carrier, 'CONTAGIOUS_INFECTION')) {
+                    if (this.carrierRelapseTimer === null || this.carrierRelapseTimer === undefined) {
+                        this.carrierRelapseTimer = 80.0 + Math.random() * 20.0;
+                    } else {
+                        this.carrierRelapseTimer -= dt;
+                        if (this.carrierRelapseTimer <= 0) {
+                            this.carrierRelapseTimer = null;
+                            this.addCondition(carrier, 'CONTAGIOUS_INFECTION', 'Chronic pathogen relapse');
+                            this.logComms(`[PATHOGEN RELAPSE] ${carrier.name}'s dormant infection has flared up again! Immediate Medbay quarantine required.`, "normal", "MED");
+                        }
+                    }
+                }
             }
         }
 
-        // 3. Doomsday Saboteur: Arms explosive bomb at voyage distance >= 35%
-        if (this.distancePercent >= 35 && !this.sabotageTriggered) {
-            const saboteur = this.crew.find(c => c.trueIdentity === 'DOOMSDAY_SABOTEUR' && !c.isDead && c.status !== 'DECEASED' && !c.isDisarmed && Object.keys(c.conditions || {}).length === 0);
-            if (saboteur) {
-                this.sabotageTriggered = true;
-                this.triggerSabotageIncident(saboteur);
+        // 3. Doomsday Saboteur: 35% milestone strike & recurring strike loop (every 100-120s)
+        const saboteur = this.crew.find(c => c.trueIdentity === 'DOOMSDAY_SABOTEUR' && !c.isDead && c.status !== 'DECEASED' && !c.isDetained);
+        if (saboteur) {
+            if (!this.saboteurFirstStrikeTriggered) {
+                if (this.distancePercent >= 35) {
+                    this.saboteurFirstStrikeTriggered = true;
+                    this.sabotageTriggered = true;
+                    if (saboteur.isDisarmed) {
+                        // Already disarmed / neutralized by Brig officer: only assault can occur
+                        this.triggerSaboteurAssault(saboteur);
+                    } else {
+                        // 50/50 pool between bomb and violent assault
+                        if (Math.random() < 0.5) {
+                            this.triggerSabotageIncident(saboteur);
+                        } else {
+                            this.triggerSaboteurAssault(saboteur);
+                        }
+                    }
+                    this.saboteurStrikeTimer = 100.0 + Math.random() * 20.0;
+                }
+            } else {
+                // Recurring strikes every 100-120s
+                if (this.saboteurStrikeTimer === null || this.saboteurStrikeTimer === undefined) {
+                    this.saboteurStrikeTimer = 100.0 + Math.random() * 20.0;
+                } else {
+                    this.saboteurStrikeTimer -= dt;
+                    if (this.saboteurStrikeTimer <= 0) {
+                        this.saboteurStrikeTimer = 100.0 + Math.random() * 20.0;
+                        if (saboteur.isDisarmed) {
+                            // Bombs neutralized by Brig officer: strictly trigger assault
+                            const result = this.triggerSaboteurAssault(saboteur);
+                            if (!result) {
+                                // If no eligible target right now, retry sooner (15s)
+                                this.saboteurStrikeTimer = 15.0;
+                            }
+                        } else {
+                            // Bombs not neutralized: if a bomb is already ticking, assault instead
+                            const hasActiveBomb = this.activeSabotage && !this.activeSabotage.isDefused && !this.activeSabotage.isDetonated;
+                            if (hasActiveBomb) {
+                                const result = this.triggerSaboteurAssault(saboteur);
+                                if (!result) {
+                                    this.saboteurStrikeTimer = 15.0;
+                                }
+                            } else {
+                                if (Math.random() < 0.5) {
+                                    this.triggerSabotageIncident(saboteur);
+                                } else {
+                                    const result = this.triggerSaboteurAssault(saboteur);
+                                    if (!result) {
+                                        // If assault could not find a victim, fallback to bomb
+                                        this.triggerSabotageIncident(saboteur);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -3022,9 +3169,13 @@ class FlightEngineCore {
                 this.resolveSabotage(true, 'Disarm codes found during Brig search');
                 msg = `<b>Saboteur Caught & Bomb Disarmed!</b> Search uncovered hidden explosives and disarm codes on ${target.name}. Active bomb defused immediately!`;
             } else {
-                msg = `<b>Explosives & Sabotage Gear Found!</b> Disarmed explosive timers and sabotage tools found in ${target.name}'s belongings. Saboteur neutralized!`;
+                msg = `<b>Explosives Confiscated!</b> Disarmed explosive timers and sabotage tools confiscated from ${target.name}'s belongings. Explosive threat neutralized!`;
             }
-            this.logComms(`[SABOTEUR EXPOSED] Security search caught ${target.name} carrying hidden explosives and detonators! Threat eliminated.`, "normal", "SEC");
+            this.logComms(`[SABOTEUR DISARMED] Security search caught ${target.name} carrying hidden explosives! Detonators neutralized, but suspect remains hostile.`, "normal", "SEC");
+
+            if (this.saboteurStrikeTimer === null || this.saboteurStrikeTimer === undefined) {
+                this.saboteurStrikeTimer = 100.0 + Math.random() * 20.0;
+            }
         } else {
             this.logComms(`[SECURITY INSPECTION] Quarters inspection complete for ${target.name}. All personal effects nominal.`, "normal", "SEC");
         }
@@ -3325,6 +3476,85 @@ class FlightEngineCore {
 
         this.activeSabotage = null;
     }
+
+    /**
+     * =========================================================================
+     * STEP 6.5: SABOTEUR SECONDARY EVENT — VIOLENT ASSAULT ON ADJACENT CREWMATE
+     * =========================================================================
+     */
+    triggerSaboteurAssault(saboteur) {
+        if (!saboteur || saboteur.isDead || saboteur.status === 'DECEASED' || saboteur.isDetained) return null;
+
+        const roomDecks = {
+            cockpit: 6,
+            medbay: 5,
+            sleepPods: 5,
+            hydroponics: 4,
+            o2bay: 4,
+            brig: 2,
+            workshop: 2,
+            reactor: 1
+        };
+
+        const saboteurRoom = saboteur.currentRoom || saboteur.transitTarget || 'reactor';
+        const saboteurDeck = roomDecks[saboteurRoom] || 1;
+
+        // Find eligible living crewmates (not saboteur, not dead, not already afflicted with conditions)
+        const candidates = this.crew.filter(c => {
+            if (c === saboteur) return false;
+            if (c.isDead || c.status === 'DECEASED') return false;
+            if (this.hasCondition(c, 'PHYSICAL_INJURY')) return false;
+            if (Object.keys(c.conditions || {}).length > 0) return false;
+            return true;
+        });
+
+        if (candidates.length === 0) {
+            return null;
+        }
+
+        // Sort candidates by deck proximity to saboteur's current location
+        candidates.sort((a, b) => {
+            const deckA = roomDecks[a.currentRoom || a.transitTarget] || 3;
+            const deckB = roomDecks[b.currentRoom || b.transitTarget] || 3;
+            return Math.abs(deckA - saboteurDeck) - Math.abs(deckB - saboteurDeck);
+        });
+
+        const minDist = Math.abs((roomDecks[candidates[0].currentRoom || candidates[0].transitTarget] || 3) - saboteurDeck);
+        const nearestCandidates = candidates.filter(c => Math.abs((roomDecks[c.currentRoom || c.transitTarget] || 3) - saboteurDeck) === minDist);
+        const victim = nearestCandidates[Math.floor(Math.random() * nearestCandidates.length)];
+
+        const victimRoom = victim.currentRoom || victim.transitTarget || 'corridors';
+        const stationNames = {
+            cockpit: 'Flight Deck',
+            medbay: 'Medbay',
+            sleepPods: 'Sleep Pods',
+            hydroponics: 'Hydroponics Bay',
+            o2bay: 'Life Support / O2 Bay',
+            brig: 'The Brig',
+            workshop: 'Workshop',
+            reactor: 'Reactor Core'
+        };
+        const stationName = stationNames[victimRoom] || 'Station Corridors';
+
+        // Inflict physical blunt trauma
+        victim.hp = Math.max(15, (victim.hp || 100) - 25);
+
+        const assaultReason = `${victim.name} suffered a brutal assault from behind in ${stationName}. They were unable to see the attacker.`;
+        const assaultDesc = `<b>${victim.name}</b> suffered a brutal assault from behind. They were unable to see the attacker.`;
+
+        const added = this.addCondition(victim, 'PHYSICAL_INJURY', assaultReason);
+        if (!added) return null;
+
+        if (victim.conditions && victim.conditions['PHYSICAL_INJURY']) {
+            victim.conditions['PHYSICAL_INJURY'].isAssault = true;
+            victim.conditions['PHYSICAL_INJURY'].customDesc = assaultDesc;
+            victim.conditions['PHYSICAL_INJURY'].stationName = stationName;
+            victim.conditions['PHYSICAL_INJURY'].bodyPart = 'head & spine';
+        }
+
+        this.syncConditionCard(victim, 'PHYSICAL_INJURY');
+        return victim;
+    }
 }
 
 // Global Singleton
@@ -3381,6 +3611,18 @@ window.triggerSabotage = function() {
         if (sab) {
             window.FlightEngine.sabotageTriggered = true;
             return window.FlightEngine.triggerSabotageIncident(sab);
+        }
+    }
+};
+
+window.triggerSaboteurAssault = function() {
+    if (window.FlightEngine) {
+        let sab = window.FlightEngine.crew.find(c => c.trueIdentity === 'DOOMSDAY_SABOTEUR' && !c.isDead);
+        if (!sab) {
+            sab = window.FlightEngine.crew[0];
+        }
+        if (sab) {
+            return window.FlightEngine.triggerSaboteurAssault(sab);
         }
     }
 };

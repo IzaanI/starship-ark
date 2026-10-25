@@ -906,7 +906,54 @@ class Phase2BridgeEngine {
         }
 
         const fromRoom = officer.currentRoom || officer.previousRoom || null;
-        const duration = this.getTransitDuration(fromRoom, targetRoomId);
+        let duration = this.getTransitDuration(fromRoom, targetRoomId);
+
+        // Check if officer was in transit and is being reassigned back to their original station
+        const isPaused = (this.activeSpeed === 'pause') || (window.FlightEngine && window.FlightEngine.speedMultiplier === 0);
+        const hasNotMovedYet = !officer.transitRemaining || officer.transitRemaining >= (officer.transitTotal || 0);
+
+        if (fromRoom === targetRoomId && (isPaused || hasNotMovedYet)) {
+            duration = 0;
+        } else if (fromRoom === targetRoomId && officer.transitTarget) {
+            // Turning back mid-walk while simulation is running: takes time already spent walking away
+            duration = Math.max(1, Math.round((officer.transitTotal || 4) - (officer.transitRemaining || 0)));
+        }
+
+        // If duration is 0 (or <= 0), officer immediately arrives / restores to target room without transit limbo
+        if (duration <= 0) {
+            delete this.wanderState[officer.name];
+            officer.currentRoom = targetRoomId;
+            officer.transitTarget = null;
+            officer.transitRemaining = 0;
+            officer.transitTotal = 0;
+            officer.previousRoom = null;
+
+            if (targetRoomId === 'sleepPods') {
+                officer.status = 'RESTING IN QUARTERS';
+            } else if (targetRoomId === 'brig' && window.FlightEngine && window.FlightEngine.activeSearches && window.FlightEngine.activeSearches[officer.name]) {
+                officer.status = 'SECURITY AUDIT';
+            } else {
+                officer.status = `ASSIGNED: ${toComp.name.toUpperCase()}`;
+            }
+
+            if (window.FlightEngine) {
+                window.FlightEngine.updateOfficerCard(officerIndex, officer);
+                window.FlightEngine.updateVesselTelemetry(0);
+                window.FlightEngine.renderHUD();
+                if (window.FlightEngine.activeCrises && window.FlightEngine.activeCrises[targetRoomId]) {
+                    window.FlightEngine.syncCrisisCard(window.FlightEngine.activeCrises[targetRoomId]);
+                }
+            }
+
+            if (window.SoundFX && SoundFX.playKeyClick) {
+                SoundFX.playKeyClick(null, true);
+            }
+
+            this.cancelDispatch();
+            this.renderRoomOccupants();
+            this.renderCrewManifest();
+            return;
+        }
 
         // Remember previous position for travel continuity
         officer.previousRoom = fromRoom;
